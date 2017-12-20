@@ -1,0 +1,12 @@
+pytest
+numpy
+wand
+pillow
+bintrees
+beautifulsoup4
+lxml
+sklearn
+pandas
+tabula-py
+IPython
+scipy
