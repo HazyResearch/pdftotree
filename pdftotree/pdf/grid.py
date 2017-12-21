@@ -5,10 +5,10 @@ Created on Dec 2, 2015
 '''
 import numpy as np
 import bisect
-from pdfminer.utils import Plane
+from pdftotree.pdfminer.utils import Plane
 import pandas as pd
-from pdf.vector_utils import inside, reading_order
-from pdf.layout_utils import project_onto
+from pdftotree.pdf.vector_utils import inside, reading_order
+from pdftotree.pdf.layout_utils import project_onto
 from collections import defaultdict
 from pprint import pprint
 

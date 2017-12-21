@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 import sys
-from pdfminer.psparser import LIT
-from pdfminer.pdftypes import PDFObjectNotFound
-from pdfminer.pdftypes import resolve1
-from pdfminer.pdftypes import int_value, list_value, dict_value
-from pdfminer.pdfparser import PDFParser
-from pdfminer.pdfdocument import PDFDocument
-from pdfminer.pdfdocument import PDFEncryptionError
-from pdfminer.pdfdocument import PDFTextExtractionNotAllowed
+from pdftotree.pdfminer.psparser import LIT
+from pdftotree.pdfminer.pdftypes import PDFObjectNotFound
+from pdftotree.pdfminer.pdftypes import resolve1
+from pdftotree.pdfminer.pdftypes import int_value, list_value, dict_value
+from pdftotree.pdfminer.pdfparser import PDFParser
+from pdftotree.pdfminer.pdfdocument import PDFDocument
+from pdftotree.pdfminer.pdfdocument import PDFEncryptionError
+from pdftotree.pdfminer.pdfdocument import PDFTextExtractionNotAllowed
 
 # some predefined literals and keywords.
 LITERAL_PAGE = LIT('Page')

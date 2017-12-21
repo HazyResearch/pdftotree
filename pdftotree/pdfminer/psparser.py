@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 import re
-from pdfminer.utils import choplist
+from pdftotree.pdfminer.utils import choplist
 
 STRICT = 0
 

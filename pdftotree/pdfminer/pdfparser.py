@@ -4,13 +4,13 @@ try:
     from cStringIO import StringIO
 except ImportError:
     from io import StringIO
-from pdfminer.psparser import PSStackParser
-from pdfminer.psparser import PSSyntaxError, PSEOF
-from pdfminer.psparser import KWD, STRICT
-from pdfminer.pdftypes import PDFException
-from pdfminer.pdftypes import PDFStream, PDFObjRef
-from pdfminer.pdftypes import int_value
-from pdfminer.pdftypes import dict_value
+from pdftotree.pdfminer.psparser import PSStackParser
+from pdftotree.pdfminer.psparser import PSSyntaxError, PSEOF
+from pdftotree.pdfminer.psparser import KWD, STRICT
+from pdftotree.pdfminer.pdftypes import PDFException
+from pdftotree.pdfminer.pdftypes import PDFStream, PDFObjRef
+from pdftotree.pdfminer.pdftypes import int_value
+from pdftotree.pdfminer.pdftypes import dict_value
 
 
 ##  Exceptions

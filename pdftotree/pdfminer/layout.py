@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-from pdfminer.utils import INF, Plane, get_bound, uniq, csort, fsplit
-from pdfminer.utils import bbox2str, matrix2str, apply_matrix_pt, is_diagonal
+from pdftotree.pdfminer.utils import INF, Plane, get_bound, uniq, csort, fsplit
+from pdftotree.pdfminer.utils import bbox2str, matrix2str, apply_matrix_pt, is_diagonal
 
 
 ##  IndexAssigner

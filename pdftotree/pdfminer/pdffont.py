@@ -5,17 +5,17 @@ try:
     from StringIO import StringIO
 except ImportError:
     from io import StringIO
-from pdfminer.cmapdb import CMapDB, CMapParser, FileUnicodeMap, CMap
-from pdfminer.encodingdb import EncodingDB, name2unicode
-from pdfminer.psparser import PSStackParser
-from pdfminer.psparser import PSEOF
-from pdfminer.psparser import LIT, KWD, STRICT
-from pdfminer.psparser import PSLiteral, literal_name
-from pdfminer.pdftypes import PDFException, resolve1
-from pdfminer.pdftypes import int_value, num_value
-from pdfminer.pdftypes import list_value, dict_value, stream_value
-from pdfminer.fontmetrics import FONT_METRICS
-from pdfminer.utils import apply_matrix_norm, nunpack, choplist, isnumber
+from pdftotree.pdfminer.cmapdb import CMapDB, CMapParser, FileUnicodeMap, CMap
+from pdftotree.pdfminer.encodingdb import EncodingDB, name2unicode
+from pdftotree.pdfminer.psparser import PSStackParser
+from pdftotree.pdfminer.psparser import PSEOF
+from pdftotree.pdfminer.psparser import LIT, KWD, STRICT
+from pdftotree.pdfminer.psparser import PSLiteral, literal_name
+from pdftotree.pdfminer.pdftypes import PDFException, resolve1
+from pdftotree.pdfminer.pdftypes import int_value, num_value
+from pdftotree.pdfminer.pdftypes import list_value, dict_value, stream_value
+from pdftotree.pdfminer.fontmetrics import FONT_METRICS
+from pdftotree.pdfminer.utils import apply_matrix_norm, nunpack, choplist, isnumber
 
 
 def get_widths(seq):

@@ -6,19 +6,19 @@ try:
     import hashlib as md5
 except ImportError:
     import md5
-from pdfminer.psparser import PSEOF
-from pdfminer.psparser import literal_name
-from pdfminer.psparser import LIT, KWD, STRICT
-from pdfminer.pdftypes import PDFException, PDFTypeError, PDFNotImplementedError
-from pdfminer.pdftypes import PDFObjectNotFound, PDFStream
-from pdfminer.pdftypes import decipher_all
-from pdfminer.pdftypes import int_value
-from pdfminer.pdftypes import str_value, list_value, dict_value, stream_value
-from pdfminer.pdfparser import PDFSyntaxError
-from pdfminer.pdfparser import PDFStreamParser
-from pdfminer.arcfour import Arcfour
-from pdfminer.utils import choplist, nunpack
-from pdfminer.utils import decode_text
+from pdftotree.pdfminer.psparser import PSEOF
+from pdftotree.pdfminer.psparser import literal_name
+from pdftotree.pdfminer.psparser import LIT, KWD, STRICT
+from pdftotree.pdfminer.pdftypes import PDFException, PDFTypeError, PDFNotImplementedError
+from pdftotree.pdfminer.pdftypes import PDFObjectNotFound, PDFStream
+from pdftotree.pdfminer.pdftypes import decipher_all
+from pdftotree.pdfminer.pdftypes import int_value
+from pdftotree.pdfminer.pdftypes import str_value, list_value, dict_value, stream_value
+from pdftotree.pdfminer.pdfparser import PDFSyntaxError
+from pdftotree.pdfminer.pdfparser import PDFStreamParser
+from pdftotree.pdfminer.arcfour import Arcfour
+from pdftotree.pdfminer.utils import choplist, nunpack
+from pdftotree.pdfminer.utils import decode_text
 
 
 ##  Exceptions

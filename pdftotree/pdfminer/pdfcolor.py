@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from pdfminer.psparser import LIT
+from pdftotree.pdfminer.psparser import LIT
 
 
 ##  PDFColorSpace

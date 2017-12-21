@@ -3,9 +3,9 @@ Created on Jan 25, 2016
 
 @author: xiao
 '''
-from pdf.vector_utils import *
+from pdftotree.pdf.vector_utils import *
 import collections
-from pdfminer.layout import LTTextLine, LTChar, LTAnno, LTCurve, LTComponent, LTLine
+from pdftotree.pdfminer.layout import LTTextLine, LTChar, LTAnno, LTCurve, LTComponent, LTLine
 from itertools import chain
 import numpy as np
 

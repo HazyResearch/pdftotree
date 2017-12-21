@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import zlib
-from pdfminer.lzw import lzwdecode
-from pdfminer.ascii85 import ascii85decode, asciihexdecode
-from pdfminer.runlength import rldecode
-from pdfminer.ccitt import ccittfaxdecode
-from pdfminer.psparser import PSException, PSObject
-from pdfminer.psparser import LIT, STRICT
-from pdfminer.utils import apply_png_predictor, isnumber
+from pdftotree.pdfminer.lzw import lzwdecode
+from pdftotree.pdfminer.ascii85 import ascii85decode, asciihexdecode
+from pdftotree.pdfminer.runlength import rldecode
+from pdftotree.pdfminer.ccitt import ccittfaxdecode
+from pdftotree.pdfminer.psparser import PSException, PSObject
+from pdftotree.pdfminer.psparser import LIT, STRICT
+from pdftotree.pdfminer.utils import apply_png_predictor, isnumber
 
 LITERAL_CRYPT = LIT('Crypt')
 

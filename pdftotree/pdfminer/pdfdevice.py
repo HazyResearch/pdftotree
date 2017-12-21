@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-from pdfminer.utils import mult_matrix, translate_matrix
-from pdfminer.utils import enc, bbox2str, isnumber
-from pdfminer.pdffont import PDFUnicodeNotDefined
+from pdftotree.pdfminer.utils import mult_matrix, translate_matrix
+from pdftotree.pdfminer.utils import enc, bbox2str, isnumber
+from pdftotree.pdfminer.pdffont import PDFUnicodeNotDefined
 
 
 ##  PDFDevice

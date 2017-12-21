@@ -5,23 +5,23 @@ try:
     from cStringIO import StringIO
 except ImportError:
     from io import StringIO
-from pdfminer.cmapdb import CMapDB, CMap
-from pdfminer.psparser import PSTypeError, PSEOF
-from pdfminer.psparser import PSKeyword, literal_name, keyword_name
-from pdfminer.psparser import PSStackParser
-from pdfminer.psparser import LIT, KWD, STRICT
-from pdfminer.pdftypes import PDFException, PDFStream, PDFObjRef
-from pdfminer.pdftypes import resolve1
-from pdfminer.pdftypes import list_value, dict_value, stream_value
-from pdfminer.pdffont import PDFFontError
-from pdfminer.pdffont import PDFType1Font, PDFTrueTypeFont, PDFType3Font
-from pdfminer.pdffont import PDFCIDFont
-from pdfminer.pdfcolor import PDFColorSpace
-from pdfminer.pdfcolor import PREDEFINED_COLORSPACE
-from pdfminer.pdfcolor import LITERAL_DEVICE_GRAY, LITERAL_DEVICE_RGB
-from pdfminer.pdfcolor import LITERAL_DEVICE_CMYK
-from pdfminer.utils import choplist
-from pdfminer.utils import mult_matrix, MATRIX_IDENTITY
+from pdftotree.pdfminer.cmapdb import CMapDB, CMap
+from pdftotree.pdfminer.psparser import PSTypeError, PSEOF
+from pdftotree.pdfminer.psparser import PSKeyword, literal_name, keyword_name
+from pdftotree.pdfminer.psparser import PSStackParser
+from pdftotree.pdfminer.psparser import LIT, KWD, STRICT
+from pdftotree.pdfminer.pdftypes import PDFException, PDFStream, PDFObjRef
+from pdftotree.pdfminer.pdftypes import resolve1
+from pdftotree.pdfminer.pdftypes import list_value, dict_value, stream_value
+from pdftotree.pdfminer.pdffont import PDFFontError
+from pdftotree.pdfminer.pdffont import PDFType1Font, PDFTrueTypeFont, PDFType3Font
+from pdftotree.pdfminer.pdffont import PDFCIDFont
+from pdftotree.pdfminer.pdfcolor import PDFColorSpace
+from pdftotree.pdfminer.pdfcolor import PREDEFINED_COLORSPACE
+from pdftotree.pdfminer.pdfcolor import LITERAL_DEVICE_GRAY, LITERAL_DEVICE_RGB
+from pdftotree.pdfminer.pdfcolor import LITERAL_DEVICE_CMYK
+from pdftotree.pdfminer.utils import choplist
+from pdftotree.pdfminer.utils import mult_matrix, MATRIX_IDENTITY
 
 
 ##  Exceptions

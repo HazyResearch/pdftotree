@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 import re
-from pdfminer.psparser import PSLiteral
-from pdfminer.glyphlist import glyphname2unicode
-from pdfminer.latin_enc import ENCODING
+from pdftotree.pdfminer.psparser import PSLiteral
+from pdftotree.pdfminer.glyphlist import glyphname2unicode
+from pdftotree.pdfminer.latin_enc import ENCODING
 
 
 STRIP_NAME = re.compile(r'[0-9]+')

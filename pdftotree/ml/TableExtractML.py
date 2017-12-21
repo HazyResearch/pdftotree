@@ -1,15 +1,15 @@
 import numpy as np
 
-from utils.bbox_utils import get_rectangles, compute_iou
-from utils.lines_utils import reorder_lines, get_vertical_and_horizontal, extend_vertical_lines, \
+from pdftotree.utils.bbox_utils import get_rectangles, compute_iou
+from pdftotree.utils.lines_utils import reorder_lines, get_vertical_and_horizontal, extend_vertical_lines, \
     merge_vertical_lines, merge_horizontal_lines, extend_horizontal_lines
-from pdf.pdf_parsers import parse_layout
-from pdf.pdf_utils import normalize_pdf, analyze_pages
-from utils.display_utils import pdf_to_img
-from ml.features import get_alignment_features, get_lines_features
+from pdftotree.pdf.pdf_parsers import parse_layout
+from pdftotree.pdf.pdf_utils import normalize_pdf, analyze_pages
+from pdftotree.utils.display_utils import pdf_to_img
+from pdftotree.ml.features import get_alignment_features, get_lines_features
 from wand.color import Color
 from wand.drawing import Drawing
-from pdfminer.utils import Plane
+from pdftotree.pdfminer.utils import Plane
 
 class TableExtractorML(object):
     """
@@ -75,7 +75,7 @@ class TableExtractorML(object):
             if(page_scanned==True):
                 is_scanned = True
         if(is_scanned==True or lin_seg_present==False): #doc is scanned if any page is scanned
-            self.scanned = True    
+            self.scanned = True
 
     def get_scanned(self):
         if(len(self.elems) == 0):

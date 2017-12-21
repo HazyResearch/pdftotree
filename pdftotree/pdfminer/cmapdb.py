@@ -17,12 +17,12 @@ import os.path
 import gzip
 import pickle
 import struct
-from pdfminer.psparser import PSStackParser
-from pdfminer.psparser import PSSyntaxError, PSEOF
-from pdfminer.psparser import PSLiteral
-from pdfminer.psparser import literal_name
-from pdfminer.encodingdb import name2unicode
-from pdfminer.utils import choplist, nunpack
+from pdftotree.pdfminer.psparser import PSStackParser
+from pdftotree.pdfminer.psparser import PSSyntaxError, PSEOF
+from pdftotree.pdfminer.psparser import PSLiteral
+from pdftotree.pdfminer.psparser import literal_name
+from pdftotree.pdfminer.encodingdb import name2unicode
+from pdftotree.pdfminer.utils import choplist, nunpack
 
 
 class CMapError(Exception):

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import sys
-from pdfminer.pdfdevice import PDFTextDevice
-from pdfminer.pdffont import PDFUnicodeNotDefined
-from pdfminer.layout import LTContainer, LTPage, LTText, LTLine, LTRect, LTCurve
-from pdfminer.layout import LTFigure, LTImage, LTChar, LTTextLine
-from pdfminer.layout import LTTextBox, LTTextBoxVertical, LTTextGroup
-from pdfminer.utils import apply_matrix_pt, mult_matrix
-from pdfminer.utils import enc, bbox2str
+from pdftotree.pdfminer.pdfdevice import PDFTextDevice
+from pdftotree.pdfminer.pdffont import PDFUnicodeNotDefined
+from pdftotree.pdfminer.layout import LTContainer, LTPage, LTText, LTLine, LTRect, LTCurve
+from pdftotree.pdfminer.layout import LTFigure, LTImage, LTChar, LTTextLine
+from pdftotree.pdfminer.layout import LTTextBox, LTTextBoxVertical, LTTextGroup
+from pdftotree.pdfminer.utils import apply_matrix_pt, mult_matrix
+from pdftotree.pdfminer.utils import enc, bbox2str
 
 
 ##  PDFLayoutAnalyzer

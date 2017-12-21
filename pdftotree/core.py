@@ -41,7 +41,7 @@ def visualize_tree(pdf_file, pdf_tree, html_path):
     a = v.display_candidates(pdf_tree, html_path, filename_prefix)
 
 
-def parse(pdf_file, model_path=None, html_path="./results/", favor_figures=True, visualize=False):
+def parse(pdf_file, html_path, model_path=None, favor_figures=True, visualize=False):
     model = None
     if (model_path is not None):
         model = load_model(model_path)
@@ -65,22 +65,3 @@ def parse(pdf_file, model_path=None, html_path="./results/", favor_figures=True,
             imgs = visualize_tree(pdf_file, pdf_tree, html_path)
     else:
         print("Document is scanned, cannot build tree structure")
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-            description="""Script to extract tree structure from PDF files.""")
-    parser.add_argument('--model_path', type=str, default=None, help='pretrained model')
-    parser.add_argument('--pdf_file', type=str, help='pdf file name for which tree structure needs to be extracted')
-    parser.add_argument('--html_path', type=str, help='path where tree structure must be saved', default="./results/")
-    parser.add_argument('--favor_figures', type=str, help='whether figures must be favored over other parts such as tables and section headers', default="True")
-    parser.add_argument('--visualize', dest="visualize", action="store_true", help='whether to output visualization images for the tree')
-    parser.set_defaults(visualize=False)
-    args = parser.parse_args()
-
-    # Call the main routine
-    parse(args.model_path,
-          args.pdf_file,
-          args.html_path,
-          args.favor_figures,
-          args.visualize)

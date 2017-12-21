@@ -1,8 +1,8 @@
 import string
 
-from pdf.pdf_parsers import *
-from pdf.vector_utils import *
-from utils.bbox_utils import isContained
+from pdftotree.pdf.pdf_parsers import *
+from pdftotree.pdf.vector_utils import *
+from pdftotree.utils.bbox_utils import isContained
 
 
 # ******************* Table Coverage Features *************************************

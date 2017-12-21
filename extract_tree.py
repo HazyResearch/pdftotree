@@ -15,8 +15,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Call the main routine
-    pdftotree.parse(args.model_path,
-                    args.pdf_file,
+    pdftotree.parse(args.pdf_file,
                     args.html_path,
+                    args.model_path,
                     args.favor_figures,
                     args.visualize)

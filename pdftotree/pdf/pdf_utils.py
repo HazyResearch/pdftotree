@@ -12,15 +12,15 @@ import traceback
 from collections import Counter
 
 #  from .img_utils import *
-from pdf.vector_utils import *
-from pdfminer.converter import PDFPageAggregator
-from pdfminer.layout import LAParams, LTFigure
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-from pdfminer.pdfpage import PDFPage
-from pdfminer.pdfparser import PDFParser
-from pdfminer.utils import apply_matrix_pt
-from pdf.layout_utils import *
-from pdfminer.pdfdocument import PDFDocument
+from pdftotree.pdf.vector_utils import *
+from pdftotree.pdfminer.converter import PDFPageAggregator
+from pdftotree.pdfminer.layout import LAParams, LTFigure
+from pdftotree.pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+from pdftotree.pdfminer.pdfpage import PDFPage
+from pdftotree.pdfminer.pdfparser import PDFParser
+from pdftotree.pdfminer.utils import apply_matrix_pt
+from pdftotree.pdf.layout_utils import *
+from pdftotree.pdfminer.pdfdocument import PDFDocument
 
 # Compact wrapper representation for the pdf
 PDFElems = namedtuple('PDFElems', ['mentions', 'segments', 'curves', 'figures', 'layout', 'chars'])
