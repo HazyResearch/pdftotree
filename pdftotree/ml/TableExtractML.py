@@ -1,3 +1,4 @@
+import six
 import numpy as np
 
 from pdftotree.utils.bbox_utils import get_rectangles, compute_iou
@@ -32,8 +33,8 @@ class TableExtractorML(object):
     def identify_scanned_page(self, boxes, page_bbox, page_width, page_height):
         plane = Plane(page_bbox)
         plane.extend(boxes)
-        cid2obj = [set([i]) for i in xrange(len(boxes))] # initialize clusters
-        obj2cid = range(len(boxes)) # default object map to cluster with its own index
+        cid2obj = [set([i]) for i in range(len(boxes))] # initialize clusters
+        obj2cid = list(range(len(boxes))) # default object map to cluster with its own index
         prev_clusters = obj2cid
         while(True):
             for i1, b1 in enumerate(boxes):

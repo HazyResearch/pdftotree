@@ -116,7 +116,6 @@ class TreeExtractor(object):
         # print "Page Num: ", page_num, "Line bboxes: ", len(lines_bboxes), ", Alignment bboxes: ", len(alignments_bboxes)
         # alignment_features += get_alignment_features(lines_bboxes, elems, font_stat)
         boxes = alignments_bboxes  # + lines_bboxes
-        #  import pdb; pdb.set_trace()
         if len(boxes) == 0:
             return [], []
         lines_features = get_lines_features(boxes, elems)
@@ -145,7 +144,8 @@ class TreeExtractor(object):
         font_stat = self.font_stats[page_num]
         try:
             nodes, features = parse_layout(elems, font_stat)
-        except Exception:
+        except Exception as e:
+            print(e)
             nodes, features = [], []
         return [(page_num, page_width, page_height) + (node.y0, node.x0,
                 node.y1, node.x1) for node in nodes], features
@@ -292,7 +292,7 @@ class TreeExtractor(object):
         table_json = tabula.read_pdf(self.pdf_file, pages=page_num,
                                      area=table_str, output_format="json")
         table_html = ""
-        if(len(table_json) > 0):
+        if (len(table_json) > 0):
             table_html = "<table>"
             for i, row in enumerate(table_json[0]["data"]):
                 row_str = "<tr>"
@@ -306,19 +306,30 @@ class TreeExtractor(object):
                     word_html = ""
                     sep = " "
                     elems = get_mentions_within_bbox(box, self.elems[page_num].mentions)
-                    elems.sort(cmp=reading_order)
+                    elems.sort(key=cmp_to_key(reading_order))
                     word_td = ""
                     for elem in elems:
                         words = self.get_word_boundaries(elem)
                         for word in words:
-                            if not re.match(r'[\x00-\x1F]', word[0].encode('utf-8')):
+                            if six.PY2:
+                                temp = word[0].encode('utf-8')
+                            elif six.PY3:
+                                temp = word[0]
+                            if not re.match(r'[\x00-\x1F]', temp):
                                 word_td += word[0] + " "
-                                word_html += str(word[0].encode('utf-8'))+sep
-                                top_html += str(word[1])+sep
-                                left_html += str(word[2])+sep
-                                bottom_html += str(word[3])+sep
-                                right_html += str(word[4])+sep
-                    row_str += "<td word='"+word_html+"', top='"+top_html+"', left='"+left_html+"', bottom='"+bottom_html+"', right='"+right_html+"'>"+word_td[:-1].encode("utf-8")+"</td>"
+                                word_html += str(word[0].encode('utf-8')) + sep
+                                top_html += str(word[1]) + sep
+                                left_html += str(word[2]) + sep
+                                bottom_html += str(word[3]) + sep
+                                right_html += str(word[4]) + sep
+                    if six.PY2:
+                        temp = word_td[:-1].encode("utf-8")
+                    elif six.PY3:
+                        temp = word_td[:-1]
+                    row_str += ("<td word='" + word_html + "', top='" +
+                                top_html + "', left='" + left_html +
+                                "', bottom='" + bottom_html + "', right='" +
+                                right_html + "'>" + temp + "</td>")
                     # row_str += "<td word='"+word_html+"', top='"+top_html+"', left='"+left_html+"', bottom='"+bottom_html+"', right='"+right_html+"'>"+str(column["text"].encode('utf-8'))+"</td>"
                     # row_str += "<td char='"+char_html+"', top="+str(column["top"])+", left="+str(column["left"])+", bottom="+str(column["top"]+column["height"])+", right="+str(column["left"]+column["width"])+">"
                     # row_str += str(column["text"].encode('utf-8'))

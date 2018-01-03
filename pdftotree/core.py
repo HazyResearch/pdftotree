@@ -65,9 +65,10 @@ def parse(pdf_file, html_path, model_path=None, favor_figures=True, visualize=Fa
         pdf_html = re.sub(r'[\x00-\x1F]+', '', pdf_html)
         if debug:
             return pdf_html
-        with codecs.open(html_path + pdf_filename[:-4] + ".html", encoding="utf-8", mode="w") as f:
+        with codecs.open(html_path + pdf_filename[:-4] + ".html",
+                         encoding="utf-8", mode="w") as f:
             f.write(pdf_html)
         if visualize:
-            imgs = visualize_tree(pdf_file, pdf_tree, html_path)
+            visualize_tree(pdf_file, pdf_tree, html_path)
     else:
         print("Document is scanned, cannot build tree structure")
