@@ -17,14 +17,13 @@ Other tree parts are detected using heuristic methods.
 Set favor_figures to "False" for Hardware sheets.
 '''
 
-import argparse
 import os
 import pickle
 import sys
 import codecs
 import re
 
-import importlib
+#  import importlib
 
 import numpy as np
 from pdftotree.ml.TableExtractML import TableExtractorML
@@ -43,7 +42,7 @@ def visualize_tree(pdf_file, pdf_tree, html_path):
     a = v.display_candidates(pdf_tree, html_path, filename_prefix)
 
 
-def parse(pdf_file, html_path, model_path=None, favor_figures=True, visualize=False):
+def parse(pdf_file, html_path, model_path=None, favor_figures=True, visualize=False, debug=False):
     model = None
     if (model_path is not None):
         model = load_model(model_path)
@@ -61,6 +60,8 @@ def parse(pdf_file, html_path, model_path=None, favor_figures=True, visualize=Fa
         #  importlib.reload(sys)
         #  sys.setdefaultencoding('utf8')
         pdf_html = re.sub(r'[\x00-\x1F]+', '', pdf_html)
+        if debug:
+            return pdf_html
         with codecs.open(html_path + pdf_filename[:-4] + ".html", encoding="utf-8", mode="w") as f:
             f.write(pdf_html)
         if visualize:
