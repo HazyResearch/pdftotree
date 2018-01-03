@@ -166,11 +166,11 @@ class TreeExtractor(object):
                 if(box[0] == "table"):
                     table = box[1:]
                     table_html = self.get_html_table(table, page_num)
-                    page_html += table_html
+                    page_html += table_html.decode('utf-8')
                 elif(box[0] == "figure"):
                     fig_str = [str(i) for i in box[1:]]
                     fig_html = "<figure bbox="+",".join(fig_str)+"></figure>"
-                    page_html += fig_html
+                    page_html += fig_html.decode('utf-8')
                 else:
                     box_html, char_html, top_html, left_html, bottom_html, right_html = self.get_html_others(box[1:], page_num)
                     page_html += "<"+box[0]+" char='"+char_html+"', top='"+top_html+"', left='"+left_html+"', bottom='"+bottom_html+"', right='"+right_html+"'>"+box_html+"</"+box[0]+">"
