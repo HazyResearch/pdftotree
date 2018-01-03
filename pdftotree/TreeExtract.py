@@ -230,15 +230,15 @@ class TreeExtractor(object):
             chars = self.get_char_boundaries(elem)
             for char in chars:
                 if not re.match(b'[\x00-\x1F]', char[0].encode('utf-8')):
-                    char_html += str(char[0].encode('utf-8')).replace("'",'"')+sep
-                    top_html += str(char[1])+sep
-                    left_html += str(char[2])+sep
-                    bottom_html += str(char[3])+sep
-                    right_html += str(char[4])+sep
+                    char_html += char[0].replace("'", '"') + sep
+                    top_html += str(char[1]) + sep
+                    left_html += str(char[2]) + sep
+                    bottom_html += str(char[3]) + sep
+                    right_html += str(char[4]) + sep
             words = self.get_word_boundaries(elem)
             for word in words:
                 # node_html += "<word top="+str(word[1])+" left="+str(word[2])+" bottom="+str(word[3])+" right="+str(word[4])+">"+str(word[0].encode('utf-8'))+"</word> "
-                node_html += str(word[0].encode('utf-8'))+" "
+                node_html += word[0] + " "
         return node_html, char_html, top_html, left_html, bottom_html, right_html
 
     def get_html_table(self, table, page_num):
