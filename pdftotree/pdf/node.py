@@ -5,8 +5,8 @@ Created on Jun 10, 2016
 '''
 from pdftotree.pdf.vector_utils import bound_elems, bound_bboxes
 from collections import Counter, defaultdict
-from pdftotree.pdfminer.layout import LTLine, LTTextLine, LTCurve, LTFigure, LTComponent
-from pdftotree.pdfminer.utils import Plane
+from pdftotree.pdfminer.pdfminer.layout import LTLine, LTTextLine, LTCurve, LTFigure, LTComponent
+from pdftotree.pdfminer.pdfminer.utils import Plane
 from pdftotree.pdf.layout_utils import is_vline, is_same_row
 import numbers
 import numpy as np

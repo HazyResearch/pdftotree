@@ -6,7 +6,7 @@ Parsing raw PDF data into python data structures
 '''
 from collections import defaultdict
 
-from pdftotree.pdfminer.utils import Plane
+from pdftotree.pdfminer.pdfminer.utils import Plane
 from pdftotree.pdf.layout_utils import *
 from pdftotree.pdf.node import Node
 import operator

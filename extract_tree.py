@@ -2,12 +2,11 @@
 import argparse
 import pdftotree
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
             description="""Script to extract tree structure from PDF files.""")
     parser.add_argument('--model_path', type=str, default=None, help='pretrained model')
-    parser.add_argument('--pdf_file', type=str, help='pdf file name for which tree structure needs to be extracted')
+    parser.add_argument('--pdf_file', type=str, required=True, help='pdf file name for which tree structure needs to be extracted')
     parser.add_argument('--html_path', type=str, help='path where tree structure must be saved', default="./results/")
     parser.add_argument('--favor_figures', type=str, help='whether figures must be favored over other parts such as tables and section headers', default="True")
     parser.add_argument('--visualize', dest="visualize", action="store_true", help='whether to output visualization images for the tree')

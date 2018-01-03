@@ -9,7 +9,7 @@ from pdftotree.utils.display_utils import pdf_to_img
 from pdftotree.ml.features import get_alignment_features, get_lines_features
 from wand.color import Color
 from wand.drawing import Drawing
-from pdftotree.pdfminer.utils import Plane
+from pdftotree.pdfminer.pdfminer.utils import Plane
 
 class TableExtractorML(object):
     """
