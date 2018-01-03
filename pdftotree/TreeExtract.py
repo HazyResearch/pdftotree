@@ -116,6 +116,7 @@ class TreeExtractor(object):
         # print "Page Num: ", page_num, "Line bboxes: ", len(lines_bboxes), ", Alignment bboxes: ", len(alignments_bboxes)
         # alignment_features += get_alignment_features(lines_bboxes, elems, font_stat)
         boxes = alignments_bboxes  # + lines_bboxes
+        #  import pdb; pdb.set_trace()
         if len(boxes) == 0:
             return [], []
         lines_features = get_lines_features(boxes, elems)
