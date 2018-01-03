@@ -1,0 +1,10 @@
+language: python
+
+notifications:
+  email: false
+
+install:
+  - sudo apt-get -qq update
+
+script:
+  - make
