@@ -1,0 +1,60 @@
+This directory contains sample PDF files.
+
+These files (including ones in nonfree/ subdirectory) can be
+distributed freely but does not come with explicit licensing 
+terms or source files.
+
+Here are the credits of the original files:
+
+simple1.pdf:
+  (Originally taken from PDF Specification 1.7, 
+  Appendix G. "Simple Text String Example" and modified)
+
+simple2.pdf:
+  (Originally taken from PDF Specification 1.7, 
+  Appendix G. "Simple Graphics Example" and modified)
+
+jo.pdf:
+  Kenji Miyazawa (1896-1933, copyright expired)
+  Preface of "Haru to Shura"
+  (File generated from jo.tex by LaTeX and dvi2pdfm)
+
+--
+nonfree/dmca.pdf: 
+  U.S. Copyright Office
+  The Digital Millenium Copyright Act
+  http://www.copyright.gov/legislation/dmca.pdf
+
+nonfree/f1040nr.pdf:
+  U.S. Department of the Treasury Internal Revenue Service
+  Form 1040-NR, U.S. Nonresident Alien Income Tax Return
+  http://www.irs.gov/pub/irs-pdf/f1040nr.pdf
+
+nonfree/i1040nr.pdf:
+  U.S. Department of the Treasury Internal Revenue Service
+  Instructions for Form 1040-NR, U.S. Nonresident Alien Income Tax Return
+  http://www.irs.gov/pub/irs-pdf/i1040nr.pdf
+
+nonfree/kampo.pdf:
+  National Priting Bureau of Japan
+  Official Gazette, Vol. 4817
+  http://kanpou.npb.go.jp/
+
+nonfree/nlp2004slides.pdf:
+  Yusuke Shinyama and Satoshi Sekine
+  "Named Entity Discovery from Comparable News Corpora"
+
+nonfree/naacl06-shinyama.pdf:
+  Yusuke Shinyama and Satoshi Sekine
+  "Preemptive Information Extraction using Unrestircted Relation Discovery"
+
+--
+Files in the encryption folder have been generated with cpdf 1.7 [http://www.coherentpdf.com/]
+from the base.pdf file generated with LibreOffice 4.1.1.2 as follows:
+
+cpdf -encrypt 40bit foo baz base.pdf -o rc4-40.pdf
+cpdf -encrypt 128bit foo baz base.pdf -o rc4-128.pdf
+cpdf -encrypt AES foo baz base.pdf -o aes-128.pdf
+cpdf -encrypt AES foo baz base.pdf -no-encrypt-metadata -o aes-128-m.pdf
+cpdf -encrypt AES256 foo baz base.pdf -o aes-256.pdf
+cpdf -encrypt AES256 foo baz base.pdf -no-encrypt-metadata -o aes-256-m.pdf
