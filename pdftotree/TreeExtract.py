@@ -1,3 +1,4 @@
+import six  # Python 2-3 compatibility
 import numpy as np
 import re
 
@@ -38,7 +39,7 @@ class TreeExtractor(object):
     def identify_scanned_page(self, boxes, page_bbox, page_width, page_height):
         plane = Plane(page_bbox)
         plane.extend(boxes)
-        cid2obj = [set([i]) for i in xrange(len(boxes))] # initialize clusters
+        cid2obj = [set([i]) for i in range(len(boxes))] # initialize clusters
         obj2cid = range(len(boxes)) # default object map to cluster with its own index
         prev_clusters = obj2cid
         while(True):
@@ -160,7 +161,7 @@ class TreeExtractor(object):
             for clust in self.tree[page_num]:
                 for (pnum, pwidth, pheight, top, left, bottom, right) in self.tree[page_num][clust]:
                     boxes += [[clust.lower().replace(" ","_"), top, left, bottom, right]]
-            boxes.sort(cmp=two_column_paper_order)
+            boxes.sort(key=cmp_to_key(two_column_paper_order))
             for box in boxes:
                 if(box[0] == "table"):
                     table = box[1:]
@@ -224,11 +225,11 @@ class TreeExtractor(object):
         char_html = ""
         sep = " "
         elems = get_mentions_within_bbox(box, self.elems[page_num].mentions)
-        elems.sort(cmp=reading_order)
+        elems.sort(key=cmp_to_key(reading_order))
         for elem in elems:
             chars = self.get_char_boundaries(elem)
             for char in chars:
-                if not re.match(r'[\x00-\x1F]', char[0].encode('utf-8')):
+                if not re.match(b'[\x00-\x1F]', char[0].encode('utf-8')):
                     char_html += str(char[0].encode('utf-8')).replace("'",'"')+sep
                     top_html += str(char[1])+sep
                     left_html += str(char[2])+sep

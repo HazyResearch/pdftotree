@@ -24,6 +24,8 @@ import sys
 import codecs
 import re
 
+import importlib
+
 import numpy as np
 from pdftotree.ml.TableExtractML import TableExtractorML
 from pdftotree.TreeExtract import TreeExtractor
@@ -56,11 +58,11 @@ def parse(pdf_file, html_path, model_path=None, favor_figures=True, visualize=Fa
         # Check html_path exists, create if not
         if not os.path.exists(html_path):
             os.makedirs(html_path)
-        reload(sys)
-        sys.setdefaultencoding('utf8')
+        #  importlib.reload(sys)
+        #  sys.setdefaultencoding('utf8')
         pdf_html = re.sub(r'[\x00-\x1F]+', '', pdf_html)
         with codecs.open(html_path + pdf_filename[:-4] + ".html", encoding="utf-8", mode="w") as f:
-            f.write(pdf_html.encode("utf-8"))
+            f.write(pdf_html)
         if visualize:
             imgs = visualize_tree(pdf_file, pdf_tree, html_path)
     else:

@@ -4,6 +4,7 @@ Parsing raw PDF data into python data structures
 
 @author: xiao
 '''
+import six  # Python 2-3 compatibility
 from collections import defaultdict
 
 from pdftotree.pdfminer.pdfminer.utils import Plane
@@ -54,7 +55,7 @@ def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width, char
         return []
     plane = Plane(page_bbox)
     plane.extend(boxes)
-    cid2obj = [set([i]) for i in xrange(len(boxes))]  # initialize clusters
+    cid2obj = [set([i]) for i in range(len(boxes))]  # initialize clusters
     obj2cid = range(len(boxes))  # default object map to cluster with its own index
     prev_clusters = obj2cid
     while (True):
@@ -92,7 +93,7 @@ def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width, char
         prev_clusters = obj2cid
     clusters = [[boxes[i] for i in cluster] for cluster in filter(bool, cid2obj)]
 
-    rid2obj = [set([i]) for i in xrange(len(boxes))]  # initialize clusters
+    rid2obj = [set([i]) for i in range(len(boxes))]  # initialize clusters
     obj2rid = range(len(boxes))  # default object map to cluster with its own index
     prev_clusters = obj2rid
     while (True):
@@ -171,7 +172,7 @@ def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width, char
     avg_node_space = defaultdict(float)
     avg_node_space_norm = defaultdict(float)
 
-    cid2obj = [set([i]) for i in xrange(len(boxes))]  # initialize clusters
+    cid2obj = [set([i]) for i in range(len(boxes))]  # initialize clusters
     obj2cid = range(len(boxes))  # default object map to cluster with its own index
     prev_clusters = obj2cid
     # add the code for merging close text boxes in particular row
@@ -659,8 +660,8 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width, p
     plane.extend(boxes)
 
     #Row level clustering - identify objects that have same horizontal alignment
-    rid2obj = [set([i]) for i in xrange(len(boxes))] # initialize clusters
-    obj2rid = range(len(boxes)) # default object map to cluster with its own index
+    rid2obj = [set([i]) for i in range(len(boxes))] # initialize clusters
+    obj2rid = list(range(len(boxes))) # default object map to cluster with its own index
     prev_clusters = obj2rid
     while(True):
         for i1, b1 in enumerate(boxes):
@@ -682,8 +683,8 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width, p
             break
         prev_clusters = obj2rid
 
-    cid2obj = [set([i]) for i in xrange(len(boxes))] # initialize clusters
-    obj2cid = range(len(boxes)) # default object map to cluster with its own index
+    cid2obj = [set([i]) for i in range(len(boxes))] # initialize clusters
+    obj2cid = list(range(len(boxes))) # default object map to cluster with its own index
     prev_clusters = obj2cid
 
     #add the code for merging close text boxes in particular row
@@ -833,7 +834,7 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width, p
     else:
         #eliminate header, footer, page number
         #sort other text and classify as header/paragraph
-        new_nodes.sort(cmp=xy_reading_order)
+        new_nodes.sort(key=cmp_to_key(xy_reading_order))
         for idx, node in enumerate(new_nodes):
             if(idx < len(new_nodes)-1):
                 if((round(node.y0) == round(min_y_page) or math.floor(node.y0) == math.floor(min_y_page)) and node.y1-node.y0<2*avg_font_pts): #can be header

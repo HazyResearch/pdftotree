@@ -5,6 +5,7 @@ Created on Oct 21, 2015
 
 
 '''
+import six  # Python 2-3 compatibility
 from collections import namedtuple
 import numpy as np
 
@@ -73,7 +74,7 @@ def area(bbox):
     return (bbox[x1]-bbox[x0])*(bbox[y1]-bbox[y0])
 
 def l1(c1,c2):
-    return sum(abs(v1-v2) for v1, v2 in izip(c1,c2))
+    return sum(abs(v1-v2) for v1, v2 in zip(c1,c2))
 
 def segment_diff(s1,s2):
     '''
@@ -127,6 +128,28 @@ def reading_order(e1,e2):
     if round(b1[y0]) == round(b2[y0]) or round(b1[y1]) == round(b2[y1]):
         return float_cmp(b1[x0],b2[x0])
     return float_cmp(b1[y0],b2[y0])
+
+def cmp_to_key(mycmp):
+    '''Convert a cmp= function into a key= function.
+
+    from http://code.activestate.com/recipes/576653-convert-a-cmp-function-to-a-key-function/
+    '''
+    class K(object):
+        def __init__(self, obj, *args):
+            self.obj = obj
+        def __lt__(self, other):
+            return mycmp(self.obj, other.obj) < 0
+        def __gt__(self, other):
+            return mycmp(self.obj, other.obj) > 0
+        def __eq__(self, other):
+            return mycmp(self.obj, other.obj) == 0
+        def __le__(self, other):
+            return mycmp(self.obj, other.obj) <= 0
+        def __ge__(self, other):
+            return mycmp(self.obj, other.obj) >= 0
+        def __ne__(self, other):
+            return mycmp(self.obj, other.obj) != 0
+    return K
 
 def xy_reading_order(e1, e2):
     '''

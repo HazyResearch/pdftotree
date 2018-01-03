@@ -5,14 +5,15 @@ extracted with PDFminer
 
 @author: xiao
 '''
+import six  # Python 2+3 compatibility
+
 import os
 import re
 import string
 import traceback
 from collections import Counter
-import six #Python 2+3 compatibility
 
-#  from .img_utils import *
+from pdftotree.img_utils import *
 from pdftotree.pdf.vector_utils import *
 from pdftotree.pdfminer.pdfminer.converter import PDFPageAggregator
 from pdftotree.pdfminer.pdfminer.layout import LAParams, LTFigure

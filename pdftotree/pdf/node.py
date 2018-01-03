@@ -3,6 +3,7 @@ Created on Jun 10, 2016
 
 @author: xiao
 '''
+import six  # Python 2-3 compatibility
 from pdftotree.pdf.vector_utils import bound_elems, bound_bboxes
 from collections import Counter, defaultdict
 from pdftotree.pdfminer.pdfminer.layout import LTLine, LTTextLine, LTCurve, LTFigure, LTComponent
@@ -44,7 +45,7 @@ class Node(LTComponent):
         # self.table_indicator = True
         self.type_counts = Counter(map(elem_type,elems))
         if(elem_type(elems) not in ["figure", "unknown"]):
-            self.feat_counts = Counter(kv for e in elems for kv in e.feats.iteritems())
+            self.feat_counts = Counter(kv for e in elems for kv in six.iteritems(e.feats))
         else:
             self.feat_counts = 0
         self.type = "UNK"
