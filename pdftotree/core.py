@@ -16,7 +16,7 @@ Other tree parts are detected using heuristic methods.
 
 Set favor_figures to "False" for Hardware sheets.
 '''
-
+import six  # Python 2-3 compatibility
 import os
 import pickle
 import sys
@@ -32,7 +32,10 @@ from pdftotree.TreeVisualizer import TreeVisualizer
 
 def load_model(model_path):
     print("Loading pretrained model for table detection")
-    model = pickle.load(open(model_path, 'rb'))
+    if six.PY3:
+        model = pickle.load(open(model_path, 'rb'), encoding="bytes")
+    else:
+        model = pickle.load(open(model_path, 'rb'))
     print("Model loaded!")
     return model
 
