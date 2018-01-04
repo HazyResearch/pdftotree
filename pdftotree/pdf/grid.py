@@ -7,7 +7,7 @@ import numpy as np
 import bisect
 from pdftotree.pdfminer.pdfminer.utils import Plane
 import pandas as pd
-from pdftotree.pdf.vector_utils import inside, reading_order
+from pdftotree.pdf.vector_utils import inside, reading_order, cmp_to_key
 from pdftotree.pdf.layout_utils import project_onto
 from collections import defaultdict
 from pprint import pprint
@@ -115,7 +115,7 @@ class Grid(object):
             subrow_across_cell = defaultdict(list)
             for col_id, cell in enumerate(row):
                 # Keep cell text in reading order
-                cell.texts.sort(cmp=reading_order)
+                cell.texts.sort(key=cmp_to_key(reading_order))
 #                intervals, groups = project_onto(cell.texts, axis='x', self.min_cell_size)
                 prev = None
                 if debug_print:
