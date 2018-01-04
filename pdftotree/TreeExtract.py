@@ -1,6 +1,7 @@
 import six  # Python 2-3 compatibility
 import numpy as np
 import re
+from functools import cmp_to_key
 
 from pdftotree.utils.bbox_utils import get_rectangles, compute_iou
 from pdftotree.utils.lines_utils import reorder_lines, get_vertical_and_horizontal, extend_vertical_lines, \

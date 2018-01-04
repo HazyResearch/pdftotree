@@ -7,9 +7,10 @@ import numpy as np
 import bisect
 from pdftotree.pdfminer.pdfminer.utils import Plane
 import pandas as pd
-from pdftotree.pdf.vector_utils import inside, reading_order, cmp_to_key
+from pdftotree.pdf.vector_utils import inside, reading_order
 from pdftotree.pdf.layout_utils import project_onto
 from collections import defaultdict
+from functools import cmp_to_key
 from pprint import pprint
 
 class Cell(object):
