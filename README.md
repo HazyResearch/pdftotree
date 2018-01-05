@@ -1,5 +1,5 @@
 # pdftotree
-[![Build Status](https://travis-ci.com/HazyResearch/pdftotree.svg?token=T3shSHjcJk8kMbzHEY7Z&branch=master)](https://travis-ci.com/HazyResearch/pdftotree)
+[![Build Status](https://travis-ci.org/HazyResearch/pdftotree.svg?branch=master)](https://travis-ci.org/HazyResearch/pdftotree)
 
 Fonduer has been successfully extended to perform information extraction from
 richly formatted data such as tables. A crucial step in this process is the
