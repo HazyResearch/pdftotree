@@ -3,10 +3,11 @@ Created on Jun 10, 2016
 
 @author: xiao
 '''
+import six  # Python 2-3 compatibility
 from pdftotree.pdf.vector_utils import bound_elems, bound_bboxes
 from collections import Counter, defaultdict
-from pdftotree.pdfminer.layout import LTLine, LTTextLine, LTCurve, LTFigure, LTComponent
-from pdftotree.pdfminer.utils import Plane
+from pdftotree.pdfminer.pdfminer.layout import LTLine, LTTextLine, LTCurve, LTFigure, LTComponent
+from pdftotree.pdfminer.pdfminer.utils import Plane
 from pdftotree.pdf.layout_utils import is_vline, is_same_row
 import numbers
 import numpy as np
@@ -44,7 +45,7 @@ class Node(LTComponent):
         # self.table_indicator = True
         self.type_counts = Counter(map(elem_type,elems))
         if(elem_type(elems) not in ["figure", "unknown"]):
-            self.feat_counts = Counter(kv for e in elems for kv in e.feats.iteritems())
+            self.feat_counts = Counter(kv for e in elems for kv in six.iteritems(e.feats))
         else:
             self.feat_counts = 0
         self.type = "UNK"
@@ -91,7 +92,7 @@ class Node(LTComponent):
             return False
         has_many_x_align = False
         has_many_y_align = False
-        for k, v in self.feat_counts.iteritems():
+        for k, v in six.iteritems(self.feat_counts):
             font_key = k[0]
             if v >= 2 and '-' in font_key: # Text row or column with more than 2 elements
                 if font_key[-2] == 'x': has_many_x_align = True

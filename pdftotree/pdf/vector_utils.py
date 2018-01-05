@@ -5,6 +5,7 @@ Created on Oct 21, 2015
 
 
 '''
+import six  # Python 2-3 compatibility
 from collections import namedtuple
 import numpy as np
 
@@ -73,7 +74,7 @@ def area(bbox):
     return (bbox[x1]-bbox[x0])*(bbox[y1]-bbox[y0])
 
 def l1(c1,c2):
-    return sum(abs(v1-v2) for v1, v2 in izip(c1,c2))
+    return sum(abs(v1-v2) for v1, v2 in zip(c1,c2))
 
 def segment_diff(s1,s2):
     '''
@@ -125,8 +126,8 @@ def reading_order(e1,e2):
     b1 = e1.bbox
     b2 = e2.bbox
     if round(b1[y0]) == round(b2[y0]) or round(b1[y1]) == round(b2[y1]):
-        return float_cmp(b1[x0],b2[x0])
-    return float_cmp(b1[y0],b2[y0])
+        return float_cmp(b1[x0], b2[x0])
+    return float_cmp(b1[y0], b2[y0])
 
 def xy_reading_order(e1, e2):
     '''
@@ -135,21 +136,42 @@ def xy_reading_order(e1, e2):
     b1 = e1.bbox
     b2 = e2.bbox
     if round(b1[x0]) == round(b2[x0]):
-        return float_cmp(b1[y0],b2[y0])
-    return float_cmp(b1[x0],b2[x0])
+        return float_cmp(b1[y0], b2[y0])
+    return float_cmp(b1[x0], b2[x0])
 
-def two_column_paper_order(b1, b2):
+def column_order(b1, b2):
     '''
+    A comparator that sorts bboxes first by "columns", where a column is made
+    up of all bboxes that overlap, then by vertical position in each column.
+
     b1 = [b1.type, b1.top, b1.left, b1.bottom, b1.right]
     b2 = [b2.type, b2.top, b2.left, b2.bottom, b2.right]
     '''
-    if((b1[2]>b2[2] and b1[2]<b2[4]) or (b2[2]>b1[2] and b2[2]<b1[4])):
-        return float_cmp(b1[1],b2[1])
-    return float_cmp(b1[2],b2[2])
+    (top, left, bottom, right) = (1, 2, 3, 4)
+    # TODO(senwu): Reimplement the functionality of this comparator to
+    # detect the number of columns, and sort those in reading order.
+
+    # TODO: This is just a simple top to bottom, left to right comparator
+    # for now.
+    if (round(b1[top]) == round(b2[top]) or
+            round(b1[bottom]) == round(b2[bottom])):
+        return float_cmp(b1[left], b2[left])
+    return float_cmp(b1[top], b2[top])
+
+    #  if((b1[left] >= b2[left] and b1[left] <= b2[right]) or
+    #          (b2[left] >= b1[left] and b2[left] <= b1[right])):
+    #      return float_cmp(b1[top], b2[top])
+    #
+    #  # Return leftmost columns first
+    #  return float_cmp(b1[left], b2[left])
 
 def float_cmp(f1, f2):
-    if f1 == f2: return 0
-    return 1 if f1 > f2 else -1
+    if f1 > f2:
+        return 1
+    elif f1 < f2:
+        return -1
+    else:
+        return 0
 
 def merge_intervals(elems, overlap_thres = 2.0):
     '''

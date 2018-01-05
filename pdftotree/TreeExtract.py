@@ -1,5 +1,7 @@
+import six  # Python 2-3 compatibility
 import numpy as np
 import re
+from functools import cmp_to_key
 
 from pdftotree.utils.bbox_utils import get_rectangles, compute_iou
 from pdftotree.utils.lines_utils import reorder_lines, get_vertical_and_horizontal, extend_vertical_lines, \
@@ -10,7 +12,7 @@ from pdftotree.utils.display_utils import pdf_to_img
 from pdftotree.ml.features import get_alignment_features, get_lines_features, get_mentions_within_bbox
 from wand.color import Color
 from wand.drawing import Drawing
-from pdftotree.pdfminer.utils import Plane
+from pdftotree.pdfminer.pdfminer.utils import Plane
 import tabula
 import json
 from pdftotree.pdf.layout_utils import *
@@ -38,8 +40,10 @@ class TreeExtractor(object):
     def identify_scanned_page(self, boxes, page_bbox, page_width, page_height):
         plane = Plane(page_bbox)
         plane.extend(boxes)
-        cid2obj = [set([i]) for i in xrange(len(boxes))] # initialize clusters
-        obj2cid = range(len(boxes)) # default object map to cluster with its own index
+        # initialize clusters
+        cid2obj = [set([i]) for i in range(len(boxes))]
+        # default object map to cluster with its own index
+        obj2cid = list(range(len(boxes)))
         prev_clusters = obj2cid
         while(True):
             for i1, b1 in enumerate(boxes):
@@ -58,8 +62,13 @@ class TreeExtractor(object):
             if(prev_clusters == obj2cid):
                 break
             prev_clusters = obj2cid
-        clusters = [[boxes[i] for i in cluster] for cluster in filter(bool, cid2obj)]
-        if(len(clusters) == 1 and clusters[0][0].bbox[0]<-0.0 and clusters[0][0].bbox[1]<=0 and abs(clusters[0][0].bbox[2]-page_width)<=5 and abs(clusters[0][0].bbox[3]-page_height)<=5):
+        clusters = [[boxes[i] for i in cluster] for cluster in filter(bool,
+                    cid2obj)]
+        if(len(clusters) == 1 and
+           clusters[0][0].bbox[0] < -0.0 and
+           clusters[0][0].bbox[1] <= 0 and
+           abs(clusters[0][0].bbox[2]-page_width) <= 5 and
+           abs(clusters[0][0].bbox[3]-page_height) <= 5):
             return True
         return False
 
@@ -71,21 +80,27 @@ class TreeExtractor(object):
             elems, font_stat = normalize_pdf(layout, scaler=1)
             self.elems[page_num] = elems
             self.font_stats[page_num] = font_stat
-            #code to detect if the page is scanned
-            if(len(elems.segments)>0):
+            # code to detect if the page is scanned
+            if(len(elems.segments) > 0):
                 lin_seg_present = True
             for fig in elems.figures:
-                if(fig.bbox[0]<=0.0 and fig.bbox[1]<=0.0 and round(fig.bbox[2])==round(elems.layout.width) and round(fig.bbox[3])==round(elems.layout.height)):
+                if(fig.bbox[0] <= 0.0 and fig.bbox[1] <= 0.0 and
+                   round(fig.bbox[2]) == round(elems.layout.width) and
+                   round(fig.bbox[3]) == round(elems.layout.height)):
                     is_scanned = True
-            page_scanned = self.identify_scanned_page(elems.figures, elems.layout.bbox, elems.layout.width, elems.layout.height)
-            if(page_scanned==True):
+            page_scanned = self.identify_scanned_page(elems.figures,
+                                                      elems.layout.bbox,
+                                                      elems.layout.width,
+                                                      elems.layout.height)
+            # doc is scanned if any page is scanned
+            if(page_scanned):
                 is_scanned = True
-        if(is_scanned==True or lin_seg_present==False): #doc is scanned if any page is scanned
+        if(is_scanned or not lin_seg_present):
             self.scanned = True
 
     def is_scanned(self):
         if(len(self.elems) == 0):
-           self.parse()
+            self.parse()
         return self.scanned
 
     def get_tables_page_num(self, page_num):
@@ -95,37 +110,46 @@ class TreeExtractor(object):
 
     def get_candidates_and_features_page_num(self, page_num):
         elems = self.elems[page_num]
-        font_stat = self.font_stats[page_num]
-        lines_bboxes = self.get_candidates_lines(page_num, elems)
-        alignments_bboxes, alignment_features = self.get_candidates_alignments(page_num, elems)
+        #  font_stat = self.font_stats[page_num]
+        #  lines_bboxes = self.get_candidates_lines(page_num, elems)
+        alignments_bboxes, alignment_features = self.get_candidates_alignments(
+            page_num, elems)
         # print "Page Num: ", page_num, "Line bboxes: ", len(lines_bboxes), ", Alignment bboxes: ", len(alignments_bboxes)
         # alignment_features += get_alignment_features(lines_bboxes, elems, font_stat)
-        boxes = alignments_bboxes #+ lines_bboxes
+        boxes = alignments_bboxes  # + lines_bboxes
         if len(boxes) == 0:
             return [], []
         lines_features = get_lines_features(boxes, elems)
-        features = np.concatenate((np.array(alignment_features), np.array(lines_features)), axis=1)
+        features = np.concatenate((np.array(alignment_features),
+                                   np.array(lines_features)), axis=1)
         return boxes, features
 
     def get_candidates_lines(self, page_num, elems):
-        page_width, page_height = int(elems.layout.width), int(elems.layout.height)
+        page_width = int(elems.layout.width)
+        page_height = int(elems.layout.height)
         lines = reorder_lines(elems.segments)
         vertical_lines, horizontal_lines = get_vertical_and_horizontal(lines)
         extended_vertical_lines = extend_vertical_lines(horizontal_lines)
         extended_horizontal_lines = extend_horizontal_lines(vertical_lines)
-        vertical_lines = merge_vertical_lines(sorted(extended_vertical_lines + vertical_lines))
-        horizontal_lines = merge_horizontal_lines(sorted(extended_horizontal_lines + horizontal_lines))
-        rectangles = get_rectangles(sorted(vertical_lines), sorted(horizontal_lines))
-        return [(page_num, page_width, page_height) + bbox for bbox in rectangles]
+        vertical_lines = merge_vertical_lines(sorted(extended_vertical_lines +
+                                                     vertical_lines))
+        horizontal_lines = merge_horizontal_lines(
+            sorted(extended_horizontal_lines + horizontal_lines))
+        rects = get_rectangles(sorted(vertical_lines),
+                               sorted(horizontal_lines))
+        return [(page_num, page_width, page_height) + bbox for bbox in rects]
 
     def get_candidates_alignments(self, page_num, elems):
-        page_width, page_height = int(elems.layout.width), int(elems.layout.height)
+        page_width = int(elems.layout.width)
+        page_height = int(elems.layout.height)
         font_stat = self.font_stats[page_num]
         try:
             nodes, features = parse_layout(elems, font_stat)
-        except:
+        except Exception as e:
+            print(e)
             nodes, features = [], []
-        return [(page_num, page_width, page_height) + (node.y0, node.x0, node.y1, node.x1) for node in nodes], features
+        return [(page_num, page_width, page_height) + (node.y0, node.x0,
+                node.y1, node.x1) for node in nodes], features
 
     def get_elems(self):
         return self.elems
@@ -134,45 +158,76 @@ class TreeExtractor(object):
         return self.font_stats
 
     def get_tree_structure(self, model, favor_figures):
-        tables={}
-        if(model is None):  #use heuristics to get tables
+        tables = {}
+        # use heuristics to get tables
+        if(model is None):
             for page_num in self.elems.keys():
                 tables[page_num] = self.get_tables_page_num(page_num)
-        else: #use ML to get tables
+        # use ML to get tables
+        else:
             for page_num in self.elems.keys():
-                table_candidates, candidates_features = self.get_candidates_and_features_page_num(page_num)
+                table_candidates, candidates_features = \
+                    self.get_candidates_and_features_page_num(page_num)
                 tables[page_num] = []
                 if(len(candidates_features) != 0):
                     table_predictions = model.predict(candidates_features)
-                    tables[page_num] = [table_candidates[i] for i in range(len(table_candidates)) if table_predictions[i]>0.5 ]
-
-        ref_page_seen = False   #Manage References - indicator to indicate if reference has been seen
+                    tables[page_num] = [table_candidates[i] for i in
+                                        range(len(table_candidates)) if
+                                        table_predictions[i] > 0.5]
+        # Manage References - indicator to indicate if reference has been seen
+        ref_page_seen = False
         for page_num in self.elems.keys():
-            #Get Tree Structure for this page
-            self.tree[page_num], ref_page_seen = parse_tree_structure(self.elems[page_num], self.font_stats[page_num], page_num, ref_page_seen, tables[page_num], favor_figures)
+            # Get Tree Structure for this page
+            self.tree[page_num], ref_page_seen = \
+                parse_tree_structure(self.elems[page_num],
+                                     self.font_stats[page_num],
+                                     page_num,
+                                     ref_page_seen,
+                                     tables[page_num],
+                                     favor_figures)
         return self.tree
 
     def get_html_tree(self):
         self.html = "<html>"
         for page_num in self.elems.keys():
-            page_html = "<div id="+str(page_num)+">"
+            page_html = "<div id=" + str(page_num) + ">"
             boxes = []
             for clust in self.tree[page_num]:
                 for (pnum, pwidth, pheight, top, left, bottom, right) in self.tree[page_num][clust]:
-                    boxes += [[clust.lower().replace(" ","_"), top, left, bottom, right]]
-            boxes.sort(cmp=two_column_paper_order)
+                    boxes += [[clust.lower().replace(' ', '_'), top, left,
+                               bottom, right]]
+
+            # TODO: We need to detect columns and sort acccordingly.
+            boxes.sort(key=cmp_to_key(column_order))
+
+            #  from pprint import pprint
+            #  pprint(boxes, width=120)
+            #  import pdb; pdb.set_trace()
+
             for box in boxes:
                 if(box[0] == "table"):
                     table = box[1:]
                     table_html = self.get_html_table(table, page_num)
-                    page_html += table_html
+                    if six.PY2:
+                        page_html += table_html.decode('utf-8')
+                    elif six.PY3:
+                        page_html += table_html
                 elif(box[0] == "figure"):
                     fig_str = [str(i) for i in box[1:]]
-                    fig_html = "<figure bbox="+",".join(fig_str)+"></figure>"
-                    page_html += fig_html
+                    fig_html = ("<figure bbox=" + ",".join(fig_str) +
+                                "></figure>")
+                    if six.PY2:
+                        page_html += fig_html.decode('utf-8')
+                    elif six.PY3:
+                        page_html += fig_html
                 else:
-                    box_html, char_html, top_html, left_html, bottom_html, right_html = self.get_html_others(box[1:], page_num)
-                    page_html += "<"+box[0]+" char='"+char_html+"', top='"+top_html+"', left='"+left_html+"', bottom='"+bottom_html+"', right='"+right_html+"'>"+box_html+"</"+box[0]+">"
+                    (box_html, char_html, top_html, left_html, bottom_html,
+                     right_html) = self.get_html_others(box[1:], page_num)
+                    page_html += ("<" + box[0] + " char='" + char_html +
+                                  "', top='" + top_html + "', left='" +
+                                  left_html + "', bottom='" + bottom_html +
+                                  "', right='" + right_html + "'>" + box_html +
+                                  "</" + box[0] + ">")
             page_html += "</div>"
             self.html += page_html
         self.html += "</html>"
@@ -189,13 +244,14 @@ class TreeExtractor(object):
         mention_words = mention_text.split()
         char_idx = 0
         for word in mention_words:
-            curr_word = [word, float("Inf"), float("Inf"), float("-Inf"), float("-Inf")]
+            curr_word = [word, float("Inf"), float("Inf"), float("-Inf"),
+                         float("-Inf")]
             len_idx = 0
-            while len_idx<len(word):
+            while len_idx < len(word):
                 if mention_chars[char_idx][0] == " ":
                     char_idx += 1
                     continue
-                if word[len_idx]!=mention_chars[char_idx][0]:
+                if word[len_idx] != mention_chars[char_idx][0]:
                     print("Out of order", word, mention_chars[char_idx][0])
                 curr_word[1] = min(curr_word[1], mention_chars[char_idx][1])
                 curr_word[2] = min(curr_word[2], mention_chars[char_idx][2])
@@ -207,7 +263,7 @@ class TreeExtractor(object):
         return words
 
     def get_char_boundaries(self, mention):
-        mention_text = mention.get_text()
+        #  mention_text = mention.get_text()
         mention_chars = []
         for obj in mention:
             if isinstance(obj, LTChar):
@@ -224,32 +280,38 @@ class TreeExtractor(object):
         char_html = ""
         sep = " "
         elems = get_mentions_within_bbox(box, self.elems[page_num].mentions)
-        elems.sort(cmp=reading_order)
+        elems.sort(key=cmp_to_key(reading_order))
         for elem in elems:
             chars = self.get_char_boundaries(elem)
             for char in chars:
-                if not re.match(r'[\x00-\x1F]', char[0].encode('utf-8')):
-                    char_html += str(char[0].encode('utf-8')).replace("'",'"')+sep
-                    top_html += str(char[1])+sep
-                    left_html += str(char[2])+sep
-                    bottom_html += str(char[3])+sep
-                    right_html += str(char[4])+sep
+                if six.PY2:
+                    temp = char[0].encode('utf-8')
+                elif six.PY3:
+                    temp = char[0]
+                if not re.match(r'[\x00-\x1F]', temp):
+                    char_html += char[0].replace("'", '"') + sep
+                    top_html += str(char[1]) + sep
+                    left_html += str(char[2]) + sep
+                    bottom_html += str(char[3]) + sep
+                    right_html += str(char[4]) + sep
             words = self.get_word_boundaries(elem)
             for word in words:
                 # node_html += "<word top="+str(word[1])+" left="+str(word[2])+" bottom="+str(word[3])+" right="+str(word[4])+">"+str(word[0].encode('utf-8'))+"</word> "
-                node_html += str(word[0].encode('utf-8'))+" "
+                node_html += word[0] + " "
         return node_html, char_html, top_html, left_html, bottom_html, right_html
 
     def get_html_table(self, table, page_num):
         table_str = [str(i) for i in table]
-        table_json = tabula.read_pdf(self.pdf_file, pages=page_num, area=table_str, output_format="json")
+        table_json = tabula.read_pdf(self.pdf_file, pages=page_num,
+                                     area=table_str, output_format="json")
         table_html = ""
-        if(len(table_json)>0):
+        if (len(table_json) > 0):
             table_html = "<table>"
             for i, row in enumerate(table_json[0]["data"]):
                 row_str = "<tr>"
                 for j, column in enumerate(row):
-                    box = [column["top"], column["left"], column["top"]+column["height"], column["left"]+column["width"]]
+                    box = [column["top"], column["left"], column["top"] +
+                           column["height"], column["left"] + column["width"]]
                     top_html = ""
                     left_html = ""
                     bottom_html = ""
@@ -257,19 +319,30 @@ class TreeExtractor(object):
                     word_html = ""
                     sep = " "
                     elems = get_mentions_within_bbox(box, self.elems[page_num].mentions)
-                    elems.sort(cmp=reading_order)
+                    elems.sort(key=cmp_to_key(reading_order))
                     word_td = ""
                     for elem in elems:
                         words = self.get_word_boundaries(elem)
                         for word in words:
-                            if not re.match(r'[\x00-\x1F]', word[0].encode('utf-8')):
+                            if six.PY2:
+                                temp = word[0].encode('utf-8')
+                            elif six.PY3:
+                                temp = word[0]
+                            if not re.match(r'[\x00-\x1F]', temp):
                                 word_td += word[0] + " "
-                                word_html += str(word[0].encode('utf-8'))+sep
-                                top_html += str(word[1])+sep
-                                left_html += str(word[2])+sep
-                                bottom_html += str(word[3])+sep
-                                right_html += str(word[4])+sep
-                    row_str += "<td word='"+word_html+"', top='"+top_html+"', left='"+left_html+"', bottom='"+bottom_html+"', right='"+right_html+"'>"+word_td[:-1].encode("utf-8")+"</td>"
+                                word_html += str(word[0].encode('utf-8')) + sep
+                                top_html += str(word[1]) + sep
+                                left_html += str(word[2]) + sep
+                                bottom_html += str(word[3]) + sep
+                                right_html += str(word[4]) + sep
+                    if six.PY2:
+                        temp = word_td[:-1].encode("utf-8")
+                    elif six.PY3:
+                        temp = word_td[:-1]
+                    row_str += ("<td word='" + word_html + "', top='" +
+                                top_html + "', left='" + left_html +
+                                "', bottom='" + bottom_html + "', right='" +
+                                right_html + "'>" + temp + "</td>")
                     # row_str += "<td word='"+word_html+"', top='"+top_html+"', left='"+left_html+"', bottom='"+bottom_html+"', right='"+right_html+"'>"+str(column["text"].encode('utf-8'))+"</td>"
                     # row_str += "<td char='"+char_html+"', top="+str(column["top"])+", left="+str(column["left"])+", bottom="+str(column["top"]+column["height"])+", right="+str(column["left"]+column["width"])+">"
                     # row_str += str(column["text"].encode('utf-8'))

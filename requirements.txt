@@ -10,3 +10,4 @@ pandas
 tabula-py
 IPython
 scipy
+six

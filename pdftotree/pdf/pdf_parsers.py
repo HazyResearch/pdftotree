@@ -4,9 +4,11 @@ Parsing raw PDF data into python data structures
 
 @author: xiao
 '''
+import six  # Python 2-3 compatibility
 from collections import defaultdict
+from functools import cmp_to_key
 
-from pdftotree.pdfminer.utils import Plane
+from pdftotree.pdfminer.pdfminer.utils import Plane
 from pdftotree.pdf.layout_utils import *
 from pdftotree.pdf.node import Node
 import operator
@@ -24,7 +26,6 @@ def parse_layout(elems, font_stat, combine=False):
     page_width = elems.layout.width
     page_height = elems.layout.height
     boxes = elems.mentions
-
     avg_font_pts = get_most_common_font_pts(elems.mentions, font_stat)
     width = get_page_width(boxes + boxes_segments + boxes_figures + boxes_curves)
     char_width = get_char_width(boxes)
@@ -33,7 +34,8 @@ def parse_layout(elems, font_stat, combine=False):
         m.id = i
         m.feats = defaultdict(bool)
         prefix = ''
-        if isinstance(m, LTTextLine) and m.font_name: prefix = m.font_name + '-' + str(m.font_size) + '-'
+        if isinstance(m, LTTextLine) and m.font_name:
+            prefix = m.font_name + '-' + str(m.font_size) + '-'
         m.xc = (m.x0 + m.x1) / 2.0
         m.yc = (m.y0 + m.y1) / 2.0
         m.feats[prefix + 'x0'] = m.x0_grid = int(m.x0 / grid_size)
@@ -41,10 +43,17 @@ def parse_layout(elems, font_stat, combine=False):
         m.feats[prefix + 'xc'] = m.xc_grid = int(m.xc / grid_size)
         m.feats[prefix + 'yc'] = m.yc_grid = int(m.yc / grid_size)
 
-    tables, table_features = cluster_vertically_aligned_boxes(boxes, elems.layout.bbox, avg_font_pts, width, char_width,
-                                                              boxes_segments, boxes_curves, boxes_figures, page_width,
-                                                              combine)
-    return tables, table_features
+    tbls, tbl_features = cluster_vertically_aligned_boxes(boxes,
+                                                          elems.layout.bbox,
+                                                          avg_font_pts,
+                                                          width,
+                                                          char_width,
+                                                          boxes_segments,
+                                                          boxes_curves,
+                                                          boxes_figures,
+                                                          page_width,
+                                                          combine)
+    return tbls, tbl_features
 
 
 def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width, char_width, boxes_segments, boxes_curves,
@@ -54,8 +63,10 @@ def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width, char
         return []
     plane = Plane(page_bbox)
     plane.extend(boxes)
-    cid2obj = [set([i]) for i in xrange(len(boxes))]  # initialize clusters
-    obj2cid = range(len(boxes))  # default object map to cluster with its own index
+    # initialize clusters
+    cid2obj = [set([i]) for i in range(len(boxes))]
+    # default object map to cluster with its own index
+    obj2cid = list(range(len(boxes)))
     prev_clusters = obj2cid
     while (True):
         for i1, b1 in enumerate(boxes):
@@ -71,12 +82,17 @@ def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width, char
                 else:
                     # horizontally aligned
                     continue
-                if (box2[1] < box1[3] or (box2[1] - box1[1] < 1.5 * avg_font_pts) or (box2[3] - box1[
-                    3] < 1.5 * avg_font_pts)):  # can probably do better if we find the average space between words
-                    if (abs(box1[0] - box2[0]) < 3 or abs(box1[2] - box2[2]) < 3 or (
-                                ((box1[0] + box1[2]) / 2) == ((box2[0] + box2[2]) / 2)) or (
-                                (box1[0] < box2[0]) and (box1[2] > box2[0])) or (
-                                (box1[0] > box2[0]) and (box2[2] > box1[0]))):  # added center alignemnt
+                if (box2[1] < box1[3] or
+                        (box2[1] - box1[1] < 1.5 * avg_font_pts) or
+                        (box2[3] - box1[3] < 1.5 * avg_font_pts)):
+                    # can probably do better if we find the average space
+                    # between words
+                    if (abs(box1[0] - box2[0]) < 3 or
+                            abs(box1[2] - box2[2]) < 3 or
+                            (((box1[0] + box1[2]) / 2) == ((box2[0] +
+                                                            box2[2]) / 2)) or
+                            ((box1[0] < box2[0]) and (box1[2] > box2[0])) or
+                            ((box1[0] > box2[0]) and (box2[2] > box1[0]))):
                         min_i = min(i1, i2)
                         max_i = max(i1, i2)
                         cid1 = obj2cid[min_i]
@@ -92,8 +108,9 @@ def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width, char
         prev_clusters = obj2cid
     clusters = [[boxes[i] for i in cluster] for cluster in filter(bool, cid2obj)]
 
-    rid2obj = [set([i]) for i in xrange(len(boxes))]  # initialize clusters
-    obj2rid = range(len(boxes))  # default object map to cluster with its own index
+    rid2obj = [set([i]) for i in range(len(boxes))]  # initialize clusters
+    # default object map to cluster with its own index
+    obj2rid = list(range(len(boxes)))
     prev_clusters = obj2rid
     while (True):
         for i1, b1 in enumerate(boxes):
@@ -102,9 +119,10 @@ def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width, char
                     continue
                 box1 = b1.bbox
                 box2 = b2.bbox
-                if ((abs(box1[1] - box2[1]) < 0.11 * avg_font_pts) or (
-                        (abs(box1[3] - box2[3]) < 0.11 * avg_font_pts)) or (
-                            round((box1[1] + box1[3]) / 2) == round((box2[1] + box2[3]) / 2))):
+                if ((abs(box1[1] - box2[1]) < 0.11 * avg_font_pts) or
+                    ((abs(box1[3] - box2[3]) < 0.11 * avg_font_pts)) or
+                    (round((box1[1] + box1[3]) / 2) == round((box2[1] +
+                                                              box2[3]) / 2))):
                     min_i = min(i1, i2)
                     max_i = max(i1, i2)
                     rid1 = obj2rid[min_i]
@@ -171,8 +189,8 @@ def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width, char
     avg_node_space = defaultdict(float)
     avg_node_space_norm = defaultdict(float)
 
-    cid2obj = [set([i]) for i in xrange(len(boxes))]  # initialize clusters
-    obj2cid = range(len(boxes))  # default object map to cluster with its own index
+    cid2obj = [set([i]) for i in range(len(boxes))]  # initialize clusters
+    obj2cid = list(range(len(boxes)))  # default object map to cluster with its own index
     prev_clusters = obj2cid
     # add the code for merging close text boxes in particular row
     while (True):
@@ -659,8 +677,8 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width, p
     plane.extend(boxes)
 
     #Row level clustering - identify objects that have same horizontal alignment
-    rid2obj = [set([i]) for i in xrange(len(boxes))] # initialize clusters
-    obj2rid = range(len(boxes)) # default object map to cluster with its own index
+    rid2obj = [set([i]) for i in range(len(boxes))] # initialize clusters
+    obj2rid = list(range(len(boxes))) # default object map to cluster with its own index
     prev_clusters = obj2rid
     while(True):
         for i1, b1 in enumerate(boxes):
@@ -682,8 +700,8 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width, p
             break
         prev_clusters = obj2rid
 
-    cid2obj = [set([i]) for i in xrange(len(boxes))] # initialize clusters
-    obj2cid = range(len(boxes)) # default object map to cluster with its own index
+    cid2obj = [set([i]) for i in range(len(boxes))] # initialize clusters
+    obj2cid = list(range(len(boxes))) # default object map to cluster with its own index
     prev_clusters = obj2cid
 
     #add the code for merging close text boxes in particular row
@@ -833,7 +851,7 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width, p
     else:
         #eliminate header, footer, page number
         #sort other text and classify as header/paragraph
-        new_nodes.sort(cmp=xy_reading_order)
+        new_nodes.sort(key=cmp_to_key(xy_reading_order))
         for idx, node in enumerate(new_nodes):
             if(idx < len(new_nodes)-1):
                 if((round(node.y0) == round(min_y_page) or math.floor(node.y0) == math.floor(min_y_page)) and node.y1-node.y0<2*avg_font_pts): #can be header
