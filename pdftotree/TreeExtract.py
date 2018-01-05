@@ -196,10 +196,14 @@ class TreeExtractor(object):
                 for (pnum, pwidth, pheight, top, left, bottom, right) in self.tree[page_num][clust]:
                     boxes += [[clust.lower().replace(' ', '_'), top, left,
                                bottom, right]]
-            # TODO(XXX): Ideally, we autodetect whether we have a 1 column
-            # or two column paper, and sort accordingly.
-            boxes.sort(key=cmp_to_key(two_column_paper_order))
+
+            # TODO: We need to detect columns and sort acccordingly.
+            boxes.sort(key=cmp_to_key(column_order))
+
+            #  from pprint import pprint
+            #  pprint(boxes, width=120)
             #  import pdb; pdb.set_trace()
+
             for box in boxes:
                 if(box[0] == "table"):
                     table = box[1:]
