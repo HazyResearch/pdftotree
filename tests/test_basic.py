@@ -12,5 +12,6 @@ def test_heuristic_completion():
 def test_ml_completion():
     """Simply test that ML-based parse runs without errors."""
     output = pdftotree.parse("tests/input/paleo.pdf", "tests/output/",
-                             model_path="tests/input/paleo_model.pkl")
+                             model_path="tests/input/paleo_model.pkl",
+                             debug=True)
     assert output is not None
