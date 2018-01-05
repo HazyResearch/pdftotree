@@ -1,6 +1,7 @@
 '''
-This script takes a PDF document and extracts it's tree structure and then writes the HTML based on that tree structure.
-The components of the tree structure are:
+This script takes a PDF document and extracts it's tree structure and then
+writes the HTML based on that tree structure. The components of the tree
+structure are:
 - Tables
 - Table Captions
 - Figures
@@ -10,25 +11,22 @@ The components of the tree structure are:
 - List (References in research papers)
 - Page Headers
 
-Tables are detected using a Machine learning model, provide the path in model_path argument = TreeStructure/data/paleo/ml/model.pkl.
+Tables are detected using a Machine learning model, provide the path in
+model_path argument = TreeStructure/data/paleo/ml/model.pkl.
 
 Other tree parts are detected using heuristic methods.
 
 Set favor_figures to "False" for Hardware sheets.
 '''
-import six  # Python 2-3 compatibility
-import os
-import pickle
-import sys
 import codecs
-import re
-
-#  import importlib
-
-import numpy as np
-from pdftotree.ml.TableExtractML import TableExtractorML
+import logging
+import os
 from pdftotree.TreeExtract import TreeExtractor
 from pdftotree.TreeVisualizer import TreeVisualizer
+import pickle
+import re
+import six  # Python 2-3 compatibility
+
 
 def load_model(model_path):
     print("Loading pretrained model for table detection")
@@ -39,13 +37,17 @@ def load_model(model_path):
     print("Model loaded!")
     return model
 
+
 def visualize_tree(pdf_file, pdf_tree, html_path):
     v = TreeVisualizer(pdf_file)
     filename_prefix = os.path.basename(pdf_file)
-    a = v.display_candidates(pdf_tree, html_path, filename_prefix)
+    v.display_candidates(pdf_tree, html_path, filename_prefix)
 
 
 def parse(pdf_file, html_path, model_path=None, favor_figures=True, visualize=False, debug=False):
+    # Set logger level to WARNING to suppress tons of pdfminer debug logs.
+    logging.getLogger().setLevel(logging.WARNING)
+
     model = None
     if (model_path is not None):
         model = load_model(model_path)
@@ -60,8 +62,6 @@ def parse(pdf_file, html_path, model_path=None, favor_figures=True, visualize=Fa
         # Check html_path exists, create if not
         if not os.path.exists(html_path):
             os.makedirs(html_path)
-        #  importlib.reload(sys)
-        #  sys.setdefaultencoding('utf8')
         pdf_html = re.sub(r'[\x00-\x1F]+', '', pdf_html)
         if debug:
             return pdf_html
