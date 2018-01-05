@@ -22,6 +22,31 @@ This project is using the table-extraction tool
 
 ## Usage
 
+To use the commandline tool:
 ```
-python extract_tree --pdf_file tests/input/112823.pdf
+usage: extract_tree.py [-h] [--model_path MODEL_PATH] --pdf_file PDF_FILE
+                       [--html_path HTML_PATH] [--favor_figures FAVOR_FIGURES]
+                       [--visualize]
+
+Script to extract tree structure from PDF files.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --model_path MODEL_PATH
+                        pretrained model
+  --pdf_file PDF_FILE   pdf file name for which tree structure needs to be
+                        extracted
+  --html_path HTML_PATH
+                        path where tree structure must be saved
+  --favor_figures FAVOR_FIGURES
+                        whether figures must be favored over other parts such
+                        as tables and section headers
+  --visualize           whether to output visualization images for the tree
+```
+
+To use it as a package:
+```py
+import pdftotree
+
+pdftotree.parse(pdf_file, html_path, model_path=None, favor_figures=True, visualize=False):
 ```
