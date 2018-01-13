@@ -1,3 +1,5 @@
+import codecs
+import csv
 import six  # Python 2-3 compatibility
 import numpy as np
 import re
@@ -36,6 +38,13 @@ class TreeExtractor(object):
         self.scanned = False
         self.tree = {}
         self.html = ""
+        self.in_data = codecs.open(pdf_file[:-4] + "_in.csv", encoding="utf-8", mode='w')
+        self.out_data = codecs.open(pdf_file[:-4] + "_out.csv", encoding="utf-8", mode='w')
+
+
+    def close(self):
+        self.in_data.close()
+        self.out_data.close()
 
     def identify_scanned_page(self, boxes, page_bbox, page_width, page_height):
         plane = Plane(page_bbox)
@@ -300,10 +309,36 @@ class TreeExtractor(object):
                 node_html += word[0] + " "
         return node_html, char_html, top_html, left_html, bottom_html, right_html
 
+
     def get_html_table(self, table, page_num):
         table_str = [str(i) for i in table]
         table_json = tabula.read_pdf(self.pdf_file, pages=page_num,
                                      area=table_str, output_format="json")
+
+        # Save the in words + coordinates
+        # as (word, pagenum, top, left, width, height)
+        csv_in = csv.writer(self.in_data)
+        csv_out = csv.writer(self.out_data)
+        for table_num, table in enumerate(table_json):
+            for i, row in enumerate(table['data']):
+                for j, word in enumerate(row):
+                    word_data = [word["text"],
+                                 page_num,
+                                 word["top"],
+                                 word["left"],
+                                 word["width"],
+                                 word["height"]]
+                    csv_in.writerow(word_data)
+
+                    # Output as (word, pagenum, table_num, row, col)
+                    word_data = [word["text"],
+                                 page_num,
+                                 table_num,
+                                 i,
+                                 j]
+                    csv_out.writerow(word_data)
+
+
         table_html = ""
         if (len(table_json) > 0):
             table_html = "<table>"

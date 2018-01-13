@@ -1,3 +1,3 @@
 #!/usr/bin/env python
 
-from .core import parse
+from pdftotree.core import parse
