@@ -1,5 +1,4 @@
 import codecs
-import csv
 import six  # Python 2-3 compatibility
 import numpy as np
 import re
@@ -38,8 +37,8 @@ class TreeExtractor(object):
         self.scanned = False
         self.tree = {}
         self.html = ""
-        self.in_data = codecs.open(pdf_file[:-4] + "_in.csv", encoding="utf-8", mode='w')
-        self.out_data = codecs.open(pdf_file[:-4] + "_out.csv", encoding="utf-8", mode='w')
+        self.in_data = codecs.open(pdf_file[:-4] + "_in.json", encoding="utf-8", mode='w')
+        self.out_data = codecs.open(pdf_file[:-4] + "_out.json", encoding="utf-8", mode='w')
 
 
     def close(self):
@@ -316,27 +315,37 @@ class TreeExtractor(object):
                                      area=table_str, output_format="json")
 
         # Save the in words + coordinates
-        # as (word, pagenum, top, left, width, height)
-        csv_in = csv.writer(self.in_data)
-        csv_out = csv.writer(self.out_data)
+        json_in = {"tables": []}
+        json_out = {"tables": []}
+        filename = self.pdf_file.split('/')[-1][:-4]
         for table_num, table in enumerate(table_json):
+            table_in = {"words": []}
+            table_out = {"words": []}
             for i, row in enumerate(table['data']):
                 for j, word in enumerate(row):
-                    word_data = [word["text"],
-                                 page_num,
-                                 word["top"],
-                                 word["left"],
-                                 word["width"],
-                                 word["height"]]
-                    csv_in.writerow(word_data)
+                    word_in = {"file": filename,
+                               "page": page_num,
+                               "table": table_num,
+                               "text": word["text"],
+                               "top": word["top"],
+                               "left": word["left"],
+                               "bottom": word["top"] + word["height"],
+                               "right": word["left"] + word["width"]}
+                    table_in["words"].append(word_in)
 
-                    # Output as (word, pagenum, table_num, row, col)
-                    word_data = [word["text"],
-                                 page_num,
-                                 table_num,
-                                 i,
-                                 j]
-                    csv_out.writerow(word_data)
+                    word_out = {"file": filename,
+                                "page": page_num,
+                                "table": table_num,
+                                "text": word["text"],
+                                "row": i,
+                                "col": j}
+                    table_out["words"].append(word_out)
+
+            json_in["tables"].append(table_in)
+            json_out["tables"].append(table_out)
+
+        json.dump(json_in, self.in_data)
+        json.dump(json_out, self.out_data)
 
 
         table_html = ""
