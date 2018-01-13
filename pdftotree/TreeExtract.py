@@ -344,8 +344,8 @@ class TreeExtractor(object):
             json_in["tables"].append(table_in)
             json_out["tables"].append(table_out)
 
-        json.dump(json_in, self.in_data)
-        json.dump(json_out, self.out_data)
+        json.dump(json_in, self.in_data, ensure_ascii=False)
+        json.dump(json_out, self.out_data, ensure_ascii=False)
 
 
         table_html = ""
