@@ -21,7 +21,8 @@ setup(
         'scipy',
         'six',
     ],
-    url='https://github.com/hazyresearch/pdftotree',
+    url='https://github.com/HazyResearch/pdftotree',
+    scripts=['extract_tree'],
     author='Hazy Research',
     license='MIT',
 )
