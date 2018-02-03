@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pdftotree',
-    version='0.1',
+    version='0.1.1',
     description='Parse PDFs into HTML-like trees.',
     packages=find_packages(),
     install_requires=[
