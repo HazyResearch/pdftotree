@@ -13,3 +13,4 @@ install:
 
 script:
   - pytest tests -rs
+  - pip install git+https://github.com/HazyResearch/pdftotree@master
