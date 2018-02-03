@@ -1,4 +1,5 @@
 # pdftotree
+
 [![Build Status](https://travis-ci.org/HazyResearch/pdftotree.svg?branch=master)](https://travis-ci.org/HazyResearch/pdftotree)
 
 Fonduer has been successfully extended to perform information extraction from
@@ -16,17 +17,18 @@ of the document using a tree data structure.
 This project is using the table-extraction tool
 (https://github.com/xiao-cheng/table-extraction).
 
-## Dependencies
+## To Installation
 
-```pip install -r requirements.txt```
+`pip install git+https://github.com/HazyResearch/pdftotree@master`
 
 ## Usage
 
 To use the commandline tool:
+
 ```
-usage: extract_tree.py [-h] [--model_path MODEL_PATH] --pdf_file PDF_FILE
-                       [--html_path HTML_PATH] [--favor_figures FAVOR_FIGURES]
-                       [--visualize]
+usage: extract_tree [-h] [--model_path MODEL_PATH] --pdf_file PDF_FILE
+                    [--html_path HTML_PATH] [--favor_figures FAVOR_FIGURES]
+                    [--visualize]
 
 Script to extract tree structure from PDF files.
 
@@ -45,6 +47,7 @@ optional arguments:
 ```
 
 To use it as a package:
+
 ```py
 import pdftotree
 

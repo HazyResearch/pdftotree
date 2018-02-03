@@ -22,7 +22,7 @@ setup(
         'six',
     ],
     url='https://github.com/HazyResearch/pdftotree',
-    scripts=['extract_tree'],
+    scripts=['bin/extract_tree'],
     author='Hazy Research',
     license='MIT',
 )
