@@ -17,7 +17,7 @@ of the document using a tree data structure.
 This project is using the table-extraction tool
 (https://github.com/xiao-cheng/table-extraction).
 
-## To Installation
+## Installation
 
 `pip install git+https://github.com/HazyResearch/pdftotree@master`
 
@@ -52,4 +52,20 @@ To use it as a package:
 import pdftotree
 
 pdftotree.parse(pdf_file, html_path, model_path=None, favor_figures=True, visualize=False):
+```
+
+## For Developers
+
+### Tests
+
+Once you've cloned this repository, first make sure you ahve the dependencies installed
+
+```
+pip install -r requirements.txt
+```
+
+Then you can run our tests
+
+```
+pytest tests -rs
 ```
