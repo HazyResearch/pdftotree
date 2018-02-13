@@ -8,7 +8,7 @@ import six  # Python 2-3 compatibility
 from collections import defaultdict
 from functools import cmp_to_key
 
-from pdftotree.pdfminer.pdfminer.utils import Plane
+from pdfminer.utils import Plane
 from pdftotree.pdf.layout_utils import *
 from pdftotree.pdf.node import Node
 import operator

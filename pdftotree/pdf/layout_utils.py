@@ -5,7 +5,7 @@ Created on Jan 25, 2016
 '''
 from pdftotree.pdf.vector_utils import *
 import collections
-from pdftotree.pdfminer.pdfminer.layout import LTTextLine, LTChar, LTAnno, LTCurve, LTComponent, LTLine
+from pdfminer.layout import LTTextLine, LTChar, LTAnno, LTCurve, LTComponent, LTLine
 from itertools import chain
 import numpy as np
 

@@ -15,13 +15,13 @@ from collections import Counter
 
 from pdftotree.img_utils import *
 from pdftotree.pdf.vector_utils import *
-from pdftotree.pdfminer.pdfminer.converter import PDFPageAggregator
-from pdftotree.pdfminer.pdfminer.layout import LAParams, LTFigure
-from pdftotree.pdfminer.pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-from pdftotree.pdfminer.pdfminer.pdfpage import PDFPage
-from pdftotree.pdfminer.pdfminer.pdfparser import PDFParser
-from pdftotree.pdfminer.pdfminer.utils import apply_matrix_pt
-from pdftotree.pdfminer.pdfminer.pdfdocument import PDFDocument
+from pdfminer.converter import PDFPageAggregator
+from pdfminer.layout import LAParams, LTFigure
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+from pdfminer.pdfpage import PDFPage
+from pdfminer.pdfparser import PDFParser
+from pdfminer.utils import apply_matrix_pt
+from pdfminer.pdfdocument import PDFDocument
 from pdftotree.pdf.layout_utils import *
 
 # Compact wrapper representation for the pdf

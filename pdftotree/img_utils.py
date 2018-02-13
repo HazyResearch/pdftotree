@@ -10,7 +10,7 @@ import numpy as np
 from PIL import ImageFont, Image, ImageDraw
 
 from pdftotree.pdf.vector_utils import center
-from pdftotree.pdfminer.pdfminer.layout import LTAnno
+from pdfminer.layout import LTAnno
 
 white = (255, 255, 255)
 black = (0, 0, 0)

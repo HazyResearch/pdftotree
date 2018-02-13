@@ -6,8 +6,8 @@ Created on Jun 10, 2016
 import six  # Python 2-3 compatibility
 from pdftotree.pdf.vector_utils import bound_elems, bound_bboxes
 from collections import Counter, defaultdict
-from pdftotree.pdfminer.pdfminer.layout import LTLine, LTTextLine, LTCurve, LTFigure, LTComponent
-from pdftotree.pdfminer.pdfminer.utils import Plane
+from pdfminer.layout import LTLine, LTTextLine, LTCurve, LTFigure, LTComponent
+from pdfminer.utils import Plane
 from pdftotree.pdf.layout_utils import is_vline, is_same_row
 import numbers
 import numpy as np
