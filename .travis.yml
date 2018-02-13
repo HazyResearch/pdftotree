@@ -14,3 +14,4 @@ install:
 script:
   - pytest tests -rs
   - pip install git+https://github.com/HazyResearch/pdftotree@master
+  - extract_tree --pdf_file tests/input/112823.pdf
