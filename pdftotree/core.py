@@ -54,11 +54,11 @@ def parse(pdf_file,
         model = load_model(model_path)
     extractor = TreeExtractor(pdf_file)
     if (not extractor.is_scanned()):
-        log.info("Digitized PDF detected, building tree structure")
+        log.info("Digitized PDF detected, building tree structure...")
         pdf_tree = extractor.get_tree_structure(model, favor_figures)
-        log.info("Tree structure built, creating html")
+        log.info("Tree structure built, creating html...")
         pdf_html = extractor.get_html_tree()
-        log.info("HTML created, writing to file")
+        log.info("HTML created, outputting...")
         pdf_filename = os.path.basename(pdf_file)
         # Check html_path exists, create if not
         pdf_html = re.sub(r'[\x00-\x1F]+', '', pdf_html)
