@@ -67,5 +67,7 @@ if __name__ == '__main__':
     result = pdftotree.parse(args.pdf_file, args.html_path, args.model_path,
                              args.favor_figures, args.visualize)
 
-    if args.html_path is None:
+    if result:
         print(result)
+    else:
+        print("HTML output to {}".format(args.html_path))
