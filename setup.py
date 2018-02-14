@@ -11,6 +11,7 @@ setup(
         'IPython',
         'beautifulsoup4',
         'bintrees',
+        'future',
         'lxml',
         'numpy',
         'pandas',
