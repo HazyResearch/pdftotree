@@ -3,11 +3,14 @@ Created on Jan 25, 2016
 
 @author: xiao
 '''
-from pdftotree.pdf.vector_utils import *
 import collections
-from pdfminer.layout import LTTextLine, LTChar, LTAnno, LTCurve, LTComponent, LTLine
-from itertools import chain
+import logging
 import numpy as np
+from itertools import chain
+from pdfminer.layout import LTTextLine, LTChar, LTAnno, LTCurve, LTComponent, LTLine
+from pdftotree.pdf.vector_utils import *
+
+log = logging.getLogger(__name__)
 
 def traverse_layout(root, callback):
     '''
@@ -198,7 +201,7 @@ def recursive_xy_divide(elems, avg_font_size):
     avg_font_size: the minimum gap size between elements below
     which we consider interval continuous.
     '''
-    print(avg_font_size)
+    log.info(avg_font_size)
     objects = list(elems.mentions)
     objects.extend(elems.segments)
     bboxes = []
@@ -228,8 +231,7 @@ def recursive_xy_divide(elems, avg_font_size):
             return objs
         else:
             children = []
-#             print 'dividing y' if h_split else 'dividing x', 'into', len(groups), 'groups'
-#             is_text_block = [all(isinstance(o, LTTextLine) for o in g) for g in groups]
+
             for interval, group in izip(intervals, groups):
                 # Create the bbox for the subgroup
                 sub_bbox = np.array(bbox)
@@ -242,7 +244,7 @@ def recursive_xy_divide(elems, avg_font_size):
     full_page_bbox = (0, 0, elems.layout.width, elems.layout.height)
     # Filter out invalid objects
     objects = [o for o in objects if inside(full_page_bbox,o.bbox)]
-    print('avg_font_size for dividing', avg_font_size)
+    log.info('avg_font_size for dividing', avg_font_size)
     tree = divide(objects, full_page_bbox) if objects else []
     return bboxes, tree
 

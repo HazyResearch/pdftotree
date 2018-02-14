@@ -4,13 +4,14 @@ from setuptools import setup, find_packages
 
 setup(
     name='pdftotree',
-    version='0.1.2',
+    version='0.1.3',
     description='Parse PDFs into HTML-like trees.',
     packages=find_packages(),
     install_requires=[
         'IPython',
         'beautifulsoup4',
         'bintrees',
+        'future',
         'lxml',
         'numpy',
         'pandas',

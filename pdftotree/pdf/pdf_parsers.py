@@ -4,16 +4,18 @@ Parsing raw PDF data into python data structures
 
 @author: xiao
 '''
+import logging
+import math
+import operator
 import six  # Python 2-3 compatibility
 from collections import defaultdict
+from copy import deepcopy
 from functools import cmp_to_key
-
 from pdfminer.utils import Plane
 from pdftotree.pdf.layout_utils import *
 from pdftotree.pdf.node import Node
-import operator
-from copy import deepcopy
-import math
+
+log = logging.getLogger(__name__)
 
 def parse_layout(elems, font_stat, combine=False):
     '''
@@ -442,8 +444,6 @@ def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width, char
     clusters = [[boxes[i] for i in cluster] for cluster in filter(bool, cid2obj2)]
     nodes = [Node(elems) for elems in clusters]
     node_indices = [i for i, x in enumerate(cid2obj2) if x]
-    # for idx in range(len(nodes)):
-    #     print idx, node_indices[idx], nodes[idx]
     merge_indices = [i for i in range(len(node_indices))]
     page_stat = Node(boxes)
     nodes, merge_indices = merge_nodes(nodes, plane, page_stat, merge_indices)
@@ -636,7 +636,6 @@ def parse_tree_structure(elems, font_stat, page_num, ref_page_seen, tables, favo
         intersect = False
         for idx2, table in enumerate(tables_page):
             table_box = tuple(table[3:])
-            # print , box.bbox
             bool_overlap = (table_box[1] <= box.bbox[2] and box.bbox[0] <= table_box[3] and table_box[0] <= box.bbox[3] and box.bbox[1] <= table_box[2])
             if(bool_overlap):
                 intersect = True
@@ -847,7 +846,7 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width, p
         min_y_page = min(min_y_page, box.bbox[1])
     if page_num == -1:
         #handle title, authors and abstract here
-        print("todo")
+        log.error("TODO: no way to handle title authors abstract yet.")
     else:
         #eliminate header, footer, page number
         #sort other text and classify as header/paragraph

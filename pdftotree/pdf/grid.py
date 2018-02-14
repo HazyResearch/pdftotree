@@ -3,15 +3,15 @@ Created on Dec 2, 2015
 
 @author: xiao
 '''
-import numpy as np
 import bisect
-from pdfminer.utils import Plane
+import logging
+import numpy as np
 import pandas as pd
-from pdftotree.pdf.vector_utils import inside, reading_order
-from pdftotree.pdf.layout_utils import project_onto
 from collections import defaultdict
 from functools import cmp_to_key
-from pprint import pprint
+from pdfminer.utils import Plane
+from pdftotree.pdf.vector_utils import inside, reading_order
+from pprint import pformat
 
 class Cell(object):
     '''Represents a cell with no visual dividers inside'''
@@ -90,11 +90,8 @@ class Grid(object):
             bbox = (x0, y0, x1, y1)
             # Keep mentions whose centers are inside the cell
             cell.texts = [m for m in text_plane.find(bbox) if inside(bbox, (m.xc, m.yc) * 2)]
-#             print (cell.rowstart, cell.colstart, cell.rowend, cell.colend), cell
 
-# TODO: provide HTML conversion here
-#         df = pd.DataFrame(grid)
-#         print df.to_string(index=False, header=False)
+        # TODO: provide HTML conversion here
 
         self.get_normalized_grid()
 
@@ -104,10 +101,11 @@ class Grid(object):
     def to_html(self):
         return self.to_dataframe().to_html(index=False, header=False)
 
-    def get_normalized_grid(self, debug_print = False):
+    def get_normalized_grid(self):
         '''
         Analyzes subcell structure
         '''
+        log = logging.getLogger(__name__)
         # Resolve multirow mentions, TODO: validate against all PDFs
         subcol_count = 0;
         mega_rows = []
@@ -119,20 +117,16 @@ class Grid(object):
                 cell.texts.sort(key=cmp_to_key(reading_order))
 #                intervals, groups = project_onto(cell.texts, axis='x', self.min_cell_size)
                 prev = None
-                if debug_print:
-                    print('='*50)
+                log.debug('='*50)
                 for m in cell.texts:
-#                     print m.yc_grid, m.clean_text
                     subrow_across_cell[m.yc_grid].append(m)
                     prev = m
 
-            if debug_print:
-                pprint(dict(subrow_across_cell))
+            log.debug(pformat(dict(subrow_across_cell)))
 
             mega_rows.append(subrow_across_cell)
 
-            #pprint(dict(subrow_across_cell), indent=1)
-        # Multilnie paragraph check
+        # Multiline paragraph check
         # Subrow/Subcolumn
 
         return mega_rows
