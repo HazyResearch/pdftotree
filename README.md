@@ -54,7 +54,7 @@ To use it as a package:
 ```py
 import pdftotree
 
-pdftotree.parse(pdf_file, html_path, model_path=None, favor_figures=True, visualize=False):
+pdftotree.parse(pdf_file, html_path=None, model_path=None, favor_figures=True, visualize=False):
 ```
 
 ## For Developers
