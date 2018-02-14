@@ -28,7 +28,7 @@ To use the commandline tool:
 ```
 usage: extract_tree [-h] [--model_path MODEL_PATH] --pdf_file PDF_FILE
                     [--html_path HTML_PATH] [--favor_figures FAVOR_FIGURES]
-                    [--visualize]
+                    [--visualize] [-v] [-vv]
 
 Script to extract tree structure from PDF files.
 
@@ -39,11 +39,14 @@ optional arguments:
   --pdf_file PDF_FILE   pdf file name for which tree structure needs to be
                         extracted
   --html_path HTML_PATH
-                        path where tree structure must be saved
+                        path where tree structure should be saved. If none,
+                        HTML is printed to stdout.
   --favor_figures FAVOR_FIGURES
                         whether figures must be favored over other parts such
                         as tables and section headers
   --visualize           whether to output visualization images for the tree
+  -v                    output INFO level logging.
+  -vv                   output DEBUG level logging.
 ```
 
 To use it as a package:

@@ -18,23 +18,20 @@ Other tree parts are detected using heuristic methods.
 
 Set favor_figures to "False" for Hardware sheets.
 '''
+from pdftotree.TreeExtract import TreeExtractor
+from pdftotree.TreeVisualizer import TreeVisualizer
 import codecs
 import logging
 import os
-from pdftotree.TreeExtract import TreeExtractor
-from pdftotree.TreeVisualizer import TreeVisualizer
 import pickle
 import re
-import six  # Python 2-3 compatibility
 
 
 def load_model(model_path):
-    print("Loading pretrained model for table detection")
-    if six.PY3:
-        model = pickle.load(open(model_path, 'rb'), encoding="bytes")
-    else:
-        model = pickle.load(open(model_path, 'rb'))
-    print("Model loaded!")
+    log = logging.getLogger(__name__)
+    log.info("Loading pretrained model for table detection")
+    model = pickle.load(open(model_path, 'rb'))
+    log.info("Model loaded!")
     return model
 
 
@@ -44,31 +41,38 @@ def visualize_tree(pdf_file, pdf_tree, html_path):
     v.display_candidates(pdf_tree, html_path, filename_prefix)
 
 
-def parse(pdf_file, html_path, model_path=None, favor_figures=True, visualize=False, debug=False):
-    # Set logger level to WARNING to suppress tons of pdfminer debug logs.
-    logging.getLogger().setLevel(logging.WARNING)
+def parse(pdf_file,
+          html_path=None,
+          model_path=None,
+          favor_figures=True,
+          visualize=False):
+
+    log = logging.getLogger(__name__)
 
     model = None
     if (model_path is not None):
         model = load_model(model_path)
     extractor = TreeExtractor(pdf_file)
-    if(not extractor.is_scanned()):
-        print("Digitized PDF detected, building tree structure")
+    if (not extractor.is_scanned()):
+        log.info("Digitized PDF detected, building tree structure")
         pdf_tree = extractor.get_tree_structure(model, favor_figures)
-        print("Tree structure built, creating html")
+        log.info("Tree structure built, creating html")
         pdf_html = extractor.get_html_tree()
-        print("HTML created, writing to file")
+        log.info("HTML created, writing to file")
         pdf_filename = os.path.basename(pdf_file)
         # Check html_path exists, create if not
-        if not os.path.exists(html_path):
-            os.makedirs(html_path)
         pdf_html = re.sub(r'[\x00-\x1F]+', '', pdf_html)
-        if debug:
+
+        if html_path is None:
             return pdf_html
-        with codecs.open(html_path + pdf_filename[:-4] + ".html",
-                         encoding="utf-8", mode="w") as f:
+        elif not os.path.exists(html_path):
+            os.makedirs(html_path)
+        with codecs.open(
+                html_path + pdf_filename[:-4] + ".html",
+                encoding="utf-8",
+                mode="w") as f:
             f.write(pdf_html)
         if visualize:
             visualize_tree(pdf_file, pdf_tree, html_path)
     else:
-        print("Document is scanned, cannot build tree structure")
+        log.error("Document is scanned, cannot build tree structure")
