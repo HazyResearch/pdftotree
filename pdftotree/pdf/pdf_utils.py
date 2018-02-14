@@ -5,14 +5,12 @@ extracted with PDFminer
 
 @author: xiao
 '''
-import six  # Python 2+3 compatibility
-
+import logging
 import os
 import re
+import six  # Python 2+3 compatibility
 import string
-import traceback
 from collections import Counter
-
 from pdftotree.img_utils import *
 from pdftotree.pdf.vector_utils import *
 from pdfminer.converter import PDFPageAggregator
@@ -26,6 +24,8 @@ from pdftotree.pdf.layout_utils import *
 
 # Compact wrapper representation for the pdf
 PDFElems = namedtuple('PDFElems', ['mentions', 'segments', 'curves', 'figures', 'layout', 'chars'])
+
+log = logging.getLogger(__name__)
 
 
 class CustomPDFPageAggregator(PDFPageAggregator):
@@ -116,8 +116,7 @@ def analyze_pages(file_name, char_margin=1.0):
             try:
                 interpreter.process_page(page)
             except OverflowError as oe:
-                print(oe, ', skipping page', page_num, 'of', file_name)
-                traceback.print_exc()
+                log.execption(oe, ', skipping page', page_num, 'of', file_name)
                 continue
             layout = device.get_result()
             yield layout

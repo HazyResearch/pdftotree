@@ -1,21 +1,22 @@
-import six  # Python 2-3 compatibility
+import json
+import logging
 import numpy as np
 import re
-from functools import cmp_to_key
-
-from pdftotree.utils.bbox_utils import get_rectangles, compute_iou
-from pdftotree.utils.lines_utils import reorder_lines, get_vertical_and_horizontal, extend_vertical_lines, \
-    merge_vertical_lines, merge_horizontal_lines, extend_horizontal_lines
-from pdftotree.pdf.pdf_parsers import parse_layout, parse_tree_structure, get_figures
-from pdftotree.pdf.pdf_utils import normalize_pdf, analyze_pages
-from pdftotree.utils.display_utils import pdf_to_img
-from pdftotree.ml.features import get_alignment_features, get_lines_features, get_mentions_within_bbox
-from wand.color import Color
-from wand.drawing import Drawing
-from pdfminer.utils import Plane
+import six  # Python 2-3 compatibility
 import tabula
-import json
+from functools import cmp_to_key
+from pdfminer.utils import Plane
+from pdftotree.ml.features import get_lines_features, get_mentions_within_bbox
 from pdftotree.pdf.layout_utils import *
+from pdftotree.pdf.pdf_parsers import parse_layout, parse_tree_structure
+from pdftotree.pdf.pdf_utils import normalize_pdf, analyze_pages
+from pdftotree.utils.bbox_utils import get_rectangles
+from pdftotree.utils.lines_utils import extend_horizontal_lines
+from pdftotree.utils.lines_utils import extend_vertical_lines
+from pdftotree.utils.lines_utils import get_vertical_and_horizontal
+from pdftotree.utils.lines_utils import merge_horizontal_lines
+from pdftotree.utils.lines_utils import merge_vertical_lines
+from pdftotree.utils.lines_utils import reorder_lines
 
 class TreeExtractor(object):
     """
@@ -23,6 +24,7 @@ class TreeExtractor(object):
     """
 
     def __init__(self, pdf_file):
+        self.log = logging.getLogger(__name__)
         self.pdf_file = pdf_file
         self.elems = {}
         self.font_stats = {}
@@ -146,7 +148,7 @@ class TreeExtractor(object):
         try:
             nodes, features = parse_layout(elems, font_stat)
         except Exception as e:
-            print(e)
+            self.log.execption(e)
             nodes, features = [], []
         return [(page_num, page_width, page_height) + (node.y0, node.x0,
                 node.y1, node.x1) for node in nodes], features
@@ -252,7 +254,7 @@ class TreeExtractor(object):
                     char_idx += 1
                     continue
                 if word[len_idx] != mention_chars[char_idx][0]:
-                    print("Out of order", word, mention_chars[char_idx][0])
+                    self.log.warning("Out of order", word, mention_chars[char_idx][0])
                 curr_word[1] = min(curr_word[1], mention_chars[char_idx][1])
                 curr_word[2] = min(curr_word[2], mention_chars[char_idx][2])
                 curr_word[3] = max(curr_word[3], mention_chars[char_idx][3])
