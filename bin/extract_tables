@@ -1,4 +1,5 @@
-from __future__ import print_function
+#!/usr/bin/env python
+
 from builtins import str
 from builtins import range
 import argparse
@@ -7,13 +8,27 @@ import numpy as np
 import os
 import pickle
 import sys
-from tesseract.table_extractor import extract_tables
-
+from pdftotree.ml.TableExtractML import TableExtractorML
+from pdftotree.tesseract.table_extractor import extract_tables
+from pdftotree.utils.bbox_utils import doOverlap, compute_iou, isContained
 from sklearn import linear_model, preprocessing, metrics
-from ml.TableExtractML import TableExtractorML
-from utils.bbox_utils import doOverlap, compute_iou, isContained
 
-log = logging.getLogger(__name__)
+
+def get_logger(name):
+    log = logging.getLogger(name)
+    if not log.handlers:
+        # Prevent logging from propagating to the root logger
+        log.propagate = 0
+        console = logging.StreamHandler()
+        log.addHandler(console)
+        formatter = logging.Formatter("[%(levelname)s] %(name)s - %(message)s")
+        console.setFormatter(formatter)
+
+        # Also setup pdftotree logs
+        pdftotree_log = logging.getLogger('pdftotree')
+        pdftotree_log.addHandler(console)
+
+    return log
 
 
 def get_bboxes_from_line(line):
@@ -34,17 +49,20 @@ def get_bboxes_from_line(line):
     return bboxes
 
 
-def get_features_and_labels(pdf_list, gt_list):
+def get_features_and_labels(pdf_list, gt_list, datapath):
     pdf_files = [pdf_file.rstrip() for pdf_file in open(pdf_list).readlines()]
     gt = [gt.rstrip() for gt in open(gt_list).readlines()]
     tables = []
     for i, pdf_file in enumerate(pdf_files):
-        if i % 10 == 0:
-            log.info("{} documents processed out of {}".format(
-                i, len(pdf_files)))
+        log.info("Processing {} ({} of {})".format(pdf_file, i + 1,
+                                                   len(pdf_files)))
         gt_tables = get_bboxes_from_line(gt[i])
-        extractor = TableExtractorML(os.environ['DATAPATH'] + pdf_file)
+        extractor = TableExtractorML(datapath + pdf_file)
         bboxes, features, is_scanned = extractor.get_candidates_and_features()
+        if is_scanned:
+            log.exception("{} is a scanned document.".format(pdf_file))
+            import pdb
+            pdb.set_trace()
         labels = extractor.get_labels(gt_tables)
         bboxes = [[i] + list(bbox) for bbox in bboxes]
         if i == 0:
@@ -60,9 +78,9 @@ def get_features_and_labels(pdf_list, gt_list):
     return X, y, tables
 
 
-def load_train_data(pdf_list, gt_list):
+def load_train_data(pdf_list, gt_list, datapath):
     if os.path.exists(pdf_list + '.features.pkl'):
-        log.info("Loading precomputed features for {}..".format(pdf_list))
+        log.info("Loading precomputed features for {}...".format(pdf_list))
         # load pickled data
         X = pickle.load(open(pdf_list + '.features.pkl', 'rb'))
         y = pickle.load(open(pdf_list + '.labels.pkl', 'rb'))
@@ -71,41 +89,38 @@ def load_train_data(pdf_list, gt_list):
     else:
         log.info("Building feature matrix for {}".format(pdf_list))
         # compute and pickle feature matrix
-        X, y, tables = get_features_and_labels(pdf_list, gt_list)
+        X, y, tables = get_features_and_labels(pdf_list, gt_list, datapath)
         pickle.dump(X, open(pdf_list + '.features.pkl', 'wb'))
         pickle.dump(y, open(pdf_list + '.labels.pkl', 'wb'))
         pickle.dump(tables, open(pdf_list + '.candidates.pkl', 'wb'))
     return X, y, tables.astype(np.int)
 
 
-def get_features(pdf_list):
+def get_features(pdf_list, datapath):
     pdf_files = [pdf_file.rstrip() for pdf_file in open(pdf_list).readlines()]
     X = []
     tables = []
     scanned_indices = []
     scanned_tables = {}
     for i, pdf_file in enumerate(pdf_files):
-        if i % 10 == 0:
-            log.info("{} documents processed out of {}".format(
-                i, len(pdf_files)))
-        extractor = TableExtractorML(os.environ['DATAPATH'] + pdf_file)
+        log.info("Processing {} ({} of {})".format(pdf_file, i + 1,
+                                                   len(pdf_files)))
+        extractor = TableExtractorML(datapath + pdf_file)
         bboxes, features, is_scanned = extractor.get_candidates_and_features()
         if (is_scanned):
             #document is scanned
             scanned_indices.append(i)
-            if not os.path.exists(
-                    os.environ['DATAPATH'] + "tesseract_results"):
-                os.makedirs(os.environ['DATAPATH'] + "tesseract_results")
-            if not os.path.exists(
-                    os.environ['DATAPATH'] + "tesseract_results/" + pdf_file):
-                os.system("./../tesseract/preprocess.sh " +
-                          os.environ['DATAPATH'] + "tesseract_results/" +
-                          pdf_file + " " + os.environ['DATAPATH'] + pdf_file)
+            if not os.path.exists(datapath + "tesseract_results"):
+                os.makedirs(datapath + "tesseract_results")
+            if not os.path.exists(datapath + "tesseract_results/" + pdf_file):
+                os.system("./../tesseract/preprocess.sh " + datapath +
+                          "tesseract_results/" + pdf_file + " " + datapath +
+                          pdf_file)
             try:
-                scanned_tables[
-                    i] = extract_tables(os.environ['DATAPATH'] +
-                                        "tesseract_results/" + pdf_file + "/")
-            except:
+                scanned_tables[i] = extract_tables(
+                    datapath + "tesseract_results/" + pdf_file + "/")
+            except Exception as e:
+                log.exception("{} Found no tables.".format(e))
                 scanned_tables[i] = "NO_TABLES\n"
             continue
         bboxes = [[i] + list(bbox) for bbox in bboxes]
@@ -121,9 +136,9 @@ def get_features(pdf_list):
     return X, tables, scanned_indices, scanned_tables
 
 
-def load_test_data(pdf_list):
+def load_test_data(pdf_list, datapath):
     if os.path.exists(pdf_list + '.features.pkl'):
-        log.info("Loading precomputed features for {}..".format(pdf_list))
+        log.info("Loading precomputed features for {}...".format(pdf_list))
         # load pickled data
         X = pickle.load(open(pdf_list + '.features.pkl', 'rb'))
         tables = pickle.load(open(pdf_list + '.candidates.pkl', 'rb'))
@@ -135,7 +150,8 @@ def load_test_data(pdf_list):
     else:
         log.info("Building feature matrix for {}".format(pdf_list))
         # compute and pickle feature matrix
-        X, tables, scanned_indices, scanned_tables = get_features(pdf_list)
+        X, tables, scanned_indices, scanned_tables = get_features(
+            pdf_list, datapath)
         pickle.dump(X, open(pdf_list + '.features.pkl', 'wb'))
         pickle.dump(tables, open(pdf_list + '.candidates.pkl', 'wb'))
         pickle.dump(scanned_indices,
@@ -263,66 +279,98 @@ def write_bbox_to_file(bbox_file, pdf_idx_to_filtered_bboxes, num_test,
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description=
-        """Script to extract tables bounding boxes from PDF files using a machine learning approach.
-            if model.pkl is saved in the model-path, the pickled model will be used for prediction. Otherwise the model will be retrained.
-            If --mode is test (by default), the script will create a .bbox file containing the tables for the pdf documents listed in the file --test-pdf.
-            If --mode is dev, the script will also extract ground truth labels fot the test data and compute some statistics.
-            To run the script on new documents, specify the path to the list of pdf to analyze using the argument --test-pdf. Those files must be saved in the DATAPATH folder."""
-    )
+    parser = argparse.ArgumentParser(description="""
+        Script to extract tables bounding boxes from PDF files using machine
+        learning. If `model.pkl` is saved in the model-path, the pickled
+        model will be used for prediction. Otherwise the model will be
+        retrained. If --mode is test (by default), the script will create a
+        .bbox file containing the tables for the pdf documents listed in the
+        file --test-pdf. If --mode is dev, the script will also extract ground
+        truth labels for the test data and compute statistics. 
+        """)
     parser.add_argument(
         '--mode',
         type=str,
         default='test',
-        help='usage mode dev or test, default is test')
+        help="Usage mode dev or test, default is test")
+    parser.add_argument(
+        '--model-path',
+        type=str,
+        required=True,
+        help=
+        "Path to the model. If the file exists, it will be used. Otherwise, a new model will be trained."
+    )
     parser.add_argument(
         '--train-pdf',
         type=str,
-        default=os.environ['MLPATH'] + 'train.pdf.list.paleo.not.scanned',
         help=
-        'list of pdf file names used for training. Those files must be saved in the DATAPATH folder (cf set_env.sh)'
+        "List of pdf file names used for training. These files must be saved in the --datapath directory. Required if no pretrained model is provided."
     )
     parser.add_argument(
         '--test-pdf',
         type=str,
-        default=os.environ['MLPATH'] + 'test.pdf.list.paleo.not.scanned',
+        required=True,
         help=
-        'list of pdf file names used for testing. Those files must be saved in the DATAPATH folder (cf set_env.sh)'
+        "List of pdf file names used for testing. These files must be saved in the --datapath directory."
     )
     parser.add_argument(
         '--gt-train',
         type=str,
-        default=os.environ['MLPATH'] + 'gt.train',
-        help='ground truth train tables')
+        help=
+        "Ground truth train tables. Required if no pretrained model is provided."
+    )
     parser.add_argument(
-        '--gt-test',
-        type=str,
-        default=os.environ['MLPATH'] + 'gt.test',
-        help='ground truth test tables')
+        '--gt-test', type=str, required=True, help="Ground truth test tables.")
     parser.add_argument(
-        '--model-path',
+        '--datapath',
         type=str,
-        default=os.environ['MLPATH'] + 'model.pkl',
-        help='pretrained model')
+        required=True,
+        help="Path to directory containing the input documents.")
     parser.add_argument(
         '--iou-thresh',
         type=float,
         default=0.8,
-        help='intersection over union threshold to remove duplicate tables')
+        help="Intersection over union threshold to remove duplicate tables")
+    parser.add_argument(
+        '-v',
+        dest='verbose',
+        action='store_true',
+        help="Output INFO level logging")
+    parser.add_argument(
+        '-vv',
+        dest='debug',
+        action='store_true',
+        help="Output DEBUG level logging")
     args = parser.parse_args()
+
+    if args.debug:
+        log_level = logging.DEBUG
+    elif args.verbose:
+        log_level = logging.INFO
+    else:
+        log_level = logging.WARNING
+
+    log = get_logger(__name__)
+    log.setLevel(log_level)
+
     # load or train the model
-    if os.path.exists(args.model_path):
+    if args.model_path and os.path.exists(args.model_path):
         model = load_model(args.model_path)
     else:
+        if not args.train_pdf or not args.gt_train:
+            parser.error(
+                "--train-pdf and --gt-train must be provided if there is no pretrained model."
+            )
+
         X_train, y_train, tables_train = load_train_data(
-            args.train_pdf, args.gt_train)
+            args.train_pdf, args.gt_train, args.datapath)
         model = train_model(X_train, y_train, args.model_path)
     num_test = len(open(args.test_pdf).readlines())
+
     if args.mode == 'dev':
         # load dev data (with ground truth, for evaluation)
-        X_test, y_test, tables_test = load_train_data(args.test_pdf,
-                                                      args.gt_test)
+        X_test, y_test, tables_test = load_train_data(
+            args.test_pdf, args.gt_test, args.datapath)
         # predict tables for dev tables and evaluate
         y_pred = model.predict(X_test)
         log.info("Testing for {} pdf documents".format(num_test))
@@ -330,8 +378,8 @@ if __name__ == '__main__':
     elif args.mode == 'test':
         # load test data (with no ground truth)
         X_test, tables_test, scanned_test, scanned_tables = load_test_data(
-            args.test_pdf)
-        if (len(X_test) == 0):  #all docs are scanned
+            args.test_pdf, args.datapath)
+        if (len(X_test) == 0):  # all docs are scanned
             y_pred = []
         else:
             y_pred = model.predict(X_test)
