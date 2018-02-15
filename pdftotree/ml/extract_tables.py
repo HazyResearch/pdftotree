@@ -7,11 +7,11 @@ import numpy as np
 import os
 import pickle
 import sys
-from tesseract.table_extractor import extract_tables
+from pdftotree.tesseract.table_extractor import extract_tables
 
 from sklearn import linear_model, preprocessing, metrics
-from ml.TableExtractML import TableExtractorML
-from utils.bbox_utils import doOverlap, compute_iou, isContained
+from TableExtractML import TableExtractorML
+from pdftotree.utils.bbox_utils import doOverlap, compute_iou, isContained
 
 log = logging.getLogger(__name__)
 
