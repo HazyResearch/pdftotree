@@ -1,10 +1,10 @@
 """For pip."""
-
 from setuptools import setup, find_packages
 
+exec(open('pdftotree/_version.py').read())
 setup(
     name='pdftotree',
-    version='0.1.3',
+    version=__version__,
     description='Parse PDFs into HTML-like trees.',
     packages=find_packages(),
     install_requires=[
