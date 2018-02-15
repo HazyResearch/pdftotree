@@ -254,7 +254,7 @@ class TreeExtractor(object):
                     char_idx += 1
                     continue
                 if word[len_idx] != mention_chars[char_idx][0]:
-                    self.log.warning("Out of order", word, mention_chars[char_idx][0])
+                    self.log.warning("Out of order {} {}".format(word, mention_chars[char_idx][0]))
                 curr_word[1] = min(curr_word[1], mention_chars[char_idx][1])
                 curr_word[2] = min(curr_word[2], mention_chars[char_idx][2])
                 curr_word[3] = max(curr_word[3], mention_chars[char_idx][3])
