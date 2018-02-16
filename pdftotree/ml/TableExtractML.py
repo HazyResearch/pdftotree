@@ -23,18 +23,18 @@ class TableExtractorML(object):
     """
 
     def __init__(self, pdf_file):
-        self.log                 = logging.getLogger(__name__)
-        self.pdf_file            = pdf_file
-        self.elems               = {}
-        self.font_stats          = {}
-        self.lines_bboxes        = []
-        self.alignments_bboxes   = []
+        self.log = logging.getLogger(__name__)
+        self.pdf_file = pdf_file
+        self.elems = {}
+        self.font_stats = {}
+        self.lines_bboxes = []
+        self.alignments_bboxes = []
         self.intersection_bboxes = []
-        self.bboxes              = []
-        self.candidates          = []
-        self.features            = []
-        self.iou_thresh          = 0.8
-        self.scanned             = False
+        self.bboxes = []
+        self.candidates = []
+        self.features = []
+        self.iou_thresh = 0.8
+        self.scanned = False
 
     def identify_scanned_page(self, boxes, page_bbox, page_width, page_height):
         plane = Plane(page_bbox)
