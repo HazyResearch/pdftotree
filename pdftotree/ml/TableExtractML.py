@@ -1,4 +1,4 @@
-import six
+import logging
 import numpy as np
 
 from pdftotree.utils.bbox_utils import get_rectangles, compute_iou
@@ -18,17 +18,18 @@ class TableExtractorML(object):
     """
 
     def __init__(self, pdf_file):
-        self.pdf_file = pdf_file
-        self.elems = {}
-        self.font_stats = {}
-        self.lines_bboxes = []
-        self.alignments_bboxes = []
+        self.log = logging.getLogger(__name__)
+        self.pdf_file            = pdf_file
+        self.elems               = {}
+        self.font_stats          = {}
+        self.lines_bboxes        = []
+        self.alignments_bboxes   = []
         self.intersection_bboxes = []
-        self.bboxes = []
-        self.candidates = []
-        self.features = []
-        self.iou_thresh = 0.8
-        self.scanned = False
+        self.bboxes              = []
+        self.candidates          = []
+        self.features            = []
+        self.iou_thresh          = 0.8
+        self.scanned             = False
 
     def identify_scanned_page(self, boxes, page_bbox, page_width, page_height):
         plane = Plane(page_bbox)
@@ -109,7 +110,7 @@ class TableExtractorML(object):
         font_stat = self.font_stats[page_num]
         lines_bboxes = self.get_candidates_lines(page_num, elems)
         alignments_bboxes, alignment_features = self.get_candidates_alignments(page_num, elems)
-        # print "Page Num: ", page_num, "Line bboxes: ", len(lines_bboxes), ", Alignment bboxes: ", len(alignments_bboxes)
+        self.log.info("Page Num: {}, Line bboxes: {}, Alignment bboxes: {}".format(page_num, len(lines_bboxes), len(alignments_bboxes)))
         alignment_features += get_alignment_features(lines_bboxes, elems, font_stat)
         boxes = alignments_bboxes + lines_bboxes
         if len(boxes) == 0:
