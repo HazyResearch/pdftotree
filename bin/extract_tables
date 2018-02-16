@@ -323,9 +323,6 @@ if __name__ == '__main__':
         help='intersection over union threshold to remove duplicate tables')
     args = parser.parse_args()
 
-    log.info("Starting the program.")
-    import pdb
-    pdb.set_trace()
     # load or train the model
     if args.model_path and os.path.exists(args.model_path):
         model = load_model(args.model_path)
