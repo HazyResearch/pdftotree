@@ -78,21 +78,27 @@ class TableExtractorML(object):
             elems, font_stat = normalize_pdf(layout, scaler=1)
             self.elems[page_num] = elems
             self.font_stats[page_num] = font_stat
-            #code to detect if the page is scanned
+            # code to detect if the page is scanned
             if (len(elems.segments) > 0):
                 lin_seg_present = True
             for fig in elems.figures:
                 if (fig.bbox[0] <= 0.0 and fig.bbox[1] <= 0.0
                         and round(fig.bbox[2]) == round(elems.layout.width)
                         and round(fig.bbox[3]) == round(elems.layout.height)):
+                    self.log.debug(
+                        "{} is scanned because of full-page figure.".format(
+                            self.pdf_file))
                     is_scanned = True
             page_scanned = self.identify_scanned_page(
                 elems.figures, elems.layout.bbox, elems.layout.width,
                 elems.layout.height)
+            # doc is scanned if any page is scanned
             if (page_scanned == True):
+                self.log.debug(
+                    "{} is scanned one of its pages is scanned.".format(
+                        self.pdf_file))
                 is_scanned = True
-        if (is_scanned == True or lin_seg_present == False
-            ):  #doc is scanned if any page is scanned
+        if (is_scanned or not lin_seg_present):
             self.scanned = True
 
     def get_scanned(self):
@@ -115,6 +121,7 @@ class TableExtractorML(object):
     def get_candidates_and_features(self):
         self.parse()
         if (self.scanned):
+            self.log.info("{} is scanned.".format(self.pdf_file))
             return [], [], self.scanned
         for page_num in self.elems.keys():
             page_boxes, page_features = self.get_candidates_and_features_page_num(
