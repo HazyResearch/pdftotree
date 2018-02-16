@@ -1,5 +1,7 @@
 # pdftotree
-
+[![GitHub issues](https://img.shields.io/github/issues/HazyResearch/pdftotree.svg)](https://github.com/HazyResearch/pdftotree/projects/2)
+[![GitHub license](https://img.shields.io/github/license/HazyResearch/pdftotree.svg)](https://github.com/HazyResearch/pdftotree/blob/master/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/HazyResearch/pdftotree.svg)](https://github.com/HazyResearch/pdftotree/stargazers)
 [![Build Status](https://travis-ci.org/HazyResearch/pdftotree.svg?branch=master)](https://travis-ci.org/HazyResearch/pdftotree)
 
 Fonduer has been successfully extended to perform information extraction from
@@ -16,6 +18,12 @@ of the document using a tree data structure.
 
 This project is using the table-extraction tool
 (https://github.com/xiao-cheng/table-extraction).
+
+## Dependencies
+
+```
+sudo apt-get install python3-tk
+```
 
 ## Installation
 
