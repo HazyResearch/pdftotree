@@ -1,3 +1,5 @@
+from __future__ import division
+from builtins import str
 import string
 
 from pdftotree.pdf.pdf_parsers import *

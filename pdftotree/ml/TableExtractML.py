@@ -1,6 +1,11 @@
+from __future__ import division
+
+from builtins import filter
+from builtins import str
+from builtins import range
+from builtins import object
 import logging
 import numpy as np
-
 from pdfminer.utils import Plane
 from pdftotree.ml.features import get_alignment_features, get_lines_features
 from pdftotree.pdf.pdf_parsers import parse_layout
@@ -40,8 +45,8 @@ class TableExtractorML(object):
         plane = Plane(page_bbox)
         plane.extend(boxes)
         cid2obj = [set([i]) for i in range(len(boxes))]  # initialize clusters
-        obj2cid = list(range(
-            len(boxes)))  # default object map to cluster with its own index
+        # default object map to cluster with its own index
+        obj2cid = list(range(len(boxes)))
         prev_clusters = obj2cid
         while (True):
             for i1, b1 in enumerate(boxes):
@@ -111,7 +116,7 @@ class TableExtractorML(object):
             self.parse()
         if (self.scanned):
             return []
-        for page_num in self.elems.keys():
+        for page_num in list(self.elems.keys()):
             page_boxes, page_features = self.get_candidates_and_features_page_num(
                 page_num)
             self.candidates += page_boxes
@@ -123,7 +128,7 @@ class TableExtractorML(object):
         if (self.scanned):
             self.log.info("{} is scanned.".format(self.pdf_file))
             return [], [], self.scanned
-        for page_num in self.elems.keys():
+        for page_num in list(self.elems.keys()):
             page_boxes, page_features = self.get_candidates_and_features_page_num(
                 page_num)
             self.candidates += page_boxes
