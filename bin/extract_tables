@@ -37,9 +37,7 @@ def get_features_and_labels(pdf_list, gt_list, datapath):
     gt = [gt.rstrip() for gt in open(gt_list).readlines()]
     tables = []
     for i, pdf_file in enumerate(pdf_files):
-        if i % 10 == 0:
-            log.info("{} documents processed out of {}".format(
-                i, len(pdf_files)))
+        log.info("Processing {} ({} of {})".format(pdf_file, i+1, len(pdf_files)))
         gt_tables = get_bboxes_from_line(gt[i])
         extractor = TableExtractorML(datapath + pdf_file)
         bboxes, features, is_scanned = extractor.get_candidates_and_features()
@@ -86,9 +84,7 @@ def get_features(pdf_list, datapath):
     scanned_indices = []
     scanned_tables = {}
     for i, pdf_file in enumerate(pdf_files):
-        if i % 10 == 0:
-            log.info("{} documents processed out of {}".format(
-                i, len(pdf_files)))
+        log.info("Processing {} ({} of {})".format(pdf_file, i+1, len(pdf_files)))
         extractor = TableExtractorML(datapath + pdf_file)
         bboxes, features, is_scanned = extractor.get_candidates_and_features()
         if (is_scanned):
