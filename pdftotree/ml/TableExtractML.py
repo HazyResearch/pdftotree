@@ -1,5 +1,4 @@
 from __future__ import division
-
 from builtins import filter
 from builtins import str
 from builtins import range
