@@ -14,6 +14,18 @@ from pdftotree.utils.bbox_utils import doOverlap, compute_iou, isContained
 from sklearn import linear_model, preprocessing, metrics
 
 
+def get_logger(name):
+    log = logging.getLogger(name)
+    if not log.handlers:
+        # Prevent logging from propagating to the root logger
+        log.propagate = 0
+        console = logging.StreamHandler()
+        log.addHandler(console)
+        formatter = logging.Formatter("[%(levelname)s] %(name)s - %(message)s")
+        console.setFormatter(formatter)
+    return log
+
+
 def get_bboxes_from_line(line):
     if line == "NO_TABLES":
         return {}
@@ -37,13 +49,15 @@ def get_features_and_labels(pdf_list, gt_list, datapath):
     gt = [gt.rstrip() for gt in open(gt_list).readlines()]
     tables = []
     for i, pdf_file in enumerate(pdf_files):
-        log.info("Processing {} ({} of {})".format(pdf_file, i+1, len(pdf_files)))
+        log.info("Processing {} ({} of {})".format(pdf_file, i + 1,
+                                                   len(pdf_files)))
         gt_tables = get_bboxes_from_line(gt[i])
         extractor = TableExtractorML(datapath + pdf_file)
         bboxes, features, is_scanned = extractor.get_candidates_and_features()
         if is_scanned:
             log.exception("{} is a scanned document.".format(pdf_file))
-            import pdb; pdb.set_trace()
+            import pdb
+            pdb.set_trace()
         labels = extractor.get_labels(gt_tables)
         bboxes = [[i] + list(bbox) for bbox in bboxes]
         if i == 0:
@@ -84,23 +98,22 @@ def get_features(pdf_list, datapath):
     scanned_indices = []
     scanned_tables = {}
     for i, pdf_file in enumerate(pdf_files):
-        log.info("Processing {} ({} of {})".format(pdf_file, i+1, len(pdf_files)))
+        log.info("Processing {} ({} of {})".format(pdf_file, i + 1,
+                                                   len(pdf_files)))
         extractor = TableExtractorML(datapath + pdf_file)
         bboxes, features, is_scanned = extractor.get_candidates_and_features()
         if (is_scanned):
             #document is scanned
             scanned_indices.append(i)
-            if not os.path.exists(
-                    datapath + "tesseract_results"):
+            if not os.path.exists(datapath + "tesseract_results"):
                 os.makedirs(datapath + "tesseract_results")
-            if not os.path.exists(
-                    datapath + "tesseract_results/" + pdf_file):
-                os.system("./../tesseract/preprocess.sh " +
-                          datapath + "tesseract_results/" +
-                          pdf_file + " " + datapath + pdf_file)
+            if not os.path.exists(datapath + "tesseract_results/" + pdf_file):
+                os.system("./../tesseract/preprocess.sh " + datapath +
+                          "tesseract_results/" + pdf_file + " " + datapath +
+                          pdf_file)
             try:
-                scanned_tables[i] = extract_tables(datapath +
-                                        "tesseract_results/" + pdf_file + "/")
+                scanned_tables[i] = extract_tables(
+                    datapath + "tesseract_results/" + pdf_file + "/")
             except Exception as e:
                 log.exception("{} Found no tables.".format(e))
                 scanned_tables[i] = "NO_TABLES\n"
@@ -132,7 +145,8 @@ def load_test_data(pdf_list, datapath):
     else:
         log.info("Building feature matrix for {}".format(pdf_list))
         # compute and pickle feature matrix
-        X, tables, scanned_indices, scanned_tables = get_features(pdf_list, datapath)
+        X, tables, scanned_indices, scanned_tables = get_features(
+            pdf_list, datapath)
         pickle.dump(X, open(pdf_list + '.features.pkl', 'wb'))
         pickle.dump(tables, open(pdf_list + '.candidates.pkl', 'wb'))
         pickle.dump(scanned_indices,
@@ -327,17 +341,8 @@ if __name__ == '__main__':
     else:
         log_level = logging.WARNING
 
-    
-    # Configure logging for this application
-    log = logging.getLogger(__name__)
+    log = get_logger(__name__)
     log.setLevel(log_level)
-    if not log.handlers:
-        ch = logging.StreamHandler()
-        ch.setLevel(log_level)
-        formatter = logging.Formatter("[%(levelname)s] %(name)s - %(message)s")
-        ch.setFormatter(formatter)
-        log.addHandler(ch)
-
 
     # load or train the model
     if args.model_path and os.path.exists(args.model_path):
