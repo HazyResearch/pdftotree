@@ -23,6 +23,11 @@ def get_logger(name):
         log.addHandler(console)
         formatter = logging.Formatter("[%(levelname)s] %(name)s - %(message)s")
         console.setFormatter(formatter)
+
+        # Also setup pdftotree logs
+        pdftotree_log = logging.getLogger('pdftotree')
+        pdftotree_log.addHandler(console)
+
     return log
 
 
