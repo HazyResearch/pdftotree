@@ -73,7 +73,7 @@ Then you can run our tests
 pytest tests -rs
 ```
 
-To test changes from the package, you can also install it locally in your virtualenv by running
+To test changes in the package, you can also install it locally in your virtualenv by running
 ```
 python setup.py develop
 ```
