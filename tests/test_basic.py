@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import pytest
 import sys
-from tests.context import pdftotree
+import pdftotree
 
 
 def test_heuristic_completion():

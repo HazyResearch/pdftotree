@@ -20,6 +20,7 @@ setup(
         'scipy',
         'six',
         'sklearn',
+        'spacy',
         'tabula-py',
         'wand',
     ],
