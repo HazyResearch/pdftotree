@@ -64,11 +64,7 @@ def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width,
     if (len(boxes) == 0 or len(boxes) > 3500):
         return []
     plane = Plane(page_bbox)
-    try:
-        plane.extend(boxes)
-    except Exception as e:
-        log.exception(e)
-        import pdb; pdb.set_trace()
+    plane.extend(boxes)
 
     # initialize clusters
     cid2obj = [set([i]) for i in range(len(boxes))]

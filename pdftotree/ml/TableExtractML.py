@@ -138,6 +138,11 @@ class TableExtractorML(object):
         elems = self.elems[page_num]
         font_stat = self.font_stats[page_num]
         lines_bboxes = self.get_candidates_lines(page_num, elems)
+        boxes = []
+        # Filter out bboxes that are zero width or height
+        for bbox in lines_bboxes:
+            if (bbox[5] - bbox[3] > 0 and bbox[6] - bbox[4] > 0):
+                boxes += [bbox]
         alignments_bboxes, alignment_features = self.get_candidates_alignments(
             page_num, elems)
         self.log.info(
@@ -145,7 +150,11 @@ class TableExtractorML(object):
                 page_num, len(lines_bboxes), len(alignments_bboxes)))
         alignment_features += get_alignment_features(lines_bboxes, elems,
                                                      font_stat)
-        boxes = alignments_bboxes + lines_bboxes
+        # Filter out bboxes that are zero width or height
+        for bbox in alignments_bboxes:
+            if (bbox[5] - bbox[3] > 0 and bbox[6] - bbox[4] > 0):
+                boxes += [bbox]
+        #  boxes = alignments_bboxes + lines_bboxes
         if len(boxes) == 0:
             return [], []
         lines_features = get_lines_features(boxes, elems)
