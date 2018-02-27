@@ -1,4 +1,5 @@
 # pdftotree
+
 [![GitHub issues](https://img.shields.io/github/issues/HazyResearch/pdftotree.svg)](https://github.com/HazyResearch/pdftotree/projects/2)
 [![GitHub license](https://img.shields.io/github/license/HazyResearch/pdftotree.svg)](https://github.com/HazyResearch/pdftotree/blob/master/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/HazyResearch/pdftotree.svg)](https://github.com/HazyResearch/pdftotree/stargazers)
@@ -31,7 +32,15 @@ sudo apt-get install python3-tk
 
 ## Usage
 
-To use the commandline tool:
+### pdftotree as a Python package
+
+```py
+import pdftotree
+
+pdftotree.parse(pdf_file, html_path=None, model_path=None, favor_figures=True, visualize=False):
+```
+
+### extract_tree
 
 ```
 usage: extract_tree [-h] [--model_path MODEL_PATH] --pdf_file PDF_FILE
@@ -57,12 +66,42 @@ optional arguments:
   -vv                   output DEBUG level logging.
 ```
 
-To use it as a package:
+### extract_tables
 
-```py
-import pdftotree
+```
+usage: extract_tables [-h] [--mode MODE] [--model-path MODEL_PATH] --train-pdf
+                      TRAIN_PDF --test-pdf TEST_PDF --gt-train GT_TRAIN
+                      --gt-test GT_TEST --datapath DATAPATH
+                      [--iou-thresh IOU_THRESH] [-v] [-vv]
 
-pdftotree.parse(pdf_file, html_path=None, model_path=None, favor_figures=True, visualize=False):
+Script to extract tables bounding boxes from PDF files using a machine
+learning approach. if model.pkl is saved in the model-path, the pickled model
+will be used for prediction. Otherwise the model will be retrained. If --mode
+is test (by default), the script will create a .bbox file containing the
+tables for the pdf documents listed in the file --test-pdf. If --mode is dev,
+the script will also extract ground truth labels fot the test data and compute
+some statistics. To run the script on new documents, specify the path to the
+list of pdf to analyze using the argument --test-pdf. Those files must be
+saved in the DATAPATH folder.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --mode MODE           usage mode dev or test, default is test
+  --model-path MODEL_PATH
+                        pretrained model
+  --train-pdf TRAIN_PDF
+                        list of pdf file names used for training. Those files
+                        must be saved in the DATAPATH folder (cf set_env.sh)
+  --test-pdf TEST_PDF   list of pdf file names used for testing. Those files
+                        must be saved in the DATAPATH folder (cf set_env.sh)
+  --gt-train GT_TRAIN   ground truth train tables
+  --gt-test GT_TEST     ground truth test tables
+  --datapath DATAPATH   path to directory containing the PDFs
+  --iou-thresh IOU_THRESH
+                        intersection over union threshold to remove duplicate
+                        tables
+  -v                    output INFO level logging.
+  -vv                   output DEBUG level logging.
 ```
 
 ## For Developers
@@ -82,6 +121,7 @@ pytest tests -rs
 ```
 
 To test changes in the package, you can also install it locally in your virtualenv by running
+
 ```
 python setup.py develop
 ```
