@@ -279,64 +279,65 @@ def write_bbox_to_file(bbox_file, pdf_idx_to_filtered_bboxes, num_test,
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description=
-        """Script to extract tables bounding boxes from PDF files using a machine learning approach.
-            if model.pkl is saved in the model-path, the pickled model will be used for prediction. Otherwise the model will be retrained.
-            If --mode is test (by default), the script will create a .bbox file containing the tables for the pdf documents listed in the file --test-pdf.
-            If --mode is dev, the script will also extract ground truth labels fot the test data and compute some statistics.
-            To run the script on new documents, specify the path to the list of pdf to analyze using the argument --test-pdf. Those files must be saved in the DATAPATH folder."""
-    )
+    parser = argparse.ArgumentParser(description="""
+        Script to extract tables bounding boxes from PDF files using machine
+        learning. If `model.pkl` is saved in the model-path, the pickled
+        model will be used for prediction. Otherwise the model will be
+        retrained. If --mode is test (by default), the script will create a
+        .bbox file containing the tables for the pdf documents listed in the
+        file --test-pdf. If --mode is dev, the script will also extract ground
+        truth labels for the test data and compute statistics. 
+        """)
     parser.add_argument(
         '--mode',
         type=str,
         default='test',
-        help='usage mode dev or test, default is test')
-    parser.add_argument('--model-path', type=str, help='pretrained model')
+        help="Usage mode dev or test, default is test")
+    parser.add_argument('--model-path', type=str, help="Pretrained model")
     parser.add_argument(
         '--train-pdf',
         type=str,
         required='--model-path' not in sys.argv,
         help=
-        'list of pdf file names used for training. Those files must be saved in the DATAPATH folder (cf set_env.sh)'
+        "List of pdf file names used for training. These files must be saved in the --datapath directory. Required if no pretrained model is provided."
     )
     parser.add_argument(
         '--test-pdf',
         type=str,
-        required='--model-path' not in sys.argv,
+        required=True,
         help=
-        'list of pdf file names used for testing. Those files must be saved in the DATAPATH folder (cf set_env.sh)'
+        "List of pdf file names used for testing. These files must be saved in the --datapath directory."
     )
     parser.add_argument(
         '--gt-train',
         type=str,
         required='--model-path' not in sys.argv,
-        help='ground truth train tables')
+        help="Ground truth train tables. Required if no pretrained model is provided.")
     parser.add_argument(
         '--gt-test',
         type=str,
-        required='--model-path' not in sys.argv,
-        help='ground truth test tables')
+        required=True,
+        help="Ground truth test tables.")
     parser.add_argument(
         '--datapath',
         type=str,
-        required='--model-path' not in sys.argv,
-        help='path to directory containing the PDFs')
+        required=True,
+        help="Path to directory containing the input documents.")
     parser.add_argument(
         '--iou-thresh',
         type=float,
         default=0.8,
-        help='intersection over union threshold to remove duplicate tables')
+        help="Intersection over union threshold to remove duplicate tables")
     parser.add_argument(
         '-v',
-        dest="verbose",
-        action="store_true",
-        help='output INFO level logging.')
+        dest='verbose',
+        action='store_true',
+        help="Output INFO level logging")
     parser.add_argument(
         '-vv',
-        dest="debug",
-        action="store_true",
-        help='output DEBUG level logging.')
+        dest='debug',
+        action='store_true',
+        help="Output DEBUG level logging")
     args = parser.parse_args()
 
     if args.debug:
