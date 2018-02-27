@@ -25,6 +25,8 @@ setup(
         'tabula-py',
         'wand',
     ],
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest'],
     url='https://github.com/HazyResearch/pdftotree',
     scripts=[
         'bin/extract_tree',
