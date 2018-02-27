@@ -293,11 +293,16 @@ if __name__ == '__main__':
         type=str,
         default='test',
         help="Usage mode dev or test, default is test")
-    parser.add_argument('--model-path', type=str, help="Pretrained model")
+    parser.add_argument(
+        '--model-path',
+        type=str,
+        required=True,
+        help=
+        "Path to the model. If the file exists, it will be used. Otherwise, a new model will be trained."
+    )
     parser.add_argument(
         '--train-pdf',
         type=str,
-        required='--model-path' not in sys.argv,
         help=
         "List of pdf file names used for training. These files must be saved in the --datapath directory. Required if no pretrained model is provided."
     )
@@ -311,13 +316,11 @@ if __name__ == '__main__':
     parser.add_argument(
         '--gt-train',
         type=str,
-        required='--model-path' not in sys.argv,
-        help="Ground truth train tables. Required if no pretrained model is provided.")
+        help=
+        "Ground truth train tables. Required if no pretrained model is provided."
+    )
     parser.add_argument(
-        '--gt-test',
-        type=str,
-        required=True,
-        help="Ground truth test tables.")
+        '--gt-test', type=str, required=True, help="Ground truth test tables.")
     parser.add_argument(
         '--datapath',
         type=str,
@@ -354,6 +357,11 @@ if __name__ == '__main__':
     if args.model_path and os.path.exists(args.model_path):
         model = load_model(args.model_path)
     else:
+        if not args.train_pdf or not args.gt_train:
+            parser.error(
+                "--train-pdf and --gt-train must be provided if there is no pretrained model."
+            )
+
         X_train, y_train, tables_train = load_train_data(
             args.train_pdf, args.gt_train, args.datapath)
         model = train_model(X_train, y_train, args.model_path)
@@ -371,7 +379,7 @@ if __name__ == '__main__':
         # load test data (with no ground truth)
         X_test, tables_test, scanned_test, scanned_tables = load_test_data(
             args.test_pdf, args.datapath)
-        if (len(X_test) == 0):  #all docs are scanned
+        if (len(X_test) == 0):  # all docs are scanned
             y_pred = []
         else:
             y_pred = model.predict(X_test)
