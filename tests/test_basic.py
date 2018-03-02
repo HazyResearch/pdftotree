@@ -10,8 +10,6 @@ def test_heuristic_completion():
     assert output is not None
 
 
-
-@pytest.mark.skipif(sys.version_info < (3, 5), reason="Only runs on Python3.")
 def test_ml_completion():
     """Simply test that ML-based parse runs without errors."""
     output = pdftotree.parse(

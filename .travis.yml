@@ -1,6 +1,6 @@
 language: python
 python:
-  - "2.7"
+  - "3.4"
   - "3.5"
   - "3.6"
 
@@ -12,6 +12,6 @@ install:
   - pip install -r requirements.txt
 
 script:
-  - pytest tests -rs
+  - pytest tests -rsXx -v
   - pip install git+https://github.com/HazyResearch/pdftotree@master
   - extract_tree --pdf_file tests/input/112823.pdf
