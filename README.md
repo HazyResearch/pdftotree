@@ -11,15 +11,14 @@ data such as tables. A crucial step in this process is the construction of the
 hierarchical tree of context objects such as text blocks, figures, tables, etc.
 The system currently uses PDF to HTML conversion provided by Adobe Acrobat.
 However, Adobe Acrobat is not an open source tool, which may be inconvenient
-for Fonduer users. This package is the result of building our own module as
-replacement to Adobe Acrobat. Several open source tools are available for pdf
-to html conversion but these tools do not preserve the cell structure in a
-table. Our goal in this project is to develop a tool that extracts text,
-figures and tables in a pdf document and maintains the structure of the
-document using a tree data structure.
+for Fonduer users.
 
-This project is utilizes the table-extraction tool
-(https://github.com/xiao-cheng/table-extraction).
+This package is the result of building our own module as replacement to Adobe
+Acrobat. Several open source tools are available for pdf to html conversion but
+these tools do not preserve the cell structure in a table. Our goal in this
+project is to develop a tool that extracts text, figures and tables in a pdf
+document and maintains the structure of the document using a tree data
+structure.
 
 ## Dependencies
 
@@ -131,8 +130,8 @@ The list of PDFs are simply a single filename on each line. For example:
 The ground truth is formatted to mirror the PDF List. That is, the first line
 of the ground truth file provides the labels for the first document in
 corresponding PDF list. Labels take the form of semicolon-separated tuples
-containing the values (page_num, page_width, page_height, top, left, bottom,
-right). For example:
+containing the values `(page_num, page_width, page_height, top, left, bottom,
+right)`. For example:
 
 ```
 (10, 696, 951, 634, 366, 832, 653);(14, 696, 951, 720, 62, 819, 654);(4, 696, 951, 152, 66, 813, 654);(7, 696, 951, 415, 57, 833, 647);(8, 696, 951, 163, 370, 563, 652)
@@ -151,9 +150,9 @@ bounding box file.
 
 #### Example Dataset: Paleontological Papers
 
-A full set of documents and ground truth labels can be 
-[downloaded here](http://i.stanford.edu/hazy/share/fonduer/pdftotree_paleo.tar.gz). 
-You can train a machine-learning model to extract table regions by downloading 
+A full set of documents and ground truth labels can be
+[downloaded here](http://i.stanford.edu/hazy/share/fonduer/pdftotree_paleo.tar.gz).
+You can train a machine-learning model to extract table regions by downloading
 this dataset and extracting it into a directory named `data` and then running the
 command below. Double check that the paths in the command match wherever you
 have downloaded the data.
@@ -184,3 +183,4 @@ To test changes in the package, you can also install it locally in your virtuale
 ```
 python setup.py develop
 ```
+
