@@ -30,7 +30,7 @@ sudo apt-get install python3-tk
 
 ## Installation
 
-`pip install git+https://github.com/HazyResearch/pdftotree@master`
+`pip install pdftotree`
 
 ## Usage
 
