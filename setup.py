@@ -26,10 +26,10 @@ setup(
         'tabula-py',
         'wand',
     ],
-    keywords=["pdf", "parsing", "html"],
+    keywords=['pdf', 'parsing', 'html'],
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
-    url='https://github.com/HazyResearch/pdftotree',
+    url="https://github.com/HazyResearch/pdftotree",
     scripts=[
         'bin/extract_tree',
         'bin/extract_tables',
@@ -44,6 +44,12 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3 :: Only",
     ],
-    author='Hazy Research',
+    project_urls={
+        'Tracker': 'https://github.com/HazyResearch/pdftotree/issues',
+        'Source': 'https://github.com/HazyResearch/pdftotree',
+    },
+    python_requires='>3',
+    author="Hazy Research",
+    author_email="senwu@cs.stanford.edu",
     license='MIT',
 )
