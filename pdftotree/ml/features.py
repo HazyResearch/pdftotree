@@ -1,3 +1,5 @@
+from __future__ import division
+from builtins import str
 import string
 
 from pdftotree.pdf.pdf_parsers import *
@@ -112,10 +114,10 @@ def get_alignment_features(line_bboxes, elems, font_stat):
             if isinstance(m, LTTextLine) and m.font_name: prefix = m.font_name + '-' + str(m.font_size) + '-'
             m.xc = (m.x0 + m.x1) / 2.0
             m.yc = (m.y0 + m.y1) / 2.0
-            m.feats[prefix + 'x0'] = m.x0_grid = int(m.x0 / grid_size)
-            m.feats[prefix + 'x1'] = m.x1_grid = int(m.x1 / grid_size)
-            m.feats[prefix + 'xc'] = m.xc_grid = int(m.xc / grid_size)
-            m.feats[prefix + 'yc'] = m.yc_grid = int(m.yc / grid_size)
+            m.feats[prefix + 'x0'] = m.x0_grid = m.x0 // grid_size
+            m.feats[prefix + 'x1'] = m.x1_grid = m.x1 // grid_size
+            m.feats[prefix + 'xc'] = m.xc_grid = m.xc // grid_size
+            m.feats[prefix + 'yc'] = m.yc_grid = m.yc // grid_size
 
         nodes, nodes_features = cluster_vertically_aligned_boxes(boxes, elems.layout.bbox, avg_font_pts, width,
                                                                  char_width, boxes_segments, boxes_curves,
