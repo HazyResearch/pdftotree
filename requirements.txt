@@ -1,16 +1,9 @@
 IPython
-beautifulsoup4
-bintrees
 future
-lxml
-matplotlib
 numpy
 pandas
 pdfminer.six
-pillow
 pytest
-scipy
-shapely
 six
 sklearn
 tabula-py
