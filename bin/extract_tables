@@ -9,7 +9,6 @@ import os
 import pickle
 import sys
 from pdftotree.ml.TableExtractML import TableExtractorML
-from pdftotree.tesseract.table_extractor import extract_tables
 from pdftotree.utils.bbox_utils import doOverlap, compute_iou, isContained
 from sklearn import linear_model, preprocessing, metrics
 
@@ -60,9 +59,12 @@ def get_features_and_labels(pdf_list, gt_list, datapath):
         extractor = TableExtractorML(datapath + pdf_file)
         bboxes, features, is_scanned = extractor.get_candidates_and_features()
         if is_scanned:
-            log.exception("{} is a scanned document.".format(pdf_file))
-            import pdb
-            pdb.set_trace()
+            log.exception(
+                "{} is a scanned document, which is not supported.".format(
+                    pdf_file))
+            raise ValueError("Documents requiring OCR are not supported.",
+                             datapath,
+                             pdf_file)
         labels = extractor.get_labels(gt_tables)
         bboxes = [[i] + list(bbox) for bbox in bboxes]
         if i == 0:
@@ -108,21 +110,12 @@ def get_features(pdf_list, datapath):
         extractor = TableExtractorML(datapath + pdf_file)
         bboxes, features, is_scanned = extractor.get_candidates_and_features()
         if (is_scanned):
-            #document is scanned
-            scanned_indices.append(i)
-            if not os.path.exists(datapath + "tesseract_results"):
-                os.makedirs(datapath + "tesseract_results")
-            if not os.path.exists(datapath + "tesseract_results/" + pdf_file):
-                os.system("./../tesseract/preprocess.sh " + datapath +
-                          "tesseract_results/" + pdf_file + " " + datapath +
-                          pdf_file)
-            try:
-                scanned_tables[i] = extract_tables(
-                    datapath + "tesseract_results/" + pdf_file + "/")
-            except Exception as e:
-                log.exception("{} Found no tables.".format(e))
-                scanned_tables[i] = "NO_TABLES\n"
-            continue
+            log.exception(
+                "{} is a scanned document, which is not supported.".format(
+                    pdf_file))
+            raise ValueError("Documents requiring OCR are not supported.",
+                             datapath,
+                             pdf_file)
         bboxes = [[i] + list(bbox) for bbox in bboxes]
         if len(X) == 0:
             X = np.array(features)
@@ -286,7 +279,7 @@ if __name__ == '__main__':
         retrained. If --mode is test (by default), the script will create a
         .bbox file containing the tables for the pdf documents listed in the
         file --test-pdf. If --mode is dev, the script will also extract ground
-        truth labels for the test data and compute statistics. 
+        truth labels for the test data and compute statistics.
         """)
     parser.add_argument(
         '--mode',
