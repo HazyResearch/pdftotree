@@ -36,7 +36,7 @@ setup(
     tests_require=['pytest'],
     url="https://github.com/HazyResearch/pdftotree",
     scripts=[
-        'bin/extract_tree',
+        'bin/pdftotree',
         'bin/extract_tables',
     ],
     classifiers=[  # https://pypi.python.org/pypi?:action=list_classifiers
