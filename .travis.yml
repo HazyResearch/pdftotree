@@ -14,4 +14,4 @@ install:
 script:
   - pytest tests -rsXx -v
   - pip install git+https://github.com/HazyResearch/pdftotree@master
-  - extract_tree --pdf_file tests/input/112823.pdf
+  - pdftotree --pdf_file tests/input/112823.pdf

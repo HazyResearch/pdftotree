@@ -42,16 +42,16 @@ import pdftotree
 pdftotree.parse(pdf_file, html_path=None, model_path=None, favor_figures=True, visualize=False):
 ```
 
-### extract_tree
+### pdftotree
 
 This is the primary command-line utility provided with this Python package.
 This takes a PDF file as input, and produces an HTML-like representation of the
 data.
 
 ```
-usage: extract_tree [-h] [--model_path MODEL_PATH] --pdf_file PDF_FILE
-                    [--html_path HTML_PATH] [--favor_figures FAVOR_FIGURES]
-                    [--visualize] [-v] [-vv]
+usage: pdftotree [-h] [--model_path MODEL_PATH] --pdf_file PDF_FILE
+                 [--html_path HTML_PATH] [--favor_figures FAVOR_FIGURES]
+                 [--visualize] [-v] [-vv]
 
 Script to extract tree structure from PDF files. Takes a PDF as input and
 outputs an HTML-like representation of the document's structure. By default,
