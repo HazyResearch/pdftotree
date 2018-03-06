@@ -19,10 +19,13 @@ setup(
     packages=find_packages(),
     install_requires=[
         'IPython',
+        'beautifulsoup4',
         'future',
         'numpy',
         'pandas',
         'pdfminer.six',
+        'pillow',
+        'scipy',
         'six',
         'sklearn',
         'tabula-py',

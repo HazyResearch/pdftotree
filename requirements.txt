@@ -1,9 +1,12 @@
 IPython
+beautifulsoup4
 future
 numpy
 pandas
 pdfminer.six
+pillow
 pytest
+scipy
 six
 sklearn
 tabula-py
