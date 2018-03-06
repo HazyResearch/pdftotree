@@ -3,7 +3,7 @@
 [![GitHub issues](https://img.shields.io/github/issues/HazyResearch/pdftotree.svg)](https://github.com/HazyResearch/pdftotree/projects/2)
 [![GitHub license](https://img.shields.io/github/license/HazyResearch/pdftotree.svg)](https://github.com/HazyResearch/pdftotree/blob/master/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/HazyResearch/pdftotree.svg)](https://github.com/HazyResearch/pdftotree/stargazers)
-[![Build Status](https://travis-ci.org/HazyResearch/pdftotree.svg?branch=master)](https://travis-ci.org/HazyResearch/pdftotree)
+[![Travis](https://img.shields.io/travis/HazyResearch/pdftotree.svg)](https://travis-ci.org/HazyResearch/pdftotree)
 [![PyPI](https://img.shields.io/pypi/v/pdftotree.svg)](https://pypi.python.org/pypi/pdftotree)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pdftotree.svg)](https://pypi.python.org/pypi/pdftotree)
 
