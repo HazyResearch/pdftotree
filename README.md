@@ -1,11 +1,12 @@
 # pdftotree
 
-[![GitHub issues](https://img.shields.io/github/issues/HazyResearch/pdftotree.svg)](https://github.com/HazyResearch/pdftotree/projects/2)
 [![GitHub license](https://img.shields.io/github/license/HazyResearch/pdftotree.svg)](https://github.com/HazyResearch/pdftotree/blob/master/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/HazyResearch/pdftotree.svg)](https://github.com/HazyResearch/pdftotree/stargazers)
-[![Travis](https://img.shields.io/travis/HazyResearch/pdftotree.svg)](https://travis-ci.org/HazyResearch/pdftotree)
 [![PyPI](https://img.shields.io/pypi/v/pdftotree.svg)](https://pypi.python.org/pypi/pdftotree)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pdftotree.svg)](https://pypi.python.org/pypi/pdftotree)
+[![GitHub issues](https://img.shields.io/github/issues/HazyResearch/pdftotree.svg)](https://github.com/HazyResearch/pdftotree/projects/2)
+[![Travis](https://img.shields.io/travis/HazyResearch/pdftotree.svg)](https://travis-ci.org/HazyResearch/pdftotree)
+[![Coveralls github](https://img.shields.io/coveralls/github/HazyResearch/pdftotree.svg)](https://coveralls.io/github/HazyResearch/pdftotree)
 
 [Fonduer](https://hazyresearch.github.io/snorkel/blog/fonduer.html) has been
 successfully extended to perform information extraction from richly formatted
