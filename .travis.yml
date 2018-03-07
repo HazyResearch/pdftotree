@@ -13,8 +13,12 @@ install:
   - sudo apt-get -qq update
   - pip install -r requirements.txt
   - pip install pypandoc
+  - pip install coveralls
 
 script:
-  - pytest tests -rsXx -v
+  - coverage run --source=pdftotree setup.py test 
   - python setup.py -q install 
   - pdftotree tests/input/112823.pdf
+
+after_success:
+  - coveralls
