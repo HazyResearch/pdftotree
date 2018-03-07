@@ -1,6 +1,5 @@
 language: python
 python:
-  - "3.4"
   - "3.5"
   - "3.6"
 
@@ -17,5 +16,5 @@ install:
 
 script:
   - pytest tests -rsXx -v
-  - pip install git+https://github.com/HazyResearch/pdftotree@master
+  - python setup.py -q install 
   - pdftotree tests/input/112823.pdf
