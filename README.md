@@ -30,7 +30,16 @@ sudo apt-get install python3-tk
 
 ## Installation
 
-`pip install pdftotree`
+To install this package from PyPi:
+
+```
+pip install pdftotree
+```
+
+Or, to install directly from this repository. Clone this repo and run:
+```
+python setup.py install
+```
 
 ## Usage
 
@@ -166,23 +175,24 @@ The resulting model of this example command would be saved as `data/model.pkl`.
 
 ## For Developers
 
-### Tests
+We are following [Semantic Versioning 2.0.0](https://semver.org/) conventions.
+The maintainers will create a git tag for each release and increment the
+version number found in
+[`pdftotree/_version.py`](https://github.com/HazyResearch/pdftotree/blob/master/pdftotree/_version.py)
+accordingly.
 
-Once you've cloned this repository, first make sure you ahve the dependencies installed
+### Tests
+To test changes in the package, you install it locally in your virtualenv by
+running
 
 ```
-pip install -r requirements.txt
+python setup.py develop
 ```
 
 Then you can run our tests
 
 ```
-pytest tests -rs
+python setup.py test
 ```
 
-To test changes in the package, you can also install it locally in your virtualenv by running
-
-```
-python setup.py develop
-```
 

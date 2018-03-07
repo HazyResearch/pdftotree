@@ -4,12 +4,16 @@ python:
   - "3.5"
   - "3.6"
 
+matrix:
+  fast_finish: true
+
 notifications:
   email: false
 
 install:
   - sudo apt-get -qq update
   - pip install -r requirements.txt
+  - pip install pypandoc
 
 script:
   - pytest tests -rsXx -v
