@@ -148,7 +148,7 @@ class TreeExtractor(object):
         try:
             nodes, features = parse_layout(elems, font_stat)
         except Exception as e:
-            self.log.execption(e)
+            self.log.exception(e)
             nodes, features = [], []
         return [(page_num, page_width, page_height) + (node.y0, node.x0,
                 node.y1, node.x1) for node in nodes], features
