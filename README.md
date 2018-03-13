@@ -39,7 +39,7 @@ pip install pdftotree
 
 Or, to install directly from this repository. Clone this repo and run:
 ```
-python setup.py install
+pip install .
 ```
 
 ## Usage
@@ -183,11 +183,12 @@ version number found in
 accordingly.
 
 ### Tests
-To test changes in the package, you install it locally in your virtualenv by
-running
+To test changes in the package, you install it in [editable
+mode](https://packaging.python.org/tutorials/distributing-packages/#working-in-development-mode)
+locally in your virtualenv by running:
 
 ```
-python setup.py develop
+pip install -e .
 ```
 
 Then you can run our tests

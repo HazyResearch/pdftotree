@@ -2,20 +2,12 @@
 from setuptools import setup
 from setuptools import find_packages
 
-try:
-    from pypandoc import convert
-    long_description = convert('README.md', 'rst')
-except (IOError, ImportError):
-    print("warning: pypandoc module not found. Could not convert MD to RST.")
-    long_description = open('README.md').read()
-
 
 exec(open('pdftotree/_version.py').read())
 setup(
     name='pdftotree',
     version=__version__,
     description='Parse PDFs into HTML-like trees.',
-    long_description=long_description,
     packages=find_packages(),
     install_requires=[
         'IPython',
