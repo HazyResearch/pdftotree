@@ -11,16 +11,16 @@ import re
 import six  # Python 2+3 compatibility
 import string
 from collections import Counter
-from pdftotree.img_utils import *
-from pdftotree.pdf.vector_utils import *
 from pdfminer.converter import PDFPageAggregator
 from pdfminer.layout import LAParams, LTFigure
+from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
 from pdfminer.utils import apply_matrix_pt
-from pdfminer.pdfdocument import PDFDocument
-from pdftotree.pdf.layout_utils import *
+from pdftotree.utils.img_utils import *
+from pdftotree.utils.pdf.layout_utils import *
+from pdftotree.utils.pdf.vector_utils import *
 
 # Compact wrapper representation for the pdf
 PDFElems = namedtuple('PDFElems', ['mentions', 'segments', 'curves', 'figures', 'layout', 'chars'])

@@ -1,10 +1,9 @@
 from __future__ import division
 from builtins import str
 import string
-
-from pdftotree.pdf.pdf_parsers import *
-from pdftotree.pdf.vector_utils import *
 from pdftotree.utils.bbox_utils import isContained
+from pdftotree.utils.pdf.pdf_parsers import *
+from pdftotree.utils.pdf.vector_utils import *
 
 
 # ******************* Table Coverage Features *************************************

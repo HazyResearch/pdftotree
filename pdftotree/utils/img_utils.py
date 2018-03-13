@@ -3,14 +3,12 @@ Created on Oct 11, 2015
 
 @author: xiao
 '''
-import os
-from sys import platform as _platform
-
 import numpy as np
+import os
 from PIL import ImageFont, Image, ImageDraw
-
-from pdftotree.pdf.vector_utils import center
 from pdfminer.layout import LTAnno
+from pdftotree.utils.pdf.vector_utils import center
+from sys import platform as _platform
 
 white = (255, 255, 255)
 black = (0, 0, 0)

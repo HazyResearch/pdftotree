@@ -16,8 +16,8 @@ from collections import defaultdict
 from copy import deepcopy
 from functools import cmp_to_key
 from pdfminer.utils import Plane
-from pdftotree.pdf.layout_utils import *
-from pdftotree.pdf.node import Node
+from pdftotree.utils.pdf.layout_utils import *
+from pdftotree.utils.pdf.node import Node
 
 log = logging.getLogger(__name__)
 

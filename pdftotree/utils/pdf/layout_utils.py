@@ -8,7 +8,7 @@ import logging
 import numpy as np
 from itertools import chain
 from pdfminer.layout import LTTextLine, LTChar, LTAnno, LTCurve, LTComponent, LTLine
-from pdftotree.pdf.vector_utils import *
+from pdftotree.utils.pdf.vector_utils import *
 
 log = logging.getLogger(__name__)
 

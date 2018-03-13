@@ -1,4 +1,3 @@
-import json
 import logging
 import numpy as np
 import re
@@ -7,9 +6,6 @@ import tabula
 from functools import cmp_to_key
 from pdfminer.utils import Plane
 from pdftotree.ml.features import get_lines_features, get_mentions_within_bbox
-from pdftotree.pdf.layout_utils import *
-from pdftotree.pdf.pdf_parsers import parse_layout, parse_tree_structure
-from pdftotree.pdf.pdf_utils import normalize_pdf, analyze_pages
 from pdftotree.utils.bbox_utils import get_rectangles
 from pdftotree.utils.lines_utils import extend_horizontal_lines
 from pdftotree.utils.lines_utils import extend_vertical_lines
@@ -17,6 +13,9 @@ from pdftotree.utils.lines_utils import get_vertical_and_horizontal
 from pdftotree.utils.lines_utils import merge_horizontal_lines
 from pdftotree.utils.lines_utils import merge_vertical_lines
 from pdftotree.utils.lines_utils import reorder_lines
+from pdftotree.utils.pdf.layout_utils import *
+from pdftotree.utils.pdf.pdf_parsers import parse_layout, parse_tree_structure
+from pdftotree.utils.pdf.pdf_utils import normalize_pdf, analyze_pages
 
 class TreeExtractor(object):
     """
