@@ -179,7 +179,7 @@ The resulting model of this example command would be saved as `data/model.pkl`.
 We are following [Semantic Versioning 2.0.0](https://semver.org/) conventions.
 The maintainers will create a git tag for each release and increment the
 version number found in
-[`pdftotree/_version.py`](https://github.com/HazyResearch/pdftotree/blob/master/pdftotree/_version.py)
+[pdftotree/_version.py](https://github.com/HazyResearch/pdftotree/blob/master/pdftotree/_version.py)
 accordingly.
 
 ### Tests
