@@ -180,7 +180,7 @@ We are following [Semantic Versioning 2.0.0](https://semver.org/) conventions.
 The maintainers will create a git tag for each release and increment the
 version number found in
 [pdftotree/_version.py](https://github.com/HazyResearch/pdftotree/blob/master/pdftotree/_version.py)
-accordingly.
+accordingly. We deploy tags to PyPI automatically using Travis-CI.
 
 ### Tests
 To test changes in the package, you install it in [editable
