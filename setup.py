@@ -2,12 +2,12 @@
 from setuptools import setup
 from setuptools import find_packages
 
-
 exec(open('pdftotree/_version.py').read())
 setup(
     name='pdftotree',
     version=__version__,
     description='Parse PDFs into HTML-like trees.',
+    long_description=open('README.rst').read(),
     packages=find_packages(),
     install_requires=[
         'IPython',
