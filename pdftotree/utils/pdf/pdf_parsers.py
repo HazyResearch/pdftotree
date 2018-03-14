@@ -995,10 +995,10 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
                         node.y1 - node.y0 < 2 * avg_font_pts):  #can be header
                     idx_new = idx + 1
                     if idx_new < len(new_nodes) - 1:
-                        while (idx_new < len(new_nodes) - 1 and
-                               (round(node.y0) == round(new_nodes[idx_new].y0))
-                               or (math.floor(node.y0) == math.floor(
-                                   new_nodes[idx_new].y0))):
+                        while (idx_new < len(new_nodes) - 1 and (
+                            (round(node.y0) == round(new_nodes[idx_new].y0)) or
+                            (math.floor(node.y0) == math.floor(
+                                new_nodes[idx_new].y0)))):
                             idx_new += 1
                     if (idx_new < len(new_nodes) - 1):
                         if (new_nodes[idx_new].y0 - node.y0 >
