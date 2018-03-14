@@ -1,13 +1,16 @@
 """For pip."""
+from os import path
 from setuptools import setup
 from setuptools import find_packages
 
+
+here = path.abspath(path.dirname(__file__))
 exec(open('pdftotree/_version.py').read())
 setup(
     name='pdftotree',
     version=__version__,
     description='Parse PDFs into HTML-like trees.',
-    long_description=open('README.rst').read(),
+    long_description=open(path.join(here, "README.rst")).read(),
     packages=find_packages(),
     install_requires=[
         'IPython',

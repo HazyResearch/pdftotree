@@ -28,6 +28,7 @@ after_success:
   - coveralls
 
 before_deploy: 
+  - ls
   - "echo 'Deploying pdftotree to PyPi'"
 
 deploy:
