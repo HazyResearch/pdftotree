@@ -18,5 +18,5 @@ def test_ml_completion():
 def test_visual_completion():
     """Simply test that ML-based parse runs without errors."""
     output = pdftotree.parse(
-        "tests/input/paleo.pdf", model_type="visual", model_path="tests/input/paleo_model.h5")
+        "tests/input/paleo.pdf", model_type="visual", model_path="tmp/model.h5")
     assert output is not None
