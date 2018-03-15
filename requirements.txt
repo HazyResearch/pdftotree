@@ -11,3 +11,4 @@ six
 sklearn
 tabula-py
 wand
+keras

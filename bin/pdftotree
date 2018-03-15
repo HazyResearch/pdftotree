@@ -14,6 +14,12 @@ if __name__ == '__main__':
         """,
         usage="%(prog)s [options] pdf_file")
     parser.add_argument(
+        '-mt',
+        '--model_type',
+        type=str,
+        default=None,
+        help="Model type to use ('vision', 'ml' or None (default) for heuristics approach.")
+    parser.add_argument(
         '-m',
         '--model_path',
         type=str,
@@ -78,8 +84,8 @@ if __name__ == '__main__':
     log.addHandler(ch)
 
     # Call the main routine
-    result = pdftotree.parse(args.pdf_file, args.output, args.model_path,
-                             args.favor_figures, args.visualize)
+    result = pdftotree.parse(args.pdf_file, args.output, args.model_type,
+                             args.model_path, args.favor_figures, args.visualize)
 
     if result:
         print(result)

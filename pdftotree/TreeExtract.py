@@ -7,6 +7,7 @@ import tabula
 from functools import cmp_to_key
 from pdfminer.utils import Plane
 from pdftotree.ml.features import get_lines_features, get_mentions_within_bbox
+from pdftotree.visual.visual_utils import load_image, get_bboxes
 from pdftotree.pdf.layout_utils import *
 from pdftotree.pdf.pdf_parsers import parse_layout, parse_tree_structure
 from pdftotree.pdf.pdf_utils import normalize_pdf, analyze_pages
@@ -159,14 +160,20 @@ class TreeExtractor(object):
     def get_font_stats(self):
         return self.font_stats
 
-    def get_tree_structure(self, model, favor_figures):
+    def get_tree_structure(self, model_type, model, favor_figures):
         tables = {}
-        # use heuristics to get tables
-        if(model is None):
+        # use vision to get tables
+        if model_type == 'vision':
             for page_num in self.elems.keys():
-                tables[page_num] = self.get_tables_page_num(page_num)
+                page_width = int(self.elems[page_num].layout.width)
+                page_height = int(self.elems[page_num].layout.height)
+                image = load_image(self.pdf_file, page_num)
+                pred = model.predict([np.zeros((1, 1)), image])    
+                bboxes, _ = get_bboxes(image, pred) 
+                tables[page_num] = [(page_num, page_width, page_height) + (top, left, top + height, left + width) for (left, top, width, height) in bboxes]
+
         # use ML to get tables
-        else:
+        elif model_type == 'ml':
             for page_num in self.elems.keys():
                 table_candidates, candidates_features = \
                     self.get_candidates_and_features_page_num(page_num)
@@ -176,6 +183,12 @@ class TreeExtractor(object):
                     tables[page_num] = [table_candidates[i] for i in
                                         range(len(table_candidates)) if
                                         table_predictions[i] > 0.5]
+
+        # use heuristics to get tables if no model_type is provided 
+        else:
+            for page_num in self.elems.keys():
+                tables[page_num] = self.get_tables_page_num(page_num)
+
         # Manage References - indicator to indicate if reference has been seen
         ref_page_seen = False
         for page_num in self.elems.keys():
