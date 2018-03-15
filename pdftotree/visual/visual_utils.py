@@ -10,7 +10,7 @@ from wand.color import Color
 from wand.image import Image
 
 
-def load_image(pdf_path, page_num, img_dim=448, img_dir='tmp/img'):
+def predict_heatmap(pdf_path, page_num, model, img_dim=448, img_dir='tmp/img'):
     """
     Return an image corresponding to the page of the pdf
     documents saved at pdf_path. If the image is not found in img_dir this
@@ -30,9 +30,10 @@ def load_image(pdf_path, page_num, img_dim=448, img_dir='tmp/img'):
     if not os.path.isfile(img_path):
         # create image for a page in the pdf document and save it in img_dir
         save_image(pdf_path, img_path, page_num)
-    image = img_to_array(load_img(img_path), grayscale=True, target_size=img_dim, data_format=K.image_data_format())
+    image = load_img(img_path, grayscale=True, target_size=(img_dim, img_dim))
+    image = img_to_array(image, data_format=K.image_data_format())    
     image = image.reshape((img_dim, img_dim, 1)).repeat(3, axis=2).reshape((1, img_dim, img_dim, 3))
-    return image 
+    return image.astype(np.uint8).reshape((img_dim, img_dim, 3)), model.predict(image).reshape((img_dim, img_dim))
 
 def save_image(pdf_path, img_path, page_num):
     """
@@ -51,6 +52,17 @@ def save_image(pdf_path, img_path, page_num):
         converted.background_color = Color('white')
         converted.alpha_channel = 'remove'
         converted.save(filename=img_path)
+
+
+def do_intersect(bb1, bb2):
+    """
+    Helper function that returns True if two bounding boxes overlap. 
+    """
+    if (bb1[0] + bb1[2] < bb2[0] or bb2[0] + bb2[2] < bb1[0]):
+        return False
+    if (bb1[1] + bb1[3] < bb2[1] or bb2[1] + bb2[3] < bb1[1]):
+        return False
+    return True
 
 
 def get_bboxes(img, mask, nb_boxes=100, score_thresh=0.5, iou_thresh=0.2, prop_size=0.09, prop_scale=1.2):
