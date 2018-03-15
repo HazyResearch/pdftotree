@@ -44,6 +44,12 @@ if __name__ == '__main__':
         action='store_true',
         help="Whether to output visualization images for the tree")
     parser.add_argument(
+        '-d',
+        '--dry-run',
+        dest='dry_run',
+        action='store_true',
+        help="Run pdftotree, but do not save any output or print to console.")
+    parser.add_argument(
         '-v',
         '--verbose',
         dest='verbose',
@@ -77,11 +83,16 @@ if __name__ == '__main__':
 
     log.addHandler(ch)
 
+    if args.dry_run:
+        print("This is just a dry run. No HTML will be output.")
+        args.output = None
+
     # Call the main routine
     result = pdftotree.parse(args.pdf_file, args.output, args.model_path,
                              args.favor_figures, args.visualize)
 
     if result:
-        print(result)
+        if not args.dry_run:
+            print(result)
     else:
         print("HTML output to {}".format(args.output))
