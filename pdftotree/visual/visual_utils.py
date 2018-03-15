@@ -3,7 +3,6 @@ import os
 
 import keras.backend as K
 import numpy as np
-import progressbar
 import selectivesearch
 from keras.preprocessing.image import load_img, img_to_array
 from PyPDF2 import PdfFileReader
@@ -31,7 +30,7 @@ def load_image(pdf_path, page_num, img_dim=448, img_dir='tmp/img'):
     if not os.path.isfile(img_path):
         # create image for a page in the pdf document and save it in img_dir
         save_image(pdf_path, img_path, page_num)
-    image = img_to_array(load_img(img_path), grayscale=True, target_size=img_dim, K.image_data_format())
+    image = img_to_array(load_img(img_path), grayscale=True, target_size=img_dim, data_format=K.image_data_format())
     image = image.reshape((img_dim, img_dim, 1)).repeat(3, axis=2).reshape((1, img_dim, img_dim, 3))
     return image 
 

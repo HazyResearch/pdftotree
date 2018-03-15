@@ -49,7 +49,6 @@ def parse(pdf_file,
           html_path=None,
           model_type=None,
           model_path=None,
-          model_type=None, 
           favor_figures=True,
           visualize=False):
 

@@ -11,4 +11,8 @@ six
 sklearn
 tabula-py
 wand
-keras
+keras==2.0.8
+tensorflow
+selectivesearch
+PyPDF2
+h5py
