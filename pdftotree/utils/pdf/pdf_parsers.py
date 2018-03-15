@@ -60,6 +60,13 @@ def parse_layout(elems, font_stat, combine=False):
 def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width,
                                      char_width, boxes_segments, boxes_curves,
                                      boxes_figures, page_width, combine):
+    # Filter out boxes with zero width or height
+    filtered_boxes = []
+    for bbox in boxes:
+        if (bbox.x1 - bbox.x0 > 0 and bbox.y1 - bbox.y0 > 0):
+            filtered_boxes.append(bbox)
+    boxes = filtered_boxes
+
     # Too many "." in the Table of Content pages
     if len(boxes) == 0:
         log.warning("No boxes were found to cluster.")
@@ -715,7 +722,7 @@ def parse_tree_structure(elems, font_stat, page_num, ref_page_seen, tables,
     else:
         tables_page = tables
 
-    ##Eliminate tables from these boxes
+    ## Eliminate tables from these boxes
     boxes = []
     for idx1, box in enumerate(mentions):
         intersect = False
@@ -765,6 +772,13 @@ def parse_tree_structure(elems, font_stat, page_num, ref_page_seen, tables,
 def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
                             page_num, ref_page_seen, boxes_figures, page_width,
                             page_height):
+    # Filter out boxes with zero width or height
+    filtered_boxes = []
+    for bbox in boxes:
+        if (bbox.x1 - bbox.x0 > 0 and bbox.y1 - bbox.y0 > 0):
+            filtered_boxes.append(bbox)
+    boxes = filtered_boxes
+
     #Too many "." in the Table of Content pages - ignore because it takes a lot of time
     if (len(boxes) == 0 or len(boxes) > 3500):
         return {}, False
@@ -1097,6 +1111,13 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
 
 def get_figures(boxes, page_bbox, page_num, boxes_figures, page_width,
                 page_height):
+
+    # Filter out boxes with zero width or height
+    filtered_boxes = []
+    for bbox in boxes:
+        if (bbox.x1 - bbox.x0 > 0 and bbox.y1 - bbox.y0 > 0):
+            filtered_boxes.append(bbox)
+    boxes = filtered_boxes
 
     if len(boxes) == 0:
         log.warning(
