@@ -19,8 +19,6 @@ from pdfminer.utils import Plane
 from pdftotree.utils.pdf.layout_utils import *
 from pdftotree.utils.pdf.node import Node
 
-log = logging.getLogger(__name__)
-
 
 def parse_layout(elems, font_stat, combine=False):
     '''
@@ -60,6 +58,7 @@ def parse_layout(elems, font_stat, combine=False):
 def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width,
                                      char_width, boxes_segments, boxes_curves,
                                      boxes_figures, page_width, combine):
+    log = logging.getLogger(__name__)
     # Filter out boxes with zero width or height
     filtered_boxes = []
     for bbox in boxes:
@@ -772,6 +771,7 @@ def parse_tree_structure(elems, font_stat, page_num, ref_page_seen, tables,
 def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
                             page_num, ref_page_seen, boxes_figures, page_width,
                             page_height):
+    log = logging.getLogger(__name__)
     # Filter out boxes with zero width or height
     filtered_boxes = []
     for bbox in boxes:
@@ -1111,7 +1111,7 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
 
 def get_figures(boxes, page_bbox, page_num, boxes_figures, page_width,
                 page_height):
-
+    log = logging.getLogger(__name__)
     # Filter out boxes with zero width or height
     filtered_boxes = []
     for bbox in boxes:
@@ -1184,6 +1184,7 @@ def get_most_common_font_pts(mentions, font_stat):
     '''
     font_stat: Counter object of font sizes
     '''
+    log = logging.getLogger(__name__)
     try:
         # default min font size of 1 pt in case no font present
         most_common_font_size = font_stat.most_common(1)[0][0]
@@ -1212,6 +1213,7 @@ def get_page_width(boxes):
 
 
 def get_char_width(boxes):
+    log = logging.getLogger(__name__)
     box_len_sum = 0
     num_char_sum = 0
     for i, b in enumerate(boxes):

@@ -25,8 +25,6 @@ from pdftotree.utils.pdf.vector_utils import *
 # Compact wrapper representation for the pdf
 PDFElems = namedtuple('PDFElems', ['mentions', 'segments', 'curves', 'figures', 'layout', 'chars'])
 
-log = logging.getLogger(__name__)
-
 
 class CustomPDFPageAggregator(PDFPageAggregator):
     '''
@@ -116,6 +114,7 @@ def analyze_pages(file_name, char_margin=1.0):
             try:
                 interpreter.process_page(page)
             except OverflowError as oe:
+                log = logging.getLogger(__name__)
                 log.exception("{}, skipiping page {} of {}".format(oe, page_num, file_name))
                 continue
             layout = device.get_result()

@@ -46,9 +46,7 @@ def parse(pdf_file,
           model_path=None,
           favor_figures=True,
           visualize=False):
-
     log = logging.getLogger(__name__)
-
     model = None
     if (model_path is not None):
         model = load_model(model_path)

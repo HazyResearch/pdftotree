@@ -10,7 +10,6 @@ from itertools import chain
 from pdfminer.layout import LTTextLine, LTChar, LTAnno, LTCurve, LTComponent, LTLine
 from pdftotree.utils.pdf.vector_utils import *
 
-log = logging.getLogger(__name__)
 
 def traverse_layout(root, callback):
     '''
@@ -23,7 +22,7 @@ def traverse_layout(root, callback):
             traverse_layout(child, callback)
 
 
-def get_near_items(tree,tree_key):
+def get_near_items(tree, tree_key):
     '''
     Check both possible neighbors for key
     in a binary tree
@@ -37,7 +36,8 @@ def get_near_items(tree,tree_key):
     except KeyError:
         pass
 
-def align_add(tree, key, item, align_thres = 2.0):
+
+def align_add(tree, key, item, align_thres=2.0):
     '''
     Adding the item object to a binary tree with the given
     key while allow for small key differences
@@ -52,15 +52,18 @@ def align_add(tree, key, item, align_thres = 2.0):
     tree[key] = [item]
 
 
-right_wall = lambda m: (m.x1,m.y0,m.x1,m.y1)
-left_wall = lambda m: (m.x0,m.y0,m.x0,m.y1)
-top_wall = lambda m: (m.x0,m.y0,m.x1,m.y0)
-bot_wall = lambda m: (m.x0,m.y1,m.x1,m.y1)
+right_wall = lambda m: (m.x1, m.y0, m.x1, m.y1)
+left_wall = lambda m: (m.x0, m.y0, m.x0, m.y1)
+top_wall = lambda m: (m.x0, m.y0, m.x1, m.y0)
+bot_wall = lambda m: (m.x0, m.y1, m.x1, m.y1)
+
+
 def vlines_between(plane, prev, m):
     if not prev or not m: return []
     if prev.xc > m.xc: prev, m = m, prev
     query = (prev.xc, prev.yc, m.xc, prev.yc)
     return [l for l in plane.find(query) if l.x1 - l.x0 < 0.1]
+
 
 def hlines_between(plane, prev, m):
     if not prev or not m: return []
@@ -69,7 +72,7 @@ def hlines_between(plane, prev, m):
     return [l for l in plane.find(query) if l.y1 - l.y0 < 0.1]
 
 
-def is_same_row(m1,m2):
+def is_same_row(m1, m2):
     # Corner case for row separation
     #------
     #-prev- ------
@@ -77,11 +80,15 @@ def is_same_row(m1,m2):
     #       ------
     return m1 and m2 and m2.yc > m1.y0 and m2.yc < m1.y1
 
+
 def is_vline(l):
     return l.x1 - l.x0 < 0.1
 
+
 def is_hline(l):
     return l.y1 - l.y0 < 0.1
+
+
 #
 # def align_add_to_tree(tree, key, item, close_enough_func):
 #     '''
@@ -102,7 +109,8 @@ def is_hline(l):
 #         tree[key] = [item]
 #
 
-def collect_table_content(table_bboxes,elems):
+
+def collect_table_content(table_bboxes, elems):
     '''
     Returns a list of elements that are contained inside
     the corresponding supplied bbox.
@@ -121,12 +129,12 @@ def collect_table_content(table_bboxes,elems):
         # and we can avoid checking all tables for elems inside
         # Elements only need to intersect the bbox for table as some
         # formatting of fonts may result in slightly out of bbox text
-        if prev_bbox is not None and intersect(prev_bbox,c.bbox):
+        if prev_bbox is not None and intersect(prev_bbox, c.bbox):
             prev_content.append(c)
             continue
         # Search the rest of the tables for membership when done with
         # the current one
-        for table_id,table_bbox in enumerate(table_bboxes):
+        for table_id, table_bbox in enumerate(table_bboxes):
             if intersect(table_bbox, c.bbox):
                 prev_bbox = table_bbox
                 prev_content = table_contents[table_id]
@@ -134,8 +142,10 @@ def collect_table_content(table_bboxes,elems):
                 break
     return table_contents
 
+
 _bbox = namedtuple('_bbox', ['bbox'])
 _inf_bbox = _bbox([float('inf')] * 4)
+
 
 def _gaps_from(intervals):
     '''
@@ -147,7 +157,8 @@ def _gaps_from(intervals):
     gaps = [b[0] - a[1] for a, b in sliding_window]
     return gaps
 
-def project_onto(objs, axis, min_gap_size = 4.0):
+
+def project_onto(objs, axis, min_gap_size=4.0):
     '''
     Projects object bboxes onto the axis and return the
     unioned intervals and groups of objects in intervals.
@@ -155,10 +166,10 @@ def project_onto(objs, axis, min_gap_size = 4.0):
     if axis == 'x': axis = 0
     if axis == 'y': axis = 1
     axis_end = axis + 2
-    if axis == 0: # if projecting onto X axis
-        objs.sort(key = lambda o:o.x0)
+    if axis == 0:  # if projecting onto X axis
+        objs.sort(key=lambda o: o.x0)
     else:
-        objs.sort(key = lambda o:o.y0)
+        objs.sort(key=lambda o: o.y0)
 
     intervals = []
     groups = []
@@ -168,7 +179,7 @@ def project_onto(objs, axis, min_gap_size = 4.0):
     end = objs[0].bbox[axis_end]
 
     # Use _inf_bbox to trigger the last interval divide
-    for o_i, o in enumerate(chain(objs,[_inf_bbox])):
+    for o_i, o in enumerate(chain(objs, [_inf_bbox])):
 
         # Get current interval
         o_start = o.bbox[axis]
@@ -193,6 +204,7 @@ def project_onto(objs, axis, min_gap_size = 4.0):
         # else do nothing
     return intervals, groups
 
+
 def recursive_xy_divide(elems, avg_font_size):
     '''
     Recursively group/divide the document by white stripes
@@ -201,14 +213,16 @@ def recursive_xy_divide(elems, avg_font_size):
     avg_font_size: the minimum gap size between elements below
     which we consider interval continuous.
     '''
+    log = logging.getLogger(__name__)
     log.info(avg_font_size)
     objects = list(elems.mentions)
     objects.extend(elems.segments)
     bboxes = []
+
     # A tree that is a list of its children
     # bboxes can be recursively reconstructed from
     # the leaves
-    def divide(objs, bbox, h_split = True, is_single = False):
+    def divide(objs, bbox, h_split=True, is_single=False):
         '''
         Recursive wrapper for splitting a list of objects
         with bounding boxes.
@@ -243,8 +257,7 @@ def recursive_xy_divide(elems, avg_font_size):
 
     full_page_bbox = (0, 0, elems.layout.width, elems.layout.height)
     # Filter out invalid objects
-    objects = [o for o in objects if inside(full_page_bbox,o.bbox)]
+    objects = [o for o in objects if inside(full_page_bbox, o.bbox)]
     log.info('avg_font_size for dividing', avg_font_size)
     tree = divide(objects, full_page_bbox) if objects else []
     return bboxes, tree
-
