@@ -117,9 +117,11 @@ class TreeExtractor(object):
             page_num, elems)
         # print "Page Num: ", page_num, "Line bboxes: ", len(lines_bboxes), ", Alignment bboxes: ", len(alignments_bboxes)
         # alignment_features += get_alignment_features(lines_bboxes, elems, font_stat)
-        boxes = alignments_bboxes  # + lines_bboxes
+        boxes = alignments_bboxes
         if len(boxes) == 0:
+            self.log.info("No boxes were found on page {}.".format(page_num))
             return [], []
+
         lines_features = get_lines_features(boxes, elems)
         features = np.concatenate((np.array(alignment_features),
                                    np.array(lines_features)), axis=1)
@@ -200,10 +202,6 @@ class TreeExtractor(object):
 
             # TODO: We need to detect columns and sort acccordingly.
             boxes.sort(key=cmp_to_key(column_order))
-
-            #  from pprint import pprint
-            #  pprint(boxes, width=120)
-            #  import pdb; pdb.set_trace()
 
             for box in boxes:
                 if(box[0] == "table"):

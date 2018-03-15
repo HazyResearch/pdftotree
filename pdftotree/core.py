@@ -46,9 +46,7 @@ def parse(pdf_file,
           model_path=None,
           favor_figures=True,
           visualize=False):
-
     log = logging.getLogger(__name__)
-
     model = None
     if (model_path is not None):
         model = load_model(model_path)
@@ -58,7 +56,7 @@ def parse(pdf_file,
         pdf_tree = extractor.get_tree_structure(model, favor_figures)
         log.info("Tree structure built, creating html...")
         pdf_html = extractor.get_html_tree()
-        log.info("HTML created, outputting...")
+        log.info("HTML created.")
         pdf_filename = os.path.basename(pdf_file)
         # Check html_path exists, create if not
         pdf_html = re.sub(r'[\x00-\x1F]+', '', pdf_html)

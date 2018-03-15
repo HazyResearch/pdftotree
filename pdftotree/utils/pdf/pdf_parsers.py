@@ -19,8 +19,6 @@ from pdfminer.utils import Plane
 from pdftotree.utils.pdf.layout_utils import *
 from pdftotree.utils.pdf.node import Node
 
-log = logging.getLogger(__name__)
-
 
 def parse_layout(elems, font_stat, combine=False):
     '''
@@ -60,9 +58,22 @@ def parse_layout(elems, font_stat, combine=False):
 def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width,
                                      char_width, boxes_segments, boxes_curves,
                                      boxes_figures, page_width, combine):
+    log = logging.getLogger(__name__)
+    # Filter out boxes with zero width or height
+    filtered_boxes = []
+    for bbox in boxes:
+        if (bbox.x1 - bbox.x0 > 0 and bbox.y1 - bbox.y0 > 0):
+            filtered_boxes.append(bbox)
+    boxes = filtered_boxes
+
     # Too many "." in the Table of Content pages
-    if (len(boxes) == 0 or len(boxes) > 3500):
-        return []
+    if len(boxes) == 0:
+        log.warning("No boxes were found to cluster.")
+        return [], []
+    elif len(boxes) > 3500:
+        log.warning("Too many '.' in the Table of Content pages?")
+        return [], []
+
     plane = Plane(page_bbox)
     plane.extend(boxes)
 
@@ -667,11 +678,7 @@ def parse_tree_structure(elems, font_stat, page_num, ref_page_seen, tables,
     width = get_page_width(
         mentions + boxes_segments + boxes_figures + boxes_curves)
 
-    try:
-        char_width = get_char_width(mentions)
-    except Exception as e:
-        log.warning("Unable to get char_width. Defaulting to char_width = 2.")
-        char_width = 2
+    char_width = get_char_width(mentions)
 
     grid_size = avg_font_pts / 2.0
 
@@ -714,7 +721,7 @@ def parse_tree_structure(elems, font_stat, page_num, ref_page_seen, tables,
     else:
         tables_page = tables
 
-    ##Eliminate tables from these boxes
+    ## Eliminate tables from these boxes
     boxes = []
     for idx1, box in enumerate(mentions):
         intersect = False
@@ -764,6 +771,14 @@ def parse_tree_structure(elems, font_stat, page_num, ref_page_seen, tables,
 def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
                             page_num, ref_page_seen, boxes_figures, page_width,
                             page_height):
+    log = logging.getLogger(__name__)
+    # Filter out boxes with zero width or height
+    filtered_boxes = []
+    for bbox in boxes:
+        if (bbox.x1 - bbox.x0 > 0 and bbox.y1 - bbox.y0 > 0):
+            filtered_boxes.append(bbox)
+    boxes = filtered_boxes
+
     #Too many "." in the Table of Content pages - ignore because it takes a lot of time
     if (len(boxes) == 0 or len(boxes) > 3500):
         return {}, False
@@ -1096,6 +1111,19 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
 
 def get_figures(boxes, page_bbox, page_num, boxes_figures, page_width,
                 page_height):
+    log = logging.getLogger(__name__)
+    # Filter out boxes with zero width or height
+    filtered_boxes = []
+    for bbox in boxes:
+        if (bbox.x1 - bbox.x0 > 0 and bbox.y1 - bbox.y0 > 0):
+            filtered_boxes.append(bbox)
+    boxes = filtered_boxes
+
+    if len(boxes) == 0:
+        log.warning(
+            "No boxes to get figures from on page {}.".format(page_num))
+        return []
+
     plane = Plane(page_bbox)
     plane.extend(boxes)
 
@@ -1156,17 +1184,22 @@ def get_most_common_font_pts(mentions, font_stat):
     '''
     font_stat: Counter object of font sizes
     '''
-    # default min font size of 1 pt in case no font present
-    most_common_font_size = font_stat.most_common(1)[0][0]
-    # Corner case when no text on page
-    if not most_common_font_size: return 2.0
-    count = 0.01  # avoid division by zero
-    height_sum = 0.02  # default to pts 2.0
-    for m in mentions:
-        if m.font_size == most_common_font_size:
-            height_sum += m.height
-            count += 1
-    return height_sum / count
+    log = logging.getLogger(__name__)
+    try:
+        # default min font size of 1 pt in case no font present
+        most_common_font_size = font_stat.most_common(1)[0][0]
+
+        count = 0.01  # avoid division by zero
+        height_sum = 0.02  # default to pts 2.0
+        for m in mentions:
+            if m.font_size == most_common_font_size:
+                height_sum += m.height
+                count += 1
+        return height_sum / count
+
+    except IndexError as ie:
+        log.info("No text found on page. Default most_common_font_pts to 2.0")
+        return 2.0
 
 
 def get_page_width(boxes):
@@ -1180,9 +1213,14 @@ def get_page_width(boxes):
 
 
 def get_char_width(boxes):
+    log = logging.getLogger(__name__)
     box_len_sum = 0
     num_char_sum = 0
     for i, b in enumerate(boxes):
         box_len_sum = box_len_sum + b.bbox[2] - b.bbox[0]
         num_char_sum = num_char_sum + len(b.get_text())
-    return box_len_sum / num_char_sum
+    try:
+        return box_len_sum / num_char_sum
+    except ZeroDivisionError as ze:
+        log.warning("No text found. Defaulting to char_width = 2.0.")
+        return 2.0
