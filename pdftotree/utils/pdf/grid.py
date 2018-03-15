@@ -10,7 +10,7 @@ import pandas as pd
 from collections import defaultdict
 from functools import cmp_to_key
 from pdfminer.utils import Plane
-from pdftotree.pdf.vector_utils import inside, reading_order
+from pdftotree.utils.pdf.vector_utils import inside, reading_order
 from pprint import pformat
 
 class Cell(object):

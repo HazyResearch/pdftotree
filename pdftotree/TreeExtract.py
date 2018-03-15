@@ -1,4 +1,3 @@
-import json
 import logging
 import numpy as np
 import re
@@ -7,10 +6,6 @@ import tabula
 from functools import cmp_to_key
 from pdfminer.utils import Plane
 from pdftotree.ml.features import get_lines_features, get_mentions_within_bbox
-from pdftotree.visual.visual_utils import load_image, get_bboxes
-from pdftotree.pdf.layout_utils import *
-from pdftotree.pdf.pdf_parsers import parse_layout, parse_tree_structure
-from pdftotree.pdf.pdf_utils import normalize_pdf, analyze_pages
 from pdftotree.utils.bbox_utils import get_rectangles
 from pdftotree.utils.lines_utils import extend_horizontal_lines
 from pdftotree.utils.lines_utils import extend_vertical_lines
@@ -18,6 +13,9 @@ from pdftotree.utils.lines_utils import get_vertical_and_horizontal
 from pdftotree.utils.lines_utils import merge_horizontal_lines
 from pdftotree.utils.lines_utils import merge_vertical_lines
 from pdftotree.utils.lines_utils import reorder_lines
+from pdftotree.utils.pdf.layout_utils import *
+from pdftotree.utils.pdf.pdf_parsers import parse_layout, parse_tree_structure
+from pdftotree.utils.pdf.pdf_utils import normalize_pdf, analyze_pages
 
 class TreeExtractor(object):
     """
@@ -119,9 +117,11 @@ class TreeExtractor(object):
             page_num, elems)
         # print "Page Num: ", page_num, "Line bboxes: ", len(lines_bboxes), ", Alignment bboxes: ", len(alignments_bboxes)
         # alignment_features += get_alignment_features(lines_bboxes, elems, font_stat)
-        boxes = alignments_bboxes  # + lines_bboxes
+        boxes = alignments_bboxes
         if len(boxes) == 0:
+            self.log.info("No boxes were found on page {}.".format(page_num))
             return [], []
+
         lines_features = get_lines_features(boxes, elems)
         features = np.concatenate((np.array(alignment_features),
                                    np.array(lines_features)), axis=1)
@@ -214,10 +214,6 @@ class TreeExtractor(object):
 
             # TODO: We need to detect columns and sort acccordingly.
             boxes.sort(key=cmp_to_key(column_order))
-
-            #  from pprint import pprint
-            #  pprint(boxes, width=120)
-            #  import pdb; pdb.set_trace()
 
             for box in boxes:
                 if(box[0] == "table"):

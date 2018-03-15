@@ -1,7 +1,7 @@
 language: python
 python:
-  - "3.5"
-  - "3.6"
+  - '3.5'
+  - '3.6'
 
 matrix:
   fast_finish: true
@@ -11,14 +11,31 @@ notifications:
 
 install:
   - sudo apt-get -qq update
+  - sudo apt-get install pandoc  # for uploading to PyPi
   - pip install -r requirements.txt
   - pip install pypandoc
   - pip install coveralls
 
+before_script:
+  - pandoc --from=markdown --to=rst --output=README.rst README.md
+
 script:
-  - coverage run --source=pdftotree setup.py test 
-  - python setup.py -q install 
+  - coverage run --source=pdftotree setup.py test
+  - python setup.py -q install
   - pdftotree tests/input/112823.pdf
 
 after_success:
   - coveralls
+
+deploy:
+  provider: pypi
+  user: lukehsiao
+  password:
+    secure: BYpjjgOk4RZohLStyqIlP2UYCOgG76zykvxfNp2wP6ewb5Sf7HPn4BDMst1FCCPBm6ekLlIRAdZJFJp/+IPyakkWeeT/FPM6oqZxeFsa6o0aFdxzHU4qA4aEb03MUpj+7lcQ9WS8x88yyLEjxQuAN31eHNAhVWUfl59ek7Jg2zJ+m/xUmKBrVjPTkrO/PNzJ3AkcKieB/27XM6CVBfi0a+JVBrZUM+nT6WtVAwp9porcOXRj6mma7vzviyo1pIhqQkruHWDeS+iZ890KuKGwRv0QWWz5w04GVC8Yg0bTc/7kY48wHjOGiSajahdM3HjhQ5ekLwP/iUdU6ICTjfj4fHt4EJhv2TOd/P9A39Sp6Q0kUQkhp8/gyz/xBt0DdMx6XXMrUsUkP/tv7aCyRvRmm6mXrpOfODEbecbXTLG6dCdha4RluWfp5cq3Q2iYclskv0o2bwXaOvr6a7fAZO2mlKsZ/EaCJPGhKRbLe03OYo9RWvd9tPgeSrw2kYmOyc3jGuSRIBBC6PFBggK8wBnznkdYq22sI7j8xCqk8Fi/sQ7Hg1PyCIJAWQQgRUJEcMmY8eW30H7dObypORILxijUm50VoPTFcweCbM4kRTSC4+rwZOzTtH4dLGser8i4vg09JjO2iXNyDfFCaeZctTDX+pjTnEqX5wlz6zYhZUgJtwg=
+  distributions: "sdist bdist_wheel"
+  skip_cleanup: true
+  on:
+    tags: true
+    branch: master
+    python: '3.6' # Only deploy once from the latest version tested
+

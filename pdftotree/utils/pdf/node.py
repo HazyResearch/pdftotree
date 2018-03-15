@@ -3,17 +3,13 @@ Created on Jun 10, 2016
 
 @author: xiao
 '''
-import six  # Python 2-3 compatibility
-from pdftotree.pdf.vector_utils import bound_elems, bound_bboxes
-from collections import Counter, defaultdict
-from pdfminer.layout import LTLine, LTTextLine, LTCurve, LTFigure, LTComponent
-from pdfminer.utils import Plane
-from pdftotree.pdf.layout_utils import is_vline, is_same_row
 import numbers
-import numpy as np
-from pprint import pprint
-from pdftotree.pdf import grid
-from pdftotree.pdf.grid import Grid
+import six  # Python 2-3 compatibility
+from collections import Counter
+from pdfminer.layout import LTLine, LTTextLine, LTCurve, LTFigure, LTComponent
+from pdftotree.utils.pdf.grid import Grid
+from pdftotree.utils.pdf.layout_utils import is_vline, is_same_row
+from pdftotree.utils.pdf.vector_utils import bound_elems, bound_bboxes
 
 def elem_type(elem):
     if isinstance(elem, LTLine):

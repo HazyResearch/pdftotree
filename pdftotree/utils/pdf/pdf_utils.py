@@ -11,21 +11,19 @@ import re
 import six  # Python 2+3 compatibility
 import string
 from collections import Counter
-from pdftotree.img_utils import *
-from pdftotree.pdf.vector_utils import *
 from pdfminer.converter import PDFPageAggregator
 from pdfminer.layout import LAParams, LTFigure
+from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
 from pdfminer.utils import apply_matrix_pt
-from pdfminer.pdfdocument import PDFDocument
-from pdftotree.pdf.layout_utils import *
+from pdftotree.utils.img_utils import *
+from pdftotree.utils.pdf.layout_utils import *
+from pdftotree.utils.pdf.vector_utils import *
 
 # Compact wrapper representation for the pdf
 PDFElems = namedtuple('PDFElems', ['mentions', 'segments', 'curves', 'figures', 'layout', 'chars'])
-
-log = logging.getLogger(__name__)
 
 
 class CustomPDFPageAggregator(PDFPageAggregator):
@@ -96,6 +94,7 @@ def analyze_pages(file_name, char_margin=1.0):
     Input: the file path to the PDF file
     Output: yields the layout object for each page in the PDF
     '''
+    log = logging.getLogger(__name__)
     # Open a PDF file.
     with open(os.path.realpath(file_name), 'rb') as fp:
         # Create a PDF parser object associated with the file object.
@@ -116,7 +115,7 @@ def analyze_pages(file_name, char_margin=1.0):
             try:
                 interpreter.process_page(page)
             except OverflowError as oe:
-                log.exception(oe, ', skipping page', page_num, 'of', file_name)
+                log.exception("{}, skipping page {} of {}".format(oe, page_num, file_name))
                 continue
             layout = device.get_result()
             yield layout

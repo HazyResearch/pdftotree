@@ -1,7 +1,13 @@
-init:
-	pip install -r requirements.txt
+dev: docs
+	pip install -e .
 
 test:
-	py.test tests
+	pytest tests -rsXx
 
-.PHONY: init test
+docs:
+	pandoc --from=markdown --to=rst --output=README.rst README.md
+
+clean:
+	rm README.rst
+
+.PHONY: dev test docs clean
