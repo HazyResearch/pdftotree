@@ -116,7 +116,7 @@ def analyze_pages(file_name, char_margin=1.0):
             try:
                 interpreter.process_page(page)
             except OverflowError as oe:
-                log.exception(oe, ', skipping page', page_num, 'of', file_name)
+                log.exception("{}, skipiping page {} of {}".format(oe, page_num, file_name))
                 continue
             layout = device.get_result()
             yield layout
