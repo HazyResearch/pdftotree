@@ -61,9 +61,12 @@ def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width,
                                      char_width, boxes_segments, boxes_curves,
                                      boxes_figures, page_width, combine):
     # Too many "." in the Table of Content pages
-    if (len(boxes) == 0 or len(boxes) > 3500):
-        log.error("Too many '.' in the Table of Content pages.")
-        return []
+    if len(boxes) == 0:
+        log.warning("No boxes were found to cluster.")
+        return [], []
+    elif len(boxes) > 3500:
+        log.warning("Too many '.' in the Table of Content pages?")
+        return [], []
 
     plane = Plane(page_bbox)
     plane.extend(boxes)
@@ -1094,6 +1097,12 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
 
 def get_figures(boxes, page_bbox, page_num, boxes_figures, page_width,
                 page_height):
+
+    if len(boxes) == 0:
+        log.warning(
+            "No boxes to get figures from on page {}.".format(page_num))
+        return []
+
     plane = Plane(page_bbox)
     plane.extend(boxes)
 
