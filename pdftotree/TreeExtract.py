@@ -119,7 +119,7 @@ class TreeExtractor(object):
         # alignment_features += get_alignment_features(lines_bboxes, elems, font_stat)
         boxes = alignments_bboxes
         if len(boxes) == 0:
-            log.info("No boxes were found on page {}.".format(page_num))
+            self.log.info("No boxes were found on page {}.".format(page_num))
             return [], []
 
         lines_features = get_lines_features(boxes, elems)
