@@ -669,7 +669,8 @@ def parse_tree_structure(elems, font_stat, page_num, ref_page_seen, tables,
 
     try:
         char_width = get_char_width(mentions)
-    except:
+    except Exception as e:
+        log.warning("Unable to get char_width. Defaulting to char_width = 2.")
         char_width = 2
 
     grid_size = avg_font_pts / 2.0
