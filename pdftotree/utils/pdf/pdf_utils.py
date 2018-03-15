@@ -94,6 +94,7 @@ def analyze_pages(file_name, char_margin=1.0):
     Input: the file path to the PDF file
     Output: yields the layout object for each page in the PDF
     '''
+    log = logging.getLogger(__name__)
     # Open a PDF file.
     with open(os.path.realpath(file_name), 'rb') as fp:
         # Create a PDF parser object associated with the file object.
@@ -114,8 +115,7 @@ def analyze_pages(file_name, char_margin=1.0):
             try:
                 interpreter.process_page(page)
             except OverflowError as oe:
-                log = logging.getLogger(__name__)
-                log.exception("{}, skipiping page {} of {}".format(oe, page_num, file_name))
+                log.exception("{}, skipping page {} of {}".format(oe, page_num, file_name))
                 continue
             layout = device.get_result()
             yield layout
