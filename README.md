@@ -37,11 +37,6 @@ To install this package from PyPi:
 pip install pdftotree
 ```
 
-Or, to install directly from this repository. Clone this repo and run:
-```
-pip install .
-```
-
 ## Usage
 
 ### pdftotree as a Python package
@@ -142,8 +137,7 @@ The list of PDFs are simply a single filename on each line. For example:
 The ground truth is formatted to mirror the PDF List. That is, the first line
 of the ground truth file provides the labels for the first document in
 corresponding PDF list. Labels take the form of semicolon-separated tuples
-containing the values `(page_num, page_width, page_height, top, left, bottom,
-right)`. For example:
+containing the values `(page_num, page_width, page_height, top, left, bottom, right)`. For example:
 
 ```
 (10, 696, 951, 634, 366, 832, 653);(14, 696, 951, 720, 62, 819, 654);(4, 696, 951, 152, 66, 813, 654);(7, 696, 951, 415, 57, 833, 647);(8, 696, 951, 163, 370, 563, 652)
@@ -172,6 +166,7 @@ have downloaded the data.
 ```
 extract_tables --train-pdf data/paleo/ml/train.pdf.list.paleo.not.scanned --gt-train data/paleo/ml/gt.train --test-pdf data/paleo/ml/test.pdf.list.paleo.not.scanned --gt-test data/paleo/ml/gt.test --datapath data/paleo/documents/ --model-path data/model.pkl
 ```
+
 The resulting model of this example command would be saved as `data/model.pkl`.
 
 ## For Developers
@@ -179,22 +174,28 @@ The resulting model of this example command would be saved as `data/model.pkl`.
 We are following [Semantic Versioning 2.0.0](https://semver.org/) conventions.
 The maintainers will create a git tag for each release and increment the
 version number found in
-[pdftotree/_version.py](https://github.com/HazyResearch/pdftotree/blob/master/pdftotree/_version.py)
+[pdftotree/\_version.py](https://github.com/HazyResearch/pdftotree/blob/master/pdftotree/_version.py)
 accordingly. We deploy tags to PyPI automatically using Travis-CI.
 
+To install locally, you'll need to install `pandoc`:
+
+```
+sudo apt-get install pandoc
+```
+which is used to create the reStructuredText file that the package expects.
+
 ### Tests
+
 To test changes in the package, you install it in [editable
 mode](https://packaging.python.org/tutorials/distributing-packages/#working-in-development-mode)
 locally in your virtualenv by running:
 
 ```
-pip install -e .
+make dev
 ```
 
 Then you can run our tests
 
 ```
-python setup.py test
+make test
 ```
-
-
