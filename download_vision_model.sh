@@ -1,14 +1,10 @@
 echo "Downloading pretrained vision model..."
-url=http://i.stanford.edu/hazy/share/fonduer/visualtable/pretrained-model.tar.gz
-data_tar=pretrained-model
+url=http://i.stanford.edu/hazy/share/fonduer/visualtable/paleo_visual_model.h5
+data_file=paleo_visual_model.h5
 if type curl &>/dev/null; then
     curl -RLO $url
 elif type wget &>/dev/null; then
     wget -N -nc $url
-fi
-echo "Unpacking pretrained model..."
-tar -zxvf $data_tar.tar.gz -C .
-echo "Deleting tar file..."
-rm $data_tar.tar.gz
-
+fi 
+mv paleo_visual_model.h5 tests/input/
 echo "Done!"
