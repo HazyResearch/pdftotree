@@ -18,6 +18,9 @@ install:
 
 before_script:
   - pandoc --from=markdown --to=rst --output=README.rst README.md
+  - cd tests/input/
+  - ./download_vision_model.sh
+  - cd ../../
 
 script:
   - coverage run --source=pdftotree setup.py test

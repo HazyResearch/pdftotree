@@ -2,6 +2,7 @@
 """Simple commandline interface for parsing PDF to HTML."""
 import argparse
 import logging
+import os
 import pdftotree
 
 if __name__ == '__main__':
@@ -13,6 +14,13 @@ if __name__ == '__main__':
         be provided as a parameter to use a machine-learning-based approach.
         """,
         usage="%(prog)s [options] pdf_file")
+    parser.add_argument(
+        '-mt',
+        '--model_type',
+        type=str,
+        default=None,
+        choices=['vision', 'ml', None],
+        help="Model type to use.  None (default) for heuristics approach.")
     parser.add_argument(
         '-m',
         '--model_path',
@@ -71,6 +79,12 @@ if __name__ == '__main__':
     else:
         log_level = logging.ERROR
 
+    if bool(args.model_type) != bool(args.model_path):
+        parser.error(
+            "Both a model_type and a model_path must be provided together.")
+    elif args.model_type and not os.path.exists(args.model_path):
+        parser.error("A valid path to a pretrained model must be provided.")
+
     # Configure logging for this application
     log = logging.getLogger('pdftotree')
     log.propagate = 0  # prevent propagation to the root logger
@@ -86,8 +100,9 @@ if __name__ == '__main__':
         args.output = None
 
     # Call the main routine
-    result = pdftotree.parse(args.pdf_file, args.output, args.model_path,
-                             args.favor_figures, args.visualize)
+    result = pdftotree.parse(args.pdf_file, args.output, args.model_type,
+                             args.model_path, args.favor_figures,
+                             args.visualize)
 
     if result:
         if not args.dry_run:
