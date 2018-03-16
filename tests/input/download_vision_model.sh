@@ -6,5 +6,4 @@ if type curl &>/dev/null; then
 elif type wget &>/dev/null; then
     wget -N -nc $url
 fi 
-mv paleo_visual_model.h5 tests/input/
 echo "Done!"

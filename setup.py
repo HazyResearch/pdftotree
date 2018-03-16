@@ -20,7 +20,6 @@ setup(
         'pandas',
         'pdfminer.six',
         'pillow',
-        'pytest'
         'scipy',
         'selectivesearch',
         'six',
