@@ -29,11 +29,12 @@ import re
 
 def load_model(model_type, model_path):
     log = logging.getLogger(__name__)
-    log.info("Loading pretrained {} model for table detection".format(model_type))
+    log.info(
+        "Loading pretrained {} model for table detection".format(model_type))
     if (model_type == "ml"):
         model = pickle.load(open(model_path, 'rb'))
     else:
-        from keras.models import load_model as load_vision_model;
+        from keras.models import load_model as load_vision_model
         model = load_vision_model(model_path)
     log.info("Model loaded!")
     return model
@@ -58,7 +59,8 @@ def parse(pdf_file,
     extractor = TreeExtractor(pdf_file)
     if (not extractor.is_scanned()):
         log.info("Digitized PDF detected, building tree structure...")
-        pdf_tree = extractor.get_tree_structure(model_type, model, favor_figures)
+        pdf_tree = extractor.get_tree_structure(model_type, model,
+                                                favor_figures)
         log.info("Tree structure built, creating html...")
         pdf_html = extractor.get_html_tree()
         log.info("HTML created.")

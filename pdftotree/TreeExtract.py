@@ -47,12 +47,13 @@ class TreeExtractor(object):
         # default object map to cluster with its own index
         obj2cid = list(range(len(boxes)))
         prev_clusters = obj2cid
-        while(True):
+        while (True):
             for i1, b1 in enumerate(boxes):
                 for i2, b2 in enumerate(boxes):
                     box1 = b1.bbox
                     box2 = b2.bbox
-                    if(box1[0]==box2[0] and box1[2]==box2[2] and round(box1[3])==round(box2[1])):
+                    if (box1[0] == box2[0] and box1[2] == box2[2]
+                            and round(box1[3]) == round(box2[1])):
                         min_i = min(i1, i2)
                         max_i = max(i1, i2)
                         cid1 = obj2cid[min_i]
@@ -61,16 +62,15 @@ class TreeExtractor(object):
                             cid2obj[cid1].add(obj_iter)
                             obj2cid[obj_iter] = cid1
                         cid2obj[cid2] = set()
-            if(prev_clusters == obj2cid):
+            if (prev_clusters == obj2cid):
                 break
             prev_clusters = obj2cid
-        clusters = [[boxes[i] for i in cluster] for cluster in filter(bool,
-                    cid2obj)]
-        if(len(clusters) == 1 and
-           clusters[0][0].bbox[0] < -0.0 and
-           clusters[0][0].bbox[1] <= 0 and
-           abs(clusters[0][0].bbox[2]-page_width) <= 5 and
-           abs(clusters[0][0].bbox[3]-page_height) <= 5):
+        clusters = [[boxes[i] for i in cluster]
+                    for cluster in filter(bool, cid2obj)]
+        if (len(clusters) == 1 and clusters[0][0].bbox[0] < -0.0
+                and clusters[0][0].bbox[1] <= 0
+                and abs(clusters[0][0].bbox[2] - page_width) <= 5
+                and abs(clusters[0][0].bbox[3] - page_height) <= 5):
             return True
         return False
 
@@ -83,25 +83,24 @@ class TreeExtractor(object):
             self.elems[page_num] = elems
             self.font_stats[page_num] = font_stat
             # code to detect if the page is scanned
-            if(len(elems.segments) > 0):
+            if (len(elems.segments) > 0):
                 lin_seg_present = True
             for fig in elems.figures:
-                if(fig.bbox[0] <= 0.0 and fig.bbox[1] <= 0.0 and
-                   round(fig.bbox[2]) == round(elems.layout.width) and
-                   round(fig.bbox[3]) == round(elems.layout.height)):
+                if (fig.bbox[0] <= 0.0 and fig.bbox[1] <= 0.0
+                        and round(fig.bbox[2]) == round(elems.layout.width)
+                        and round(fig.bbox[3]) == round(elems.layout.height)):
                     is_scanned = True
-            page_scanned = self.identify_scanned_page(elems.figures,
-                                                      elems.layout.bbox,
-                                                      elems.layout.width,
-                                                      elems.layout.height)
+            page_scanned = self.identify_scanned_page(
+                elems.figures, elems.layout.bbox, elems.layout.width,
+                elems.layout.height)
             # doc is scanned if any page is scanned
-            if(page_scanned):
+            if (page_scanned):
                 is_scanned = True
-        if(is_scanned or not lin_seg_present):
+        if (is_scanned or not lin_seg_present):
             self.scanned = True
 
     def is_scanned(self):
-        if(len(self.elems) == 0):
+        if (len(self.elems) == 0):
             self.parse()
         return self.scanned
 
@@ -124,8 +123,8 @@ class TreeExtractor(object):
             return [], []
 
         lines_features = get_lines_features(boxes, elems)
-        features = np.concatenate((np.array(alignment_features),
-                                   np.array(lines_features)), axis=1)
+        features = np.concatenate(
+            (np.array(alignment_features), np.array(lines_features)), axis=1)
         return boxes, features
 
     def get_candidates_lines(self, page_num, elems):
@@ -135,12 +134,12 @@ class TreeExtractor(object):
         vertical_lines, horizontal_lines = get_vertical_and_horizontal(lines)
         extended_vertical_lines = extend_vertical_lines(horizontal_lines)
         extended_horizontal_lines = extend_horizontal_lines(vertical_lines)
-        vertical_lines = merge_vertical_lines(sorted(extended_vertical_lines +
-                                                     vertical_lines))
+        vertical_lines = merge_vertical_lines(
+            sorted(extended_vertical_lines + vertical_lines))
         horizontal_lines = merge_horizontal_lines(
             sorted(extended_horizontal_lines + horizontal_lines))
-        rects = get_rectangles(sorted(vertical_lines),
-                               sorted(horizontal_lines))
+        rects = get_rectangles(
+            sorted(vertical_lines), sorted(horizontal_lines))
         return [(page_num, page_width, page_height) + bbox for bbox in rects]
 
     def get_candidates_alignments(self, page_num, elems):
@@ -152,8 +151,9 @@ class TreeExtractor(object):
         except Exception as e:
             self.log.exception(e)
             nodes, features = [], []
-        return [(page_num, page_width, page_height) + (node.y0, node.x0,
-                node.y1, node.x1) for node in nodes], features
+        return [(page_num, page_width, page_height) +
+                (node.y0, node.x0, node.y1, node.x1)
+                for node in nodes], features
 
     def get_elems(self):
         return self.elems
@@ -169,9 +169,13 @@ class TreeExtractor(object):
             for page_num in self.elems.keys():
                 page_width = int(self.elems[page_num].layout.width)
                 page_height = int(self.elems[page_num].layout.height)
-                image, pred = predict_heatmap(self.pdf_file, page_num-1, model) # index start at 0 with wand
+                image, pred = predict_heatmap(
+                    self.pdf_file, page_num - 1,
+                    model)  # index start at 0 with wand
                 bboxes, _ = get_bboxes(image, pred)
-                tables[page_num] = [(page_num, page_width, page_height) + (top, left, top + height, left + width) for (left, top, width, height) in bboxes]
+                tables[page_num] = [(page_num, page_width, page_height) +
+                                    (top, left, top + height, left + width)
+                                    for (left, top, width, height) in bboxes]
 
         # use ML to get tables
         elif model_type == 'ml':
@@ -179,11 +183,13 @@ class TreeExtractor(object):
                 table_candidates, candidates_features = \
                     self.get_candidates_and_features_page_num(page_num)
                 tables[page_num] = []
-                if(len(candidates_features) != 0):
+                if (len(candidates_features) != 0):
                     table_predictions = model.predict(candidates_features)
-                    tables[page_num] = [table_candidates[i] for i in
-                                        range(len(table_candidates)) if
-                                        table_predictions[i] > 0.5]
+                    tables[page_num] = [
+                        table_candidates[i]
+                        for i in range(len(table_candidates))
+                        if table_predictions[i] > 0.5
+                    ]
 
         # use heuristics to get tables if no model_type is provided
         else:
@@ -209,25 +215,28 @@ class TreeExtractor(object):
             page_html = "<div id=" + str(page_num) + ">"
             boxes = []
             for clust in self.tree[page_num]:
-                for (pnum, pwidth, pheight, top, left, bottom, right) in self.tree[page_num][clust]:
-                    boxes += [[clust.lower().replace(' ', '_'), top, left,
-                               bottom, right]]
+                for (pnum, pwidth, pheight, top, left, bottom,
+                     right) in self.tree[page_num][clust]:
+                    boxes += [[
+                        clust.lower().replace(' ', '_'), top, left, bottom,
+                        right
+                    ]]
 
             # TODO: We need to detect columns and sort acccordingly.
             boxes.sort(key=cmp_to_key(column_order))
 
             for box in boxes:
-                if(box[0] == "table"):
+                if (box[0] == "table"):
                     table = box[1:]
                     table_html = self.get_html_table(table, page_num)
                     if six.PY2:
                         page_html += table_html.decode('utf-8')
                     elif six.PY3:
                         page_html += table_html
-                elif(box[0] == "figure"):
+                elif (box[0] == "figure"):
                     fig_str = [str(i) for i in box[1:]]
-                    fig_html = ("<figure bbox=" + ",".join(fig_str) +
-                                "></figure>")
+                    fig_html = (
+                        "<figure bbox=" + ",".join(fig_str) + "></figure>")
                     if six.PY2:
                         page_html += fig_html.decode('utf-8')
                     elif six.PY3:
@@ -235,11 +244,11 @@ class TreeExtractor(object):
                 else:
                     (box_html, char_html, top_html, left_html, bottom_html,
                      right_html) = self.get_html_others(box[1:], page_num)
-                    page_html += ("<" + box[0] + " char='" + char_html +
-                                  "', top='" + top_html + "', left='" +
-                                  left_html + "', bottom='" + bottom_html +
-                                  "', right='" + right_html + "'>" + box_html +
-                                  "</" + box[0] + ">")
+                    page_html += (
+                        "<" + box[0] + " char='" + char_html + "', top='" +
+                        top_html + "', left='" + left_html + "', bottom='" +
+                        bottom_html + "', right='" + right_html + "'>" +
+                        box_html + "</" + box[0] + ">")
             page_html += "</div>"
             self.html += page_html
         self.html += "</html>"
@@ -256,15 +265,21 @@ class TreeExtractor(object):
         mention_words = mention_text.split()
         char_idx = 0
         for word in mention_words:
-            curr_word = [word, float("Inf"), float("Inf"), float("-Inf"),
-                         float("-Inf")]
+            curr_word = [
+                word,
+                float("Inf"),
+                float("Inf"),
+                float("-Inf"),
+                float("-Inf")
+            ]
             len_idx = 0
             while len_idx < len(word):
                 if mention_chars[char_idx][0] == " ":
                     char_idx += 1
                     continue
                 if word[len_idx] != mention_chars[char_idx][0]:
-                    self.log.warning("Out of order ({}, {})".format(word, mention_chars[char_idx][0]))
+                    self.log.warning("Out of order ({}, {})".format(
+                        word, mention_chars[char_idx][0]))
                 curr_word[1] = min(curr_word[1], mention_chars[char_idx][1])
                 curr_word[2] = min(curr_word[2], mention_chars[char_idx][2])
                 curr_word[3] = max(curr_word[3], mention_chars[char_idx][3])
@@ -314,23 +329,30 @@ class TreeExtractor(object):
 
     def get_html_table(self, table, page_num):
         table_str = [str(i) for i in table]
-        table_json = tabula.read_pdf(self.pdf_file, pages=page_num,
-                                     area=table_str, output_format="json")
+        table_json = tabula.read_pdf(
+            self.pdf_file,
+            pages=page_num,
+            area=table_str,
+            output_format="json")
         table_html = ""
         if (len(table_json) > 0):
             table_html = "<table>"
             for i, row in enumerate(table_json[0]["data"]):
                 row_str = "<tr>"
                 for j, column in enumerate(row):
-                    box = [column["top"], column["left"], column["top"] +
-                           column["height"], column["left"] + column["width"]]
+                    box = [
+                        column["top"], column["left"],
+                        column["top"] + column["height"],
+                        column["left"] + column["width"]
+                    ]
                     top_html = ""
                     left_html = ""
                     bottom_html = ""
                     right_html = ""
                     word_html = ""
                     sep = " "
-                    elems = get_mentions_within_bbox(box, self.elems[page_num].mentions)
+                    elems = get_mentions_within_bbox(
+                        box, self.elems[page_num].mentions)
                     elems.sort(key=cmp_to_key(reading_order))
                     word_td = ""
                     for elem in elems:
@@ -351,10 +373,10 @@ class TreeExtractor(object):
                         temp = word_td[:-1].encode("utf-8")
                     elif six.PY3:
                         temp = word_td[:-1]
-                    row_str += ("<td word='" + word_html + "', top='" +
-                                top_html + "', left='" + left_html +
-                                "', bottom='" + bottom_html + "', right='" +
-                                right_html + "'>" + temp + "</td>")
+                    row_str += (
+                        "<td word='" + word_html + "', top='" + top_html +
+                        "', left='" + left_html + "', bottom='" + bottom_html +
+                        "', right='" + right_html + "'>" + temp + "</td>")
                     # row_str += "<td word='"+word_html+"', top='"+top_html+"', left='"+left_html+"', bottom='"+bottom_html+"', right='"+right_html+"'>"+str(column["text"].encode('utf-8'))+"</td>"
                     # row_str += "<td char='"+char_html+"', top="+str(column["top"])+", left="+str(column["left"])+", bottom="+str(column["top"]+column["height"])+", right="+str(column["left"]+column["width"])+">"
                     # row_str += str(column["text"].encode('utf-8'))
