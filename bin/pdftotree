@@ -80,10 +80,10 @@ if __name__ == '__main__':
         log_level = logging.ERROR
 
     if bool(args.model_type) != bool(args.model_path):
-        parser.error("Both a model_type and a model_path must be provided together.")
+        parser.error(
+            "Both a model_type and a model_path must be provided together.")
     elif args.model_type and not os.path.exists(args.model_path):
         parser.error("A valid path to a pretrained model must be provided.")
-
 
     # Configure logging for this application
     log = logging.getLogger('pdftotree')
@@ -101,7 +101,8 @@ if __name__ == '__main__':
 
     # Call the main routine
     result = pdftotree.parse(args.pdf_file, args.output, args.model_type,
-                             args.model_path, args.favor_figures, args.visualize)
+                             args.model_path, args.favor_figures,
+                             args.visualize)
 
     if result:
         if not args.dry_run:
