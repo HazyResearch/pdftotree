@@ -20,7 +20,6 @@ Set favor_figures to "False" for Hardware sheets.
 '''
 from pdftotree.TreeExtract import TreeExtractor
 from pdftotree.TreeVisualizer import TreeVisualizer
-from keras.models import load_model as load_vision_model
 import codecs
 import logging
 import os
@@ -34,6 +33,7 @@ def load_model(model_type, model_path):
     if (model_type == "ml"):
         model = pickle.load(open(model_path, 'rb'))
     else:
+        from keras.models import load_model as load_vision_model;
         model = load_vision_model(model_path)
     log.info("Model loaded!")
     return model
