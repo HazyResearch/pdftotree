@@ -16,7 +16,6 @@ from pdftotree.utils.lines_utils import reorder_lines
 from pdftotree.utils.pdf.layout_utils import *
 from pdftotree.utils.pdf.pdf_parsers import parse_layout, parse_tree_structure
 from pdftotree.utils.pdf.pdf_utils import normalize_pdf, analyze_pages
-from pdftotree.visual.visual_utils import predict_heatmap, get_bboxes
 
 
 class TreeExtractor(object):
@@ -166,11 +165,12 @@ class TreeExtractor(object):
         tables = {}
         # use vision to get tables
         if model_type == 'vision':
+            from pdftotree.visual.visual_utils import predict_heatmap, get_bboxes
             for page_num in self.elems.keys():
                 page_width = int(self.elems[page_num].layout.width)
                 page_height = int(self.elems[page_num].layout.height)
-                image, pred = predict_heatmap(self.pdf_file, page_num-1, model) # index start at 0 with wand 
-                bboxes, _ = get_bboxes(image, pred) 
+                image, pred = predict_heatmap(self.pdf_file, page_num-1, model) # index start at 0 with wand
+                bboxes, _ = get_bboxes(image, pred)
                 tables[page_num] = [(page_num, page_width, page_height) + (top, left, top + height, left + width) for (left, top, width, height) in bboxes]
 
         # use ML to get tables
@@ -185,7 +185,7 @@ class TreeExtractor(object):
                                         range(len(table_candidates)) if
                                         table_predictions[i] > 0.5]
 
-        # use heuristics to get tables if no model_type is provided 
+        # use heuristics to get tables if no model_type is provided
         else:
             for page_num in self.elems.keys():
                 tables[page_num] = self.get_tables_page_num(page_num)

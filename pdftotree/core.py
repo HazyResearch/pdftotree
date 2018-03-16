@@ -53,7 +53,7 @@ def parse(pdf_file,
           visualize=False):
     log = logging.getLogger(__name__)
     model = None
-    if (model_type is not None):
+    if (model_type is not None and model_path is not None):
         model = load_model(model_type, model_path)
     extractor = TreeExtractor(pdf_file)
     if (not extractor.is_scanned()):

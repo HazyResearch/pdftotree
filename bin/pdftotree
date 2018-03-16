@@ -2,6 +2,7 @@
 """Simple commandline interface for parsing PDF to HTML."""
 import argparse
 import logging
+import os
 import pdftotree
 
 if __name__ == '__main__':
@@ -18,7 +19,8 @@ if __name__ == '__main__':
         '--model_type',
         type=str,
         default=None,
-        help="Model type to use ('vision', 'ml' or None (default) for heuristics approach.")
+        choices=['vision', 'ml', None],
+        help="Model type to use.  None (default) for heuristics approach.")
     parser.add_argument(
         '-m',
         '--model_path',
@@ -76,6 +78,12 @@ if __name__ == '__main__':
         log_level = logging.INFO
     else:
         log_level = logging.ERROR
+
+    if bool(args.model_type) != bool(args.model_path):
+        parser.error("Both a model_type and a model_path must be provided together.")
+    elif args.model_type and not os.path.exists(args.model_path):
+        parser.error("A valid path to a pretrained model must be provided.")
+
 
     # Configure logging for this application
     log = logging.getLogger('pdftotree')
