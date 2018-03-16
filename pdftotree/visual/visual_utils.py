@@ -17,7 +17,7 @@ def predict_heatmap(pdf_path, page_num, model, img_dim=448, img_dir='tmp/img'):
     function creates it and saves it in img_dir.
 
     :param pdf_path: path to the pdf document.
-    :param page_num: page number to create image from in the pdf file. 
+    :param page_num: page number to create image from in the pdf file.
     :return:
     """
     if not os.path.isdir(img_dir):
@@ -25,21 +25,25 @@ def predict_heatmap(pdf_path, page_num, model, img_dim=448, img_dir='tmp/img'):
         os.makedirs(img_dir)
     pdf_name = os.path.splitext(os.path.basename(pdf_path))[0]
     # TODO: add hashing function to make sure name is unique
-    # TODO: add parallelization 
+    # TODO: add parallelization
     img_path = os.path.join(img_dir, pdf_name + '-{}.png'.format(page_num))
     if not os.path.isfile(img_path):
         # create image for a page in the pdf document and save it in img_dir
         save_image(pdf_path, img_path, page_num)
     image = load_img(img_path, grayscale=True, target_size=(img_dim, img_dim))
-    image = img_to_array(image, data_format=K.image_data_format())    
-    image = image.reshape((img_dim, img_dim, 1)).repeat(3, axis=2).reshape((1, img_dim, img_dim, 3))
-    return image.astype(np.uint8).reshape((img_dim, img_dim, 3)), model.predict(image).reshape((img_dim, img_dim))
+    image = img_to_array(image, data_format=K.image_data_format())
+    image = image.reshape((img_dim, img_dim, 1)).repeat(
+        3, axis=2).reshape((1, img_dim, img_dim, 3))
+    return image.astype(np.uint8).reshape(
+        (img_dim, img_dim, 3)), model.predict(image).reshape((img_dim,
+                                                              img_dim))
+
 
 def save_image(pdf_path, img_path, page_num):
     """
 
     Creates images for a page of the input pdf document and saves it
-    at img_path. 
+    at img_path.
 
     :param pdf_path: path to pdf to create images for.
     :param img_path: path where to save the images.
@@ -56,7 +60,7 @@ def save_image(pdf_path, img_path, page_num):
 
 def do_intersect(bb1, bb2):
     """
-    Helper function that returns True if two bounding boxes overlap. 
+    Helper function that returns True if two bounding boxes overlap.
     """
     if (bb1[0] + bb1[2] < bb2[0] or bb2[0] + bb2[2] < bb1[0]):
         return False
@@ -65,16 +69,22 @@ def do_intersect(bb1, bb2):
     return True
 
 
-def get_bboxes(img, mask, nb_boxes=100, score_thresh=0.5, iou_thresh=0.2, prop_size=0.09, prop_scale=1.2):
+def get_bboxes(img,
+               mask,
+               nb_boxes=100,
+               score_thresh=0.5,
+               iou_thresh=0.2,
+               prop_size=0.09,
+               prop_scale=1.2):
     """
     Uses selective search to generate candidate bounding boxes and keeps the ones that have the largest
     iou with the predicted mask.
 
     :param img: original image
-    :param mask: predicted mask 
+    :param mask: predicted mask
     :param nb_boxes: max number of candidate bounding boxes
     :param score_thresh: scre threshold to consider prediction is True
-    :param iou_thresh: iou threshold to consider a candidate is a correct region 
+    :param iou_thresh: iou threshold to consider a candidate is a correct region
     :param prop_size: selective search parameter
     :param prop_scale: selective search parameter, larger prop_scale favorizes large boudning boxes
     :return: list of bounding boxes and ious, boudning boxes are tuples (left, top, width, height)
@@ -82,11 +92,12 @@ def get_bboxes(img, mask, nb_boxes=100, score_thresh=0.5, iou_thresh=0.2, prop_s
     min_size = int(img.shape[0] * prop_size * img.shape[1] * prop_size)
     scale = int(img.shape[0] * prop_scale)
     # TODO: cross validate for multiple values of prop_size, prop_scale, and nb_bboxes
-    img_lbl, regions = selectivesearch.selective_search(img, scale=scale, sigma=0.8, min_size=min_size)
+    img_lbl, regions = selectivesearch.selective_search(
+        img, scale=scale, sigma=0.8, min_size=min_size)
     rect = [None] * nb_boxes
     max_iou = -1 * np.ones(nb_boxes)
     mask = 1. * (mask > score_thresh)
-    # compute iou for each candidate bounding box and save top nb_bboxes 
+    # compute iou for each candidate bounding box and save top nb_bboxes
     for region in regions:
         left, top, width, height = region["rect"]
         intersection = mask[top:top + height, left:left + width].sum()
@@ -96,13 +107,13 @@ def get_bboxes(img, mask, nb_boxes=100, score_thresh=0.5, iou_thresh=0.2, prop_s
         if iou > max_iou[idx]:
             max_iou[idx] = iou
             rect[idx] = region["rect"]
-    # Exclusive maximum 
+    # Exclusive maximum
     remove_indexes = max_iou == -1
     bboxes = []
     filtered_ious = []
     for idx in np.argsort([-x for x in max_iou]):
         if remove_indexes[idx]:
-            # no more tables bounding boxes 
+            # no more tables bounding boxes
             break
         if len(bboxes) == 0:
             # first candidate table bounding box
@@ -114,7 +125,10 @@ def get_bboxes(img, mask, nb_boxes=100, score_thresh=0.5, iou_thresh=0.2, prop_s
                 break
         else:
             # If it doensn't intersect with any other bounding box
-            if not any([do_intersect(rect[idx], bboxes[k]) for k in range(len(bboxes))]):
+            if not any([
+                    do_intersect(rect[idx], bboxes[k])
+                    for k in range(len(bboxes))
+            ]):
                 if max_iou[idx] > iou_thresh:
                     bboxes += [rect[idx]]
                     filtered_ious += [max_iou[idx]]
