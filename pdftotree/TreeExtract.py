@@ -320,7 +320,7 @@ class TreeExtractor(object):
                     top_html += str(char[1]) + sep
                     left_html += str(char[2]) + sep
                     bottom_html += str(char[3]) + sep
-                    right_html += str(char[4]) + sep
+                    right_html += str(char[4])
             words = self.get_word_boundaries(elem)
             for word in words:
                 # node_html += "<word top="+str(word[1])+" left="+str(word[2])+" bottom="+str(word[3])+" right="+str(word[4])+">"+str(word[0].encode('utf-8'))+"</word> "
@@ -349,13 +349,25 @@ class TreeExtractor(object):
                     left_html = ""
                     bottom_html = ""
                     right_html = ""
-                    word_html = ""
+                    char_html = ""
                     sep = " "
                     elems = get_mentions_within_bbox(
                         box, self.elems[page_num].mentions)
                     elems.sort(key=cmp_to_key(reading_order))
                     word_td = ""
                     for elem in elems:
+                        chars = self.get_char_boundaries(elem)
+                        for char in chars:
+                            if six.PY2:
+                                temp = char[0].encode('utf-8')
+                            else:
+                                temp = char[0]
+                            if not re.match(r'[\x00-\x1F]', temp):
+                                char_html += char[0].replace("'", '"') + sep
+                                top_html += str(char[1]) + sep
+                                left_html += str(char[2]) + sep
+                                bottom_html += str(char[3]) + sep
+                                right_html += str(char[4])
                         words = self.get_word_boundaries(elem)
                         for word in words:
                             if six.PY2:
@@ -363,20 +375,11 @@ class TreeExtractor(object):
                             elif six.PY3:
                                 temp = word[0]
                             if not re.match(r'[\x00-\x1F]', temp):
-                                word_td += word[0] + " "
-                                word_html += str(word[0].encode('utf-8')) + sep
-                                top_html += str(word[1]) + sep
-                                left_html += str(word[2]) + sep
-                                bottom_html += str(word[3]) + sep
-                                right_html += str(word[4]) + sep
-                    if six.PY2:
-                        temp = word_td[:-1].encode("utf-8")
-                    elif six.PY3:
-                        temp = word_td[:-1]
-                    row_str += (
-                        "<td word='" + word_html + "', top='" + top_html +
-                        "', left='" + left_html + "', bottom='" + bottom_html +
-                        "', right='" + right_html + "'>" + temp + "</td>")
+                                word_td += word[0] + sep
+                    row_str += ("<td char='" + char_html + "', top='" +
+                                top_html + "', left='" + left_html +
+                                "', bottom='" + bottom_html + "', right='" +
+                                right_html + "'>" + word_td.strip() + "</td>")
                     # row_str += "<td word='"+word_html+"', top='"+top_html+"', left='"+left_html+"', bottom='"+bottom_html+"', right='"+right_html+"'>"+str(column["text"].encode('utf-8'))+"</td>"
                     # row_str += "<td char='"+char_html+"', top="+str(column["top"])+", left="+str(column["left"])+", bottom="+str(column["top"]+column["height"])+", right="+str(column["left"]+column["width"])+">"
                     # row_str += str(column["text"].encode('utf-8'))
