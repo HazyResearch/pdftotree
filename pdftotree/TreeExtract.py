@@ -320,7 +320,7 @@ class TreeExtractor(object):
                     top_html += str(char[1]) + sep
                     left_html += str(char[2]) + sep
                     bottom_html += str(char[3]) + sep
-                    right_html += str(char[4])
+                    right_html += str(char[4]) + sep
             words = self.get_word_boundaries(elem)
             for word in words:
                 # node_html += "<word top="+str(word[1])+" left="+str(word[2])+" bottom="+str(word[3])+" right="+str(word[4])+">"+str(word[0].encode('utf-8'))+"</word> "
@@ -367,7 +367,7 @@ class TreeExtractor(object):
                                 top_html += str(char[1]) + sep
                                 left_html += str(char[2]) + sep
                                 bottom_html += str(char[3]) + sep
-                                right_html += str(char[4])
+                                right_html += str(char[4]) + sep
                         words = self.get_word_boundaries(elem)
                         for word in words:
                             if six.PY2:
