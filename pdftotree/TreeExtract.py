@@ -1,3 +1,4 @@
+import html
 import logging
 import numpy as np
 import re
@@ -316,7 +317,7 @@ class TreeExtractor(object):
                 elif six.PY3:
                     temp = char[0]
                 if not re.match(r'[\x00-\x1F]', temp):
-                    char_html += char[0].replace("'", '"') + sep
+                    char_html += char[0] + sep
                     top_html += str(char[1]) + sep
                     left_html += str(char[2]) + sep
                     bottom_html += str(char[3]) + sep
@@ -325,6 +326,10 @@ class TreeExtractor(object):
             for word in words:
                 # node_html += "<word top="+str(word[1])+" left="+str(word[2])+" bottom="+str(word[3])+" right="+str(word[4])+">"+str(word[0].encode('utf-8'))+"</word> "
                 node_html += word[0] + " "
+
+        # escape special HTML chars
+        node_html = html.escape(node_html)
+        char_html = html.escape(char_html)
         return node_html, char_html, top_html, left_html, bottom_html, right_html
 
     def get_html_table(self, table, page_num):
@@ -376,6 +381,9 @@ class TreeExtractor(object):
                                 temp = word[0]
                             if not re.match(r'[\x00-\x1F]', temp):
                                 word_td += word[0] + sep
+                    # escape special HTML chars
+                    word_td = html.escape(word_td)
+                    char_html = html.escape(char_html)
                     row_str += ("<td char='" + char_html + "', top='" +
                                 top_html + "', left='" + left_html +
                                 "', bottom='" + bottom_html + "', right='" +
