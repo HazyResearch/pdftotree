@@ -177,6 +177,10 @@ your virtualenv by running::
 
     $ make dev
 
+You will also need flake8_ installed locally to run our code-style checks::
+
+    $ pip install flake8
+
 Then you can run our tests::
 
     $ make test
@@ -200,3 +204,4 @@ Then you can run our tests::
 .. _PaleoDocs: http://i.stanford.edu/hazy/share/fonduer/pdftotree_paleo.tar.gz
 .. _version file: https://github.com/HazyResearch/pdftotree/blob/master/pdftotree/_version.py
 .. _editable mode: https://packaging.python.org/tutorials/distributing-packages/#working-in-development-mode
+.. _flake8: http://flake8.pycqa.org/en/latest/

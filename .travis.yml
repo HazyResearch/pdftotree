@@ -16,7 +16,7 @@ install:
   - pip install coveralls
 
 before_script:
-  - flake8 pdftotree --count --max-line-length=127 --statistics --show-source --ignore=E731
+  - flake8 pdftotree --count --max-line-length=127 --statistics --show-source --ignore=E731,W503
   - cd tests/input/
   - ./download_vision_model.sh
   - cd ../../
