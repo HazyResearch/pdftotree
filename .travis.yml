@@ -11,13 +11,12 @@ notifications:
 
 install:
   - sudo apt-get -qq update
-  - sudo apt-get install pandoc  # for uploading to PyPi
   - pip install -r requirements.txt
-  - pip install pypandoc
+  - pip install flake8
   - pip install coveralls
 
 before_script:
-  - pandoc --from=markdown --to=rst --output=README.rst README.md
+  - flake8 pdftotree --count --max-line-length=127 --statistics --show-source --ignore=E731,W503
   - cd tests/input/
   - ./download_vision_model.sh
   - cd ../../

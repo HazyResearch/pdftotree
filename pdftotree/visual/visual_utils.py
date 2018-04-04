@@ -1,11 +1,9 @@
-import glob
 import os
 
 import keras.backend as K
 import numpy as np
 import selectivesearch
-from keras.preprocessing.image import load_img, img_to_array
-from PyPDF2 import PdfFileReader
+from keras.preprocessing.image import img_to_array, load_img
 from wand.color import Color
 from wand.image import Image
 

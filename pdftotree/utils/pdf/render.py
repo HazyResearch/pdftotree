@@ -6,9 +6,12 @@ Created on Jan 28, 2016
 
 @author: xiao
 '''
-from pdf.vector_utils import *
 import logging
+
 import numpy as np
+
+from pdf.vector_utils import x0, x1, y0, y1
+
 
 class Renderer(object):
     '''
@@ -23,7 +26,7 @@ class Renderer(object):
     curve = -5
     misc = -6
 
-    def __init__(self, elems, scaler = 1):
+    def __init__(self, elems, scaler=1):
         '''
         Initializes the rendered object grid with specified
         scaler so we can map original coordinates into the
@@ -35,14 +38,14 @@ class Renderer(object):
         width = int(np.ceil(scaler * layout.width))
         height = int(np.ceil(scaler * layout.height))
 
-        self.grid = np.zeros((width, height), dtype = np.int8)
+        self.grid = np.zeros((width, height), dtype=np.int8)
 
         # Estimates the grid size in megabytes
-        self.log.info(self.grid.nbytes/float(1048576))
+        self.log.info(self.grid.nbytes / float(1048576))
         for line in elems.segments:
             if line.height < 0.1:  # Horizontal lines
                 self.draw_rect(line.bbox, self.horizontal_line)
-            elif line.width < 0.1:# Vertical lines
+            elif line.width < 0.1:  # Vertical lines
                 self.draw_rect(line.bbox, self.vertical_line)
 
         for mention in elems.mentions:
@@ -61,7 +64,7 @@ class Renderer(object):
         new_x1 = max(new_x0 + 1, int(bbox[x1]))
         new_y1 = max(new_y0 + 1, int(bbox[y1]))
 
-        self.grid[new_x0:new_x1,new_y0:new_y1] = cell_val
+        self.grid[new_x0:new_x1, new_y0:new_y1] = cell_val
 
     @staticmethod
     def is_mention(cell_val):
@@ -69,4 +72,3 @@ class Renderer(object):
         Nonnegative values in grid cells are reserved for mention ids
         '''
         return cell_val >= 0
-

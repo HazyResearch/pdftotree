@@ -5,25 +5,29 @@ extracted with PDFminer
 
 @author: xiao
 '''
+import collections
 import logging
 import os
 import re
-import six  # Python 2+3 compatibility
 import string
-from collections import Counter
+
 from pdfminer.converter import PDFPageAggregator
-from pdfminer.layout import LAParams, LTFigure
+from pdfminer.layout import (LAParams, LTAnno, LTChar, LTComponent, LTCurve,
+                             LTFigure, LTLine, LTTextLine)
 from pdfminer.pdfdocument import PDFDocument
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
 from pdfminer.utils import apply_matrix_pt
-from pdftotree.utils.img_utils import *
-from pdftotree.utils.pdf.layout_utils import *
-from pdftotree.utils.pdf.vector_utils import *
+
+from pdftotree.utils.img_utils import normalize_bbox, normalize_pts
+from pdftotree.utils.pdf.layout_utils import traverse_layout
+#  from pdftotree.utils.pdf.vector_utils import *
 
 # Compact wrapper representation for the pdf
-PDFElems = namedtuple('PDFElems', ['mentions', 'segments', 'curves', 'figures', 'layout', 'chars'])
+PDFElems = collections.namedtuple(
+    'PDFElems',
+    ['mentions', 'segments', 'curves', 'figures', 'layout', 'chars'])
 
 
 class CustomPDFPageAggregator(PDFPageAggregator):
@@ -45,15 +49,18 @@ class CustomPDFPageAggregator(PDFPageAggregator):
         prev_split = 0
         for i in range(len(shape)):
             if shape[i] == 'm' and prev_split != i:
-                self.paint_single_path(gstate, stroke, fill, evenodd, path[prev_split:i])
+                self.paint_single_path(gstate, stroke, fill, evenodd,
+                                       path[prev_split:i])
                 prev_split = i
             if shape[i] == 'h':
-                self.paint_single_path(gstate, stroke, fill, evenodd, path[prev_split:i + 1])
+                self.paint_single_path(gstate, stroke, fill, evenodd,
+                                       path[prev_split:i + 1])
                 prev_split = i + 1
 
         # clean up remaining segments
         if prev_split < len(shape):
-            self.paint_single_path(gstate, stroke, fill, evenodd, path[prev_split:])
+            self.paint_single_path(gstate, stroke, fill, evenodd,
+                                   path[prev_split:])
 
     def paint_single_path(self, gstate, stroke, fill, evenodd, path):
         '''
@@ -78,11 +85,13 @@ class CustomPDFPageAggregator(PDFPageAggregator):
                     break
             if not has_slope:
                 for i in range(len(pts) - 1):
-                    self.cur_item.add(LTLine(gstate.linewidth, pts[i], pts[i + 1]))
+                    self.cur_item.add(
+                        LTLine(gstate.linewidth, pts[i], pts[i + 1]))
 
                 # Adding the closing line for a polygon, especially rectangles
                 if shape.endswith('h'):
-                    self.cur_item.add(LTLine(gstate.linewidth, pts[0], pts[-1]))
+                    self.cur_item.add(
+                        LTLine(gstate.linewidth, pts[0], pts[-1]))
                 return
 
         # Add the curve as an arbitrary polyline (belzier curve info is lost here)
@@ -105,7 +114,8 @@ def analyze_pages(file_name, char_margin=1.0):
         # Create a PDF resource manager object that stores shared resources.
         rsrcmgr = PDFResourceManager()
         # Set parameters for analysis.
-        laparams = LAParams(char_margin=char_margin, word_margin=0.1, detect_vertical=True)
+        laparams = LAParams(
+            char_margin=char_margin, word_margin=0.1, detect_vertical=True)
         # Create a PDF page aggregator object.
         device = CustomPDFPageAggregator(rsrcmgr, laparams=laparams)
         # Create a PDF interpreter object.
@@ -115,7 +125,8 @@ def analyze_pages(file_name, char_margin=1.0):
             try:
                 interpreter.process_page(page)
             except OverflowError as oe:
-                log.exception("{}, skipping page {} of {}".format(oe, page_num, file_name))
+                log.exception("{}, skipping page {} of {}".format(
+                    oe, page_num, file_name))
                 continue
             layout = device.get_result()
             yield layout
@@ -130,7 +141,7 @@ def normalize_pdf(layout, scaler):
     chars = []
     mentions = []
     height = scaler * layout.height
-    font_size_counter = Counter()
+    font_size_counter = collections.Counter()
     # Lines longer than this are included in segments
     pts_thres = 2.0 * scaler
     segments = []
@@ -146,7 +157,8 @@ def normalize_pdf(layout, scaler):
             if isinstance(m, LTCurve):
                 m.pts = normalize_pts(m.pts, height, scaler)
                 # Only keep longer lines here
-                if isinstance(m, LTLine) and max(m.width, m.height) > pts_thres:
+                if isinstance(m,
+                              LTLine) and max(m.width, m.height) > pts_thres:
                     segments.append(m)
                     return
                 # Here we exclude straight lines from curves
@@ -227,8 +239,10 @@ def _font_of_mention(m):
 # Initialize the set of chars allowed in output
 _ascii_allowed = [False] * 128
 _forbidden_chars = '\n\t'
-for c in string.printable: _ascii_allowed[ord(c)] = True
-for c in _forbidden_chars: _ascii_allowed[ord(c)] = False
+for c in string.printable:
+    _ascii_allowed[ord(c)] = True
+for c in _forbidden_chars:
+    _ascii_allowed[ord(c)] = False
 
 
 def _allowed_char(c):
@@ -250,4 +264,5 @@ def keep_allowed_chars(text):
     Cleans the text for output
     '''
     #     print ','.join(str(ord(c)) for c in text)
-    return ''.join(' ' if c == '\n' else c for c in text.strip() if _allowed_char(c))
+    return ''.join(
+        ' ' if c == '\n' else c for c in text.strip() if _allowed_char(c))

@@ -5,19 +5,20 @@ Parsing raw PDF data into python data structures
 @author: xiao
 '''
 from __future__ import division
-from builtins import filter
-from builtins import str
-from builtins import zip
-from builtins import range
+
 import logging
 import math
 import operator
+from builtins import filter, range, str, zip
 from collections import defaultdict
-from copy import deepcopy
 from functools import cmp_to_key
+
 from pdfminer.utils import Plane
-from pdftotree.utils.pdf.layout_utils import *
+from pdfminer.layout import LTTextLine
+
 from pdftotree.utils.pdf.node import Node
+from pdftotree.utils.pdf.vector_utils import (center, intersect, l1,
+                                              xy_reading_order)
 
 
 def parse_layout(elems, font_stat, combine=False):
@@ -29,7 +30,7 @@ def parse_layout(elems, font_stat, combine=False):
     boxes_curves = elems.curves
     boxes_figures = elems.figures
     page_width = elems.layout.width
-    page_height = elems.layout.height
+    #  page_height = elems.layout.height
     boxes = elems.mentions
     avg_font_pts = get_most_common_font_pts(elems.mentions, font_stat)
     width = get_page_width(
@@ -183,7 +184,8 @@ def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width,
     # If text boxes are very close in a row
     if_row_connected = defaultdict(int)
     num_row_connected = defaultdict(lambda: 1)
-    # If text is merged using span code in adjacent rows, this feature tells the number of times the cluster went through span based clustering
+    # If text is merged using span code in adjacent rows, this feature tells
+    # the number of times the cluster went through span based clustering
     if_connected_by_span = defaultdict(int)
     num_connected_by_span = defaultdict(lambda: 1)
     # If columns were merged using cluster alignment
@@ -263,7 +265,7 @@ def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width,
                             or abs(box1[2] - box2[2]) < 3
                             or (((box1[0] + box1[2]) / 2) == (
                                 (box2[0] + box2[2]) / 2))
-                    ):  # or ((box1[0]<box2[0]) and (box1[2]>box2[0])) or ((box1[0]>box2[0]) and (box2[2]>box1[0]))): #added center alignemnt
+                    ):
                         min_i = min(i1, i2)
                         max_i = max(i1, i2)
                         if ((min_i, max_i) not in not_merge):
@@ -392,7 +394,7 @@ def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width,
                   or round(box1[2]) == round(box2[2])) and connected)
                     or (round((box1[0] + box1[2]) / 2) == round(
                         (box2[0] + box2[2]) / 2) and connected)
-            ):  # or (abs((box1[0]+box1[2])/2-(box2[0]+box2[2])/2)<0.1*char_width and connected)):# or ((box1[0]<box2[0]) and (box1[2]>box2[0])) or ((box1[0]>box2[0]) and (box2[2]>box1[0]))): #added center alignemnt
+            ):
                 cid2cid[min(cid1, cid2)].add(max(cid1, cid2))
                 min_cid = min(cid1, cid2)
                 max_cid = max(cid1, cid2)
@@ -476,8 +478,7 @@ def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width,
                                         num_row_connected[max_cid] = 0
                                         if_row_connected[max_cid] = 0
                                     if (if_connected_by_span[min_cid] == 1 or
-                                            if_connected_by_span[max_cid] == 1
-                                        ):
+                                            if_connected_by_span[max_cid] == 1):
                                         if_connected_by_span[min_cid] = 1
                                         num_connected_by_span[
                                             min_cid] += num_connected_by_span[
@@ -485,8 +486,7 @@ def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width,
                                         num_connected_by_span[max_cid] = 0
                                         if_connected_by_span[max_cid] = 0
                                     if (if_connected_by_align[min_cid] == 1 or
-                                            if_connected_by_align[max_cid] == 1
-                                        ):
+                                            if_connected_by_align[max_cid] == 1):
                                         if_connected_by_align[min_cid] = 1
                                         num_connected_by_align[
                                             min_cid] += num_connected_by_align[
@@ -549,8 +549,9 @@ def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width,
             i[0] for i in sorted(enumerate(obj_boxes), key=lambda x: x[1])
         ]
         for obj_idx in range(len(sorted_obj_idx) - 1):
-            rid2space[rid] += boxes[obj_list[sorted_obj_idx[obj_idx + 1]]].bbox[2] - \
-                              boxes[obj_list[sorted_obj_idx[obj_idx]]].bbox[0]
+            rid2space[rid] += (
+                boxes[obj_list[sorted_obj_idx[obj_idx + 1]]].bbox[2] -
+                boxes[obj_list[sorted_obj_idx[obj_idx]]].bbox[0])
         rid2space_norm[rid] = rid2space[rid] / (len(obj_list) - 1)
 
     for idx, node in enumerate(nodes):
@@ -574,8 +575,9 @@ def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width,
                     for i in sorted(enumerate(obj_boxes), key=lambda x: x[1])
                 ]
                 for obj_idx in range(len(sorted_obj_idx) - 1):
-                    node_space[node_idx] += boxes[obj_list[sorted_obj_idx[obj_idx + 1]]].bbox[2] - \
-                                            boxes[obj_list[sorted_obj_idx[obj_idx]]].bbox[0]
+                    node_space[node_idx] += (
+                        boxes[obj_list[sorted_obj_idx[obj_idx + 1]]].bbox[2] -
+                        boxes[obj_list[sorted_obj_idx[obj_idx]]].bbox[0])
                 avg_node_space_norm[node_idx] += node_space[node_idx] / (
                     len(obj_boxes) - 1)
             avg_word_space[node_idx] = total_word_space[node_idx] / len(
@@ -623,7 +625,7 @@ def cluster_vertically_aligned_boxes(boxes, page_bbox, avg_font_pts, width,
                 tables.append(node)
                 table_indices.append(node_idx)
 
-    if (combine == True):
+    if combine:
         node_features = [0] * 17
         for idx, node in enumerate(nodes):
             node_idx = node_indices[idx]
@@ -698,11 +700,11 @@ def parse_tree_structure(elems, font_stat, page_num, ref_page_seen, tables,
         m.feats[prefix + 'xc'] = m.xc_grid = m.xc // grid_size
         m.feats[prefix + 'yc'] = m.yc_grid = m.yc // grid_size
 
-    #Figures for this page
+    # Figures for this page
     figures_page = get_figures(mentions, elems.layout.bbox, page_num,
                                boxes_figures, page_width, page_height)
 
-    #Omit tables that overlap with figures if figures need to be favored
+    # Omit tables that overlap with figures if figures need to be favored
     if favor_figures == "True":
         tables_page = []
         for idx, table in enumerate(tables):
@@ -721,7 +723,7 @@ def parse_tree_structure(elems, font_stat, page_num, ref_page_seen, tables,
     else:
         tables_page = tables
 
-    ## Eliminate tables from these boxes
+    # Eliminate tables from these boxes
     boxes = []
     for idx1, box in enumerate(mentions):
         intersect = False
@@ -743,7 +745,7 @@ def parse_tree_structure(elems, font_stat, page_num, ref_page_seen, tables,
     text_candidates["figure"] = figures_page
     text_candidates["table"] = tables_page
 
-    #Check overlap with figures if figures are favored
+    # Check overlap with figures if figures are favored
     pruned_text_candidates = {}
     if favor_figures == "True":
         for clust in text_candidates:
@@ -779,13 +781,13 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
             filtered_boxes.append(bbox)
     boxes = filtered_boxes
 
-    #Too many "." in the Table of Content pages - ignore because it takes a lot of time
+    # Too many "." in the Table of Content pages - ignore because it takes a lot of time
     if (len(boxes) == 0 or len(boxes) > 3500):
         return {}, False
     plane = Plane(page_bbox)
     plane.extend(boxes)
 
-    #Row level clustering - identify objects that have same horizontal alignment
+    # Row level clustering - identify objects that have same horizontal alignment
     rid2obj = [set([i]) for i in range(len(boxes))]  # initialize clusters
     obj2rid = list(range(
         len(boxes)))  # default object map to cluster with its own index
@@ -818,7 +820,7 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
         len(boxes)))  # default object map to cluster with its own index
     prev_clusters = obj2cid
 
-    #add the code for merging close text boxes in particular row
+    # add the code for merging close text boxes in particular row
     while (True):
         for i1, b1 in enumerate(boxes):
             for i2, b2 in enumerate(boxes):
@@ -843,7 +845,7 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
             break
         prev_clusters = obj2cid
 
-    #vertical alignment code
+    # vertical alignment code
     while (True):
         for i1, b1 in enumerate(boxes):
             for i2, b2 in enumerate(boxes):
@@ -856,7 +858,7 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
                     box1 = b2.bbox
                     box2 = b1.bbox
                 else:
-                    #horizontally aligned
+                    # horizontally aligned
                     continue
                 if (abs((box2[3] - box2[1]) - (box1[3] - box1[1])) >
                         0.5 * avg_font_pts):
@@ -865,7 +867,7 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
                         box2[1] < box1[3]
                         or (box2[1] - box1[1] < 1.5 * avg_font_pts)
                         or (box2[3] - box1[3] < 1.5 * avg_font_pts)
-                ):  #can probably do better if we find the average space between words
+                ):  # can probably do better if we find the average space between words
                     if (abs(box1[0] - box2[0]) < 3 * char_width
                             or abs(box1[2] - box2[2]) < 3 * char_width
                             or (((box1[0] + box1[2]) / 2) == (
@@ -874,8 +876,8 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
                         max_i = max(i1, i2)
                         cid1 = obj2cid[min_i]
                         cid2 = obj2cid[max_i]
-                        #move all objects from cluster cid2 to cid1
-                        #reassign cluster ids for all such objects as well
+                        # move all objects from cluster cid2 to cid1
+                        # reassign cluster ids for all such objects as well
                         for obj_iter in cid2obj[cid2]:
                             cid2obj[cid1].add(obj_iter)
                             obj2cid[obj_iter] = cid1
@@ -884,7 +886,7 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
             break
         prev_clusters = obj2cid
 
-    #get cluster spans
+    # get cluster spans
     cid2span = {}
     for cid in range(len(cid2obj)):
         cid2span[cid] = {}
@@ -902,7 +904,7 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
             cid2span[cid]["max_y"] = max(cid2span[cid]["max_y"],
                                          boxes[obj].bbox[3])
 
-    #Don't split up references
+    # Don't split up references
     references_bbox = []
     references_cid = set()
     for cid in range(len(cid2obj)):
@@ -921,19 +923,19 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
                         cid2span[cid2]["min_x"] = cid2span[cid]["min_x"]
                         cid2span[cid2]["max_x"] = cid2span[cid]["max_x"]
 
-    #get a list of empty cids
+    # get a list of empty cids
     empty_cids = [cid for cid in range(len(cid2obj)) if len(cid2obj[cid]) == 0]
     empty_idx = 0
 
-    #Split paras based on whitespaces - seems to work
-    if (ref_page_seen == False):
+    # Split paras based on whitespaces - seems to work
+    if not ref_page_seen:
         for cid in range(len(cid2obj)):
             if (len(cid2obj[cid]) > 0 and cid not in empty_cids
                     and cid not in references_cid):
                 cid_maxx = max([boxes[obj].bbox[2] for obj in cid2obj[cid]])
                 cid_minx = min([boxes[obj].bbox[0] for obj in cid2obj[cid]])
                 rid_list = set([obj2rid[obj] for obj in cid2obj[cid]])
-                #Get min_y for each row
+                # Get min_y for each row
                 rid_miny = {}
                 for rid in rid_list:
                     rid_miny[rid] = min([
@@ -956,7 +958,7 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
                     ])
                     if (row1_maxx <= cid_maxx
                             and (row2_minx - char_width) > cid_minx):
-                        #split cluster cid
+                        # split cluster cid
                         new_cid_idx = empty_cids[empty_idx]
                         empty_idx += 1
                         for i_iter in range(last_rid, i + 1):
@@ -979,7 +981,7 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
     page_stat = Node(boxes)
     nodes, merge_indices = merge_nodes(nodes, plane, page_stat, merge_indices)
 
-    ##Merging Nodes
+    # Merging Nodes
     new_nodes = []
     new_node_indices = []
     for idx in range(len(merge_indices)):
@@ -987,8 +989,8 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
             new_nodes.append(nodes[idx])
             new_node_indices.append(node_indices[idx])
 
-    #Heuristics for Node type
-    ref_nodes = []
+    # Heuristics for Node type
+    #  ref_nodes = []
     new_ref_page_seen = False
     if (len(references_cid) > 0 or ref_page_seen or references_bbox != []):
         new_ref_page_seen = True
@@ -998,17 +1000,17 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
     for idx, box in enumerate(all_boxes):
         min_y_page = min(min_y_page, box.bbox[1])
     if page_num == -1:
-        #handle title, authors and abstract here
+        # handle title, authors and abstract here
         log.error("TODO: no way to handle title authors abstract yet.")
     else:
-        #eliminate header, footer, page number
-        #sort other text and classify as header/paragraph
+        # eliminate header, footer, page number
+        # sort other text and classify as header/paragraph
         new_nodes.sort(key=cmp_to_key(xy_reading_order))
         for idx, node in enumerate(new_nodes):
             if (idx < len(new_nodes) - 1):
                 if ((round(node.y0) == round(min_y_page)
                      or math.floor(node.y0) == math.floor(min_y_page)) and
-                        node.y1 - node.y0 < 2 * avg_font_pts):  #can be header
+                        node.y1 - node.y0 < 2 * avg_font_pts):  # can be header
                     idx_new = idx + 1
                     if idx_new < len(new_nodes) - 1:
                         while (idx_new < len(new_nodes) - 1 and (
@@ -1021,14 +1023,14 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
                                 1.5 * avg_font_pts):
                             node.type = "Header"
                             continue
-            #get captions - first word is fig/figure/table
+            # get captions - first word is fig/figure/table
             first_elem = None
             for elem in node.elems:
                 if (round(elem.bbox[0]) == round(node.x0)
                         and round(elem.bbox[1]) == round(node.y0)):
                     first_elem = elem
                     break
-            if (first_elem != None):
+            if first_elem is not None:
                 text = first_elem.get_text()
                 if (len(text) > 10):
                     text = first_elem.get_text()[0:10]
@@ -1051,33 +1053,34 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
                         and node.x1 > references_bbox[2]):
                     node.type = "List"
                     continue
-            if (node.y1 - node.y0 <= 2.0 * avg_font_pts):  #one lines - section
+            if (node.y1 - node.y0 <=
+                    2.0 * avg_font_pts):  # one lines - section
                 node.type = "Section Header"
-            else:  #multiple lines - para
+            else:  # multiple lines - para
                 node.type = "Paragraph"
 
-    #handle references
+    # handle references
     newer_nodes = []
     ref_indices = [False for idx in range(len(new_nodes))]
     for idx1, node1 in enumerate(new_nodes):
-        if (ref_indices[idx1] == True):
+        if ref_indices[idx1]:
             continue
         if (node1.type != "List"):
             newer_nodes.append(node1)
             continue
-        x0, y0, x1, y1 = node1.x0, node1.y0, node1.x1, node1.y1
+        x0, x1 = node1.x0, node1.x1
         newer_node = node1
         ref_indices[idx1] = True
         for idx2, node2 in enumerate(new_nodes):
             if (idx1 != idx2):
-                if (node2.type == "List" and ref_indices[idx2] == False):
+                if (node2.type == "List" and not ref_indices[idx2]):
                     if ((node2.x0 <= x0 and node2.x1 >= x0)
                             or (x0 <= node2.x0 and x1 >= node2.x0)):
                         newer_node.merge(node2)
                         ref_indices[idx2] = True
         newer_nodes.append(newer_node)
 
-    #handle figures
+    # handle figures
     for fig_box in boxes_figures:
         node_fig = Node(fig_box)
         node_fig.type = "Figure"
@@ -1094,7 +1097,9 @@ def extract_text_candidates(boxes, page_bbox, avg_font_pts, width, char_width,
     tree["paragraph"] = [(page_num, page_width, page_height) +
                          (node.y0, node.x0, node.y1, node.x1)
                          for node in newer_nodes if node.type == "Paragraph"]
-    # tree["figure"] = [(page_num, page_width, page_height) + (node.y0, node.x0, node.y1, node.x1) for node in newer_nodes if node.type=="Figure"]
+    #  tree["figure"] = [(page_num, page_width, page_height) +
+    #                    (node.y0, node.x0, node.y1, node.x1)
+    #                    for node in newer_nodes if node.type == "Figure"]
     tree["figure_caption"] = [(page_num, page_width, page_height) +
                               (node.y0, node.x0, node.y1, node.x1)
                               for node in newer_nodes
@@ -1138,7 +1143,7 @@ def get_figures(boxes, page_bbox, page_num, boxes_figures, page_width,
     nodes, merge_indices = merge_nodes(nodes_figures, plane, page_stat,
                                        merge_indices)
 
-    ##Merging Nodes
+    # Merging Nodes
     new_nodes = []
     for idx in range(len(merge_indices)):
         if (merge_indices[idx] == idx):
@@ -1162,11 +1167,13 @@ def merge_nodes(nodes, plane, page_stat, merge_indices):
         outers_indices = []
         for outer_idx in range(len(nodes)):
             outer = nodes[outer_idx]
-            if outer is inner or outer in to_be_removed: continue
+            if outer is inner or outer in to_be_removed:
+                continue
             if intersect(outer.bbox, inner.bbox):
                 outers.append(outer)
                 outers_indices.append(outer_idx)
-        if not outers: continue
+        if not outers:
+            continue
         # Best is defined as min L1 distance to outer center
         best_outer = min(
             outers,

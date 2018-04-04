@@ -3,12 +3,14 @@ Created on Oct 11, 2015
 
 @author: xiao
 '''
-import numpy as np
 import os
-from PIL import ImageFont, Image, ImageDraw
-from pdfminer.layout import LTAnno
-from pdftotree.utils.pdf.vector_utils import center
 from sys import platform as _platform
+
+import numpy as np
+from pdfminer.layout import LTAnno
+from PIL import Image, ImageDraw, ImageFont
+
+from pdftotree.utils.pdf.vector_utils import center
 
 white = (255, 255, 255)
 black = (0, 0, 0)
@@ -39,10 +41,10 @@ def normalize_bbox(coords, ymax, scaler=2):
     scales all coordinates and flip y axis due to different
     origin coordinates (top left vs. bottom left)
     '''
-    return [coords[0] * scaler,
-            ymax - (coords[3] * scaler),
-            coords[2] * scaler,
-            ymax - (coords[1] * scaler)]
+    return [
+        coords[0] * scaler, ymax - (coords[3] * scaler), coords[2] * scaler,
+        ymax - (coords[1] * scaler)
+    ]
 
 
 def normalize_pts(pts, ymax, scaler=2):
@@ -86,16 +88,17 @@ def fill(mat, orig_bbox, margin):
     pass
 
 
-def render_debug_img(file_name,
-                     page_num,
-                     elems,
-                     nodes=[],
-                     scaler=1,
-                     print_segments=False,
-                     print_curves=True,
-                     print_table_bbox=True,
-                     print_text_as_rect=True,
-                     ):
+def render_debug_img(
+        file_name,
+        page_num,
+        elems,
+        nodes=[],
+        scaler=1,
+        print_segments=False,
+        print_curves=True,
+        print_table_bbox=True,
+        print_text_as_rect=True,
+):
     '''
     Shows an image rendering of the pdf page along with debugging
     info printed
@@ -116,13 +119,17 @@ def render_debug_img(file_name,
             #     draw.rectangle(fig.bbox, fill = blue)
 
     for i, m in enumerate(elems.mentions):
-        if isinstance(m, LTAnno): continue
+        if isinstance(m, LTAnno):
+            continue
         if print_text_as_rect:
-            fill = 'pink' if hasattr(m, 'feats') and m.feats['is_cell'] else green
+            fill = 'pink' if hasattr(m,
+                                     'feats') and m.feats['is_cell'] else green
             #             fill = green
             draw.rectangle(m.bbox, fill=fill)
             # draw.text(center(m.bbox), str(i), black, font = font) # Draw id
-            draw.text(m.bbox[:2], m.get_text(), black, font=font)  # Draw mention content
+            draw.text(
+                m.bbox[:2], m.get_text(), black,
+                font=font)  # Draw mention content
         else:
             draw.text(m.bbox[:2], m.get_text(), 'black', font=font)
 
@@ -144,7 +151,8 @@ def render_debug_img(file_name,
 
     # Water mark with file name so we can identify among multiple images
     if file_name and page_num is not None:
-        water_mark = file_name + ':page ' + str(page_num + 1) + '@%dx%d' % (width, height)
+        water_mark = file_name + ':page ' + str(page_num + 1) + '@%dx%d' % (
+            width, height)
         draw.text((10, 10), water_mark, black, font=font)
     debug_img.show()
     return debug_img

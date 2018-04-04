@@ -1,22 +1,24 @@
 import html
 import logging
-import numpy as np
 import re
+from functools import cmp_to_key
+
+import numpy as np
 import six  # Python 2-3 compatibility
 import tabula
-from functools import cmp_to_key
+from pdfminer.layout import LTChar
 from pdfminer.utils import Plane
+
 from pdftotree.ml.features import get_lines_features, get_mentions_within_bbox
 from pdftotree.utils.bbox_utils import get_rectangles
-from pdftotree.utils.lines_utils import extend_horizontal_lines
-from pdftotree.utils.lines_utils import extend_vertical_lines
-from pdftotree.utils.lines_utils import get_vertical_and_horizontal
-from pdftotree.utils.lines_utils import merge_horizontal_lines
-from pdftotree.utils.lines_utils import merge_vertical_lines
-from pdftotree.utils.lines_utils import reorder_lines
-from pdftotree.utils.pdf.layout_utils import *
+from pdftotree.utils.lines_utils import (extend_horizontal_lines,
+                                         extend_vertical_lines,
+                                         get_vertical_and_horizontal,
+                                         merge_horizontal_lines,
+                                         merge_vertical_lines, reorder_lines)
 from pdftotree.utils.pdf.pdf_parsers import parse_layout, parse_tree_structure
-from pdftotree.utils.pdf.pdf_utils import normalize_pdf, analyze_pages
+from pdftotree.utils.pdf.pdf_utils import analyze_pages, normalize_pdf
+from pdftotree.utils.pdf.vector_utils import column_order, reading_order
 
 
 class TreeExtractor(object):
@@ -324,7 +326,10 @@ class TreeExtractor(object):
                     right_html += str(char[4]) + sep
             words = self.get_word_boundaries(elem)
             for word in words:
-                # node_html += "<word top="+str(word[1])+" left="+str(word[2])+" bottom="+str(word[3])+" right="+str(word[4])+">"+str(word[0].encode('utf-8'))+"</word> "
+                #  node_html += (
+                #      "<word top=" + str(word[1]) + " left=" + str(word[2]) +
+                #      " bottom=" + str(word[3]) + " right=" + str(word[4]) +
+                #      ">" + str(word[0].encode('utf-8')) + "</word> ")
                 node_html += word[0] + " "
 
         # escape special HTML chars
@@ -388,8 +393,16 @@ class TreeExtractor(object):
                                 top_html + "', left='" + left_html +
                                 "', bottom='" + bottom_html + "', right='" +
                                 right_html + "'>" + word_td.strip() + "</td>")
-                    # row_str += "<td word='"+word_html+"', top='"+top_html+"', left='"+left_html+"', bottom='"+bottom_html+"', right='"+right_html+"'>"+str(column["text"].encode('utf-8'))+"</td>"
-                    # row_str += "<td char='"+char_html+"', top="+str(column["top"])+", left="+str(column["left"])+", bottom="+str(column["top"]+column["height"])+", right="+str(column["left"]+column["width"])+">"
+                    #  row_str += (
+                    #      "<td word='" + word_html + "', top='" + top_html +
+                    #      "', left='" + left_html + "', bottom='" + bottom_html +
+                    #      "', right='" + right_html + "'>") + str(
+                    #          column["text"].encode('utf-8')) + "</td>"
+                    #  row_str += ("<td char='" + char_html + "', top=") + str(
+                    #      column["top"]
+                    #  ) + (", left=" + str(column["left"]) + ", bottom=") + str(
+                    #      column["top"] + column["height"]) + ", right=" + str(
+                    #          column["left"] + column["width"]) + ">"
                     # row_str += str(column["text"].encode('utf-8'))
                     # row_str += "</td>"
                 row_str += "</tr>"
