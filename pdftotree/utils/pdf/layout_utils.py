@@ -5,10 +5,13 @@ Created on Jan 25, 2016
 '''
 import collections
 import logging
-import numpy as np
+from builtins import range
 from itertools import chain
-from pdfminer.layout import LTTextLine, LTChar, LTAnno, LTCurve, LTComponent, LTLine
-from pdftotree.utils.pdf.vector_utils import *
+
+import numpy as np
+from pdfminer.layout import LTAnno
+
+from pdftotree.utils.pdf.vector_utils import intersect, inside
 
 
 def traverse_layout(root, callback):
@@ -59,25 +62,29 @@ bot_wall = lambda m: (m.x0, m.y1, m.x1, m.y1)
 
 
 def vlines_between(plane, prev, m):
-    if not prev or not m: return []
-    if prev.xc > m.xc: prev, m = m, prev
+    if not prev or not m:
+        return []
+    if prev.xc > m.xc:
+        prev, m = m, prev
     query = (prev.xc, prev.yc, m.xc, prev.yc)
     return [l for l in plane.find(query) if l.x1 - l.x0 < 0.1]
 
 
 def hlines_between(plane, prev, m):
-    if not prev or not m: return []
-    if prev.yc > m.yc: prev, m = m, prev
+    if not prev or not m:
+        return []
+    if prev.yc > m.yc:
+        prev, m = m, prev
     query = (prev.xc, prev.yc, prev.xc, m.yc)
     return [l for l in plane.find(query) if l.y1 - l.y0 < 0.1]
 
 
 def is_same_row(m1, m2):
     # Corner case for row separation
-    #------
-    #-prev- ------
-    #------ ---m--
-    #       ------
+    # ------
+    # -prev- ------
+    # ------ ---m--
+    #        ------
     return m1 and m2 and m2.yc > m1.y0 and m2.yc < m1.y1
 
 
@@ -116,7 +123,7 @@ def collect_table_content(table_bboxes, elems):
     the corresponding supplied bbox.
     '''
     # list of table content chars
-    table_contents = [[] for _ in xrange(len(table_bboxes))]
+    table_contents = [[] for _ in range(len(table_bboxes))]
     prev_content = None
     prev_bbox = None
     for cid, c in enumerate(elems):
@@ -143,7 +150,7 @@ def collect_table_content(table_bboxes, elems):
     return table_contents
 
 
-_bbox = namedtuple('_bbox', ['bbox'])
+_bbox = collections.namedtuple('_bbox', ['bbox'])
 _inf_bbox = _bbox([float('inf')] * 4)
 
 
@@ -153,7 +160,7 @@ def _gaps_from(intervals):
     a list of sorted gaps in the form of [(g,i)]
     where g is the size of the ith gap.
     '''
-    sliding_window = izip(intervals, intervals[1:])
+    sliding_window = zip(intervals, intervals[1:])
     gaps = [b[0] - a[1] for a, b in sliding_window]
     return gaps
 
@@ -163,8 +170,10 @@ def project_onto(objs, axis, min_gap_size=4.0):
     Projects object bboxes onto the axis and return the
     unioned intervals and groups of objects in intervals.
     '''
-    if axis == 'x': axis = 0
-    if axis == 'y': axis = 1
+    if axis == 'x':
+        axis = 0
+    if axis == 'y':
+        axis = 1
     axis_end = axis + 2
     if axis == 0:  # if projecting onto X axis
         objs.sort(key=lambda o: o.x0)
@@ -229,7 +238,8 @@ def recursive_xy_divide(elems, avg_font_size):
         h_split: whether to split along y axis, otherwise
         we split along x axis.
         '''
-        if not objs: return []
+        if not objs:
+            return []
 
         # range start/end indices
         axis = 1 if h_split else 0
@@ -246,7 +256,7 @@ def recursive_xy_divide(elems, avg_font_size):
         else:
             children = []
 
-            for interval, group in izip(intervals, groups):
+            for interval, group in zip(intervals, groups):
                 # Create the bbox for the subgroup
                 sub_bbox = np.array(bbox)
                 sub_bbox[[axis, axis + 2]] = interval

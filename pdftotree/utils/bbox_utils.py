@@ -107,8 +107,8 @@ def get_intersection(bbox1, bbox2):
         if doOverlap((top_1, left_1, bottom_1, right_1),
                      (top_2, left_2, bottom_2, right_2)):
             intersection += [(page_1, page_width, page_height, max(
-                top_1, top_2), max(left_1, left_2), min(bottom_1, bottom_2),
-                              min(right_1, right_2))]
+                              top_1, top_2), max(left_1, left_2), min(bottom_1,
+                              bottom_2), min(right_1, right_2))]
     return intersection
 
 

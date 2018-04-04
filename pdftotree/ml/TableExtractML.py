@@ -1,24 +1,23 @@
 from __future__ import division
-from builtins import filter
-from builtins import str
-from builtins import range
-from builtins import object
+
 import logging
+from builtins import filter, object, range, str
+
 import numpy as np
 from pdfminer.utils import Plane
-from pdftotree.ml.features import get_alignment_features, get_lines_features
-from pdftotree.utils.bbox_utils import get_rectangles, compute_iou
-from pdftotree.utils.display_utils import pdf_to_img
-from pdftotree.utils.lines_utils import extend_horizontal_lines
-from pdftotree.utils.lines_utils import extend_vertical_lines
-from pdftotree.utils.lines_utils import get_vertical_and_horizontal
-from pdftotree.utils.lines_utils import merge_horizontal_lines
-from pdftotree.utils.lines_utils import merge_vertical_lines
-from pdftotree.utils.lines_utils import reorder_lines
-from pdftotree.utils.pdf.pdf_parsers import parse_layout
-from pdftotree.utils.pdf.pdf_utils import normalize_pdf, analyze_pages
 from wand.color import Color
 from wand.drawing import Drawing
+
+from pdftotree.ml.features import get_alignment_features, get_lines_features
+from pdftotree.utils.bbox_utils import compute_iou, get_rectangles
+from pdftotree.utils.display_utils import pdf_to_img
+from pdftotree.utils.lines_utils import (extend_horizontal_lines,
+                                         extend_vertical_lines,
+                                         get_vertical_and_horizontal,
+                                         merge_horizontal_lines,
+                                         merge_vertical_lines, reorder_lines)
+from pdftotree.utils.pdf.pdf_parsers import parse_layout
+from pdftotree.utils.pdf.pdf_utils import analyze_pages, normalize_pdf
 
 
 class TableExtractorML(object):
@@ -97,7 +96,7 @@ class TableExtractorML(object):
                 elems.figures, elems.layout.bbox, elems.layout.width,
                 elems.layout.height)
             # doc is scanned if any page is scanned
-            if (page_scanned == True):
+            if page_scanned:
                 self.log.debug(
                     "{} is scanned one of its pages is scanned.".format(
                         self.pdf_file))
@@ -184,7 +183,7 @@ class TableExtractorML(object):
         font_stat = self.font_stats[page_num]
         try:
             nodes, features = parse_layout(elems, font_stat)
-        except:
+        except Exception as e:
             nodes, features = [], []
         return [(page_num, page_width, page_height) +
                 (node.y0, node.x0, node.y1, node.x1)
