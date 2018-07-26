@@ -8,7 +8,4 @@ from pdftotree.core import parse
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
-__all__ = [
-    '__version__',
-    'parse',
-]
+__all__ = ["__version__", "parse"]

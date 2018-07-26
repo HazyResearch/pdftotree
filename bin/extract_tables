@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 
-from builtins import str
-from builtins import range
 import argparse
 import logging
-import numpy as np
 import os
 import pickle
 import sys
+from builtins import range, str
+
+import numpy as np
+from sklearn import linear_model, metrics, preprocessing
+
 from pdftotree.ml.TableExtractML import TableExtractorML
-from pdftotree.utils.bbox_utils import doOverlap, compute_iou, isContained
-from sklearn import linear_model, preprocessing, metrics
+from pdftotree.utils.bbox_utils import compute_iou, doOverlap, isContained
 
 
 def get_logger(name):
@@ -24,7 +25,7 @@ def get_logger(name):
         console.setFormatter(formatter)
 
         # Also setup pdftotree logs
-        pdftotree_log = logging.getLogger('pdftotree')
+        pdftotree_log = logging.getLogger("pdftotree")
         pdftotree_log.addHandler(console)
 
     return log
@@ -35,16 +36,29 @@ def get_bboxes_from_line(line):
         return {}
     bboxes = {}
     for bbox in line.split(";"):
-        page_num, page_width, page_height, y0, x0, y1, x1 = bbox[1:-1].split(
-            ",")
+        page_num, page_width, page_height, y0, x0, y1, x1 = bbox[1:-1].split(",")
         try:
-            bboxes[int(page_num)] += [(float(page_width), float(page_height),
-                                       float(y0), float(x0), float(y1),
-                                       float(x1))]
+            bboxes[int(page_num)] += [
+                (
+                    float(page_width),
+                    float(page_height),
+                    float(y0),
+                    float(x0),
+                    float(y1),
+                    float(x1),
+                )
+            ]
         except KeyError:
-            bboxes[int(page_num)] = [(float(page_width), float(page_height),
-                                      float(y0), float(x0), float(y1),
-                                      float(x1))]
+            bboxes[int(page_num)] = [
+                (
+                    float(page_width),
+                    float(page_height),
+                    float(y0),
+                    float(x0),
+                    float(y1),
+                    float(x1),
+                )
+            ]
     return bboxes
 
 
@@ -53,18 +67,17 @@ def get_features_and_labels(pdf_list, gt_list, datapath):
     gt = [gt.rstrip() for gt in open(gt_list).readlines()]
     tables = []
     for i, pdf_file in enumerate(pdf_files):
-        log.info("Processing {} ({} of {})".format(pdf_file, i + 1,
-                                                   len(pdf_files)))
+        log.info("Processing {} ({} of {})".format(pdf_file, i + 1, len(pdf_files)))
         gt_tables = get_bboxes_from_line(gt[i])
         extractor = TableExtractorML(datapath + pdf_file)
         bboxes, features, is_scanned = extractor.get_candidates_and_features()
         if is_scanned:
             log.exception(
-                "{} is a scanned document, which is not supported.".format(
-                    pdf_file))
-            raise ValueError("Documents requiring OCR are not supported.",
-                             datapath,
-                             pdf_file)
+                "{} is a scanned document, which is not supported.".format(pdf_file)
+            )
+            raise ValueError(
+                "Documents requiring OCR are not supported.", datapath, pdf_file
+            )
         labels = extractor.get_labels(gt_tables)
         bboxes = [[i] + list(bbox) for bbox in bboxes]
         if i == 0:
@@ -81,20 +94,20 @@ def get_features_and_labels(pdf_list, gt_list, datapath):
 
 
 def load_train_data(pdf_list, gt_list, datapath):
-    if os.path.exists(pdf_list + '.features.pkl'):
+    if os.path.exists(pdf_list + ".features.pkl"):
         log.info("Loading precomputed features for {}...".format(pdf_list))
         # load pickled data
-        X = pickle.load(open(pdf_list + '.features.pkl', 'rb'))
-        y = pickle.load(open(pdf_list + '.labels.pkl', 'rb'))
-        tables = pickle.load(open(pdf_list + '.candidates.pkl', 'rb'))
+        X = pickle.load(open(pdf_list + ".features.pkl", "rb"))
+        y = pickle.load(open(pdf_list + ".labels.pkl", "rb"))
+        tables = pickle.load(open(pdf_list + ".candidates.pkl", "rb"))
         log.info("Features loaded!")
     else:
         log.info("Building feature matrix for {}".format(pdf_list))
         # compute and pickle feature matrix
         X, y, tables = get_features_and_labels(pdf_list, gt_list, datapath)
-        pickle.dump(X, open(pdf_list + '.features.pkl', 'wb'))
-        pickle.dump(y, open(pdf_list + '.labels.pkl', 'wb'))
-        pickle.dump(tables, open(pdf_list + '.candidates.pkl', 'wb'))
+        pickle.dump(X, open(pdf_list + ".features.pkl", "wb"))
+        pickle.dump(y, open(pdf_list + ".labels.pkl", "wb"))
+        pickle.dump(tables, open(pdf_list + ".candidates.pkl", "wb"))
     return X, y, tables.astype(np.int)
 
 
@@ -105,17 +118,16 @@ def get_features(pdf_list, datapath):
     scanned_indices = []
     scanned_tables = {}
     for i, pdf_file in enumerate(pdf_files):
-        log.info("Processing {} ({} of {})".format(pdf_file, i + 1,
-                                                   len(pdf_files)))
+        log.info("Processing {} ({} of {})".format(pdf_file, i + 1, len(pdf_files)))
         extractor = TableExtractorML(datapath + pdf_file)
         bboxes, features, is_scanned = extractor.get_candidates_and_features()
-        if (is_scanned):
+        if is_scanned:
             log.exception(
-                "{} is a scanned document, which is not supported.".format(
-                    pdf_file))
-            raise ValueError("Documents requiring OCR are not supported.",
-                             datapath,
-                             pdf_file)
+                "{} is a scanned document, which is not supported.".format(pdf_file)
+            )
+            raise ValueError(
+                "Documents requiring OCR are not supported.", datapath, pdf_file
+            )
         bboxes = [[i] + list(bbox) for bbox in bboxes]
         if len(X) == 0:
             X = np.array(features)
@@ -123,34 +135,29 @@ def get_features(pdf_list, datapath):
         else:
             X = np.concatenate((X, np.array(features)), axis=0)
             tables = np.concatenate((tables, bboxes), axis=0)
-    if (len(X) > 0):
+    if len(X) > 0:
         X = preprocessing.scale(X, axis=0)
     log.info("Features computed!")
     return X, tables, scanned_indices, scanned_tables
 
 
 def load_test_data(pdf_list, datapath):
-    if os.path.exists(pdf_list + '.features.pkl'):
+    if os.path.exists(pdf_list + ".features.pkl"):
         log.info("Loading precomputed features for {}...".format(pdf_list))
         # load pickled data
-        X = pickle.load(open(pdf_list + '.features.pkl', 'rb'))
-        tables = pickle.load(open(pdf_list + '.candidates.pkl', 'rb'))
-        scanned_indices = pickle.load(
-            open(pdf_list + '.scanned_indices.pkl', 'rb'))
-        scanned_tables = pickle.load(
-            open(pdf_list + '.scanned_tables.pkl', 'rb'))
+        X = pickle.load(open(pdf_list + ".features.pkl", "rb"))
+        tables = pickle.load(open(pdf_list + ".candidates.pkl", "rb"))
+        scanned_indices = pickle.load(open(pdf_list + ".scanned_indices.pkl", "rb"))
+        scanned_tables = pickle.load(open(pdf_list + ".scanned_tables.pkl", "rb"))
         log.info("Features loaded!")
     else:
         log.info("Building feature matrix for {}".format(pdf_list))
         # compute and pickle feature matrix
-        X, tables, scanned_indices, scanned_tables = get_features(
-            pdf_list, datapath)
-        pickle.dump(X, open(pdf_list + '.features.pkl', 'wb'))
-        pickle.dump(tables, open(pdf_list + '.candidates.pkl', 'wb'))
-        pickle.dump(scanned_indices,
-                    open(pdf_list + '.scanned_indices.pkl', 'wb'))
-        pickle.dump(scanned_tables, open(pdf_list + '.scanned_tables.pkl',
-                                         'wb'))
+        X, tables, scanned_indices, scanned_tables = get_features(pdf_list, datapath)
+        pickle.dump(X, open(pdf_list + ".features.pkl", "wb"))
+        pickle.dump(tables, open(pdf_list + ".candidates.pkl", "wb"))
+        pickle.dump(scanned_indices, open(pdf_list + ".scanned_indices.pkl", "wb"))
+        pickle.dump(scanned_tables, open(pdf_list + ".scanned_tables.pkl", "wb"))
     return X, tables.astype(np.int), scanned_indices, scanned_tables
 
 
@@ -161,8 +168,11 @@ def compute_overlap_matrix(pdf_bboxes, iou_thresh):
         for j, bb2 in enumerate(pdf_bboxes):
             if i != j and bb1[0] == bb2[0] and doOverlap(bb1[-4:], bb2[-4:]):
                 iou = compute_iou(bb1[-4:], bb2[-4:])
-                if iou > iou_thresh or isContained(
-                        bb1[-4:], bb2[-4:]) or isContained(bb2[-4:], bb1[-4:]):
+                if (
+                    iou > iou_thresh
+                    or isContained(bb1[-4:], bb2[-4:])
+                    or isContained(bb2[-4:], bb1[-4:])
+                ):
                     overlap[i, j] = 1.
     return overlap
 
@@ -219,14 +229,14 @@ def train_model(X_train, y_train, model_path):
     logistic = linear_model.LogisticRegression()
     logistic.fit(X_train, y_train)
     log.info("Model trained!")
-    pickle.dump(logistic, open(model_path, 'wb'))
+    pickle.dump(logistic, open(model_path, "wb"))
     log.info("Model saved!")
     return logistic
 
 
 def load_model(model_path):
     log.info("Loading pretrained model...")
-    model = pickle.load(open(model_path, 'rb'))
+    model = pickle.load(open(model_path, "rb"))
     log.info("Model loaded!")
     return model
 
@@ -256,23 +266,24 @@ def bbox_to_dict(tables):
     return bbox_dict
 
 
-def write_bbox_to_file(bbox_file, pdf_idx_to_filtered_bboxes, num_test,
-                       scanned_test, scanned_tables):
+def write_bbox_to_file(
+    bbox_file, pdf_idx_to_filtered_bboxes, num_test, scanned_test, scanned_tables
+):
     for i in range(num_test):
-        if (i in scanned_test):
+        if i in scanned_test:
             bbox_file.write(scanned_tables[i])
             continue
         try:
             filtered_bboxes = pdf_idx_to_filtered_bboxes[i]
-            bbox_file.write(";".join([str(bbox)
-                                      for bbox in filtered_bboxes]) + "\n")
+            bbox_file.write(";".join([str(bbox) for bbox in filtered_bboxes]) + "\n")
         except KeyError:
             bbox_file.write("NO_TABLES\n")
     bbox_file.close()
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="""
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="""
         Script to extract tables bounding boxes from PDF files using machine
         learning. If `model.pkl` is saved in the model-path, the pickled
         model will be used for prediction. Otherwise the model will be
@@ -280,60 +291,57 @@ if __name__ == '__main__':
         .bbox file containing the tables for the pdf documents listed in the
         file --test-pdf. If --mode is dev, the script will also extract ground
         truth labels for the test data and compute statistics.
-        """)
+        """
+    )
     parser.add_argument(
-        '--mode',
+        "--mode",
         type=str,
-        default='test',
-        help="Usage mode dev or test, default is test")
+        default="test",
+        help="Usage mode dev or test, default is test",
+    )
     parser.add_argument(
-        '--model-path',
+        "--model-path",
         type=str,
         required=True,
-        help=
-        "Path to the model. If the file exists, it will be used. Otherwise, a new model will be trained."
+        help="Path to the model. If the file exists, it will be used. Otherwise, a new model will be trained.",
     )
     parser.add_argument(
-        '--train-pdf',
+        "--train-pdf",
         type=str,
-        help=
-        "List of pdf file names used for training. These files must be saved in the --datapath directory. Required if no pretrained model is provided."
+        help="List of pdf file names used for training. These files must be saved in the --datapath directory. Required if no pretrained model is provided.",
     )
     parser.add_argument(
-        '--test-pdf',
+        "--test-pdf",
         type=str,
         required=True,
-        help=
-        "List of pdf file names used for testing. These files must be saved in the --datapath directory."
+        help="List of pdf file names used for testing. These files must be saved in the --datapath directory.",
     )
     parser.add_argument(
-        '--gt-train',
+        "--gt-train",
         type=str,
-        help=
-        "Ground truth train tables. Required if no pretrained model is provided."
+        help="Ground truth train tables. Required if no pretrained model is provided.",
     )
     parser.add_argument(
-        '--gt-test', type=str, required=True, help="Ground truth test tables.")
+        "--gt-test", type=str, required=True, help="Ground truth test tables."
+    )
     parser.add_argument(
-        '--datapath',
+        "--datapath",
         type=str,
         required=True,
-        help="Path to directory containing the input documents.")
+        help="Path to directory containing the input documents.",
+    )
     parser.add_argument(
-        '--iou-thresh',
+        "--iou-thresh",
         type=float,
         default=0.8,
-        help="Intersection over union threshold to remove duplicate tables")
+        help="Intersection over union threshold to remove duplicate tables",
+    )
     parser.add_argument(
-        '-v',
-        dest='verbose',
-        action='store_true',
-        help="Output INFO level logging")
+        "-v", dest="verbose", action="store_true", help="Output INFO level logging"
+    )
     parser.add_argument(
-        '-vv',
-        dest='debug',
-        action='store_true',
-        help="Output DEBUG level logging")
+        "-vv", dest="debug", action="store_true", help="Output DEBUG level logging"
+    )
     args = parser.parse_args()
 
     if args.debug:
@@ -356,30 +364,33 @@ if __name__ == '__main__':
             )
 
         X_train, y_train, tables_train = load_train_data(
-            args.train_pdf, args.gt_train, args.datapath)
+            args.train_pdf, args.gt_train, args.datapath
+        )
         model = train_model(X_train, y_train, args.model_path)
     num_test = len(open(args.test_pdf).readlines())
 
-    if args.mode == 'dev':
+    if args.mode == "dev":
         # load dev data (with ground truth, for evaluation)
         X_test, y_test, tables_test = load_train_data(
-            args.test_pdf, args.gt_test, args.datapath)
+            args.test_pdf, args.gt_test, args.datapath
+        )
         # predict tables for dev tables and evaluate
         y_pred = model.predict(X_test)
         log.info("Testing for {} pdf documents".format(num_test))
         compute_stats(y_pred, y_test)
-    elif args.mode == 'test':
+    elif args.mode == "test":
         # load test data (with no ground truth)
         X_test, tables_test, scanned_test, scanned_tables = load_test_data(
-            args.test_pdf, args.datapath)
-        if (len(X_test) == 0):  # all docs are scanned
+            args.test_pdf, args.datapath
+        )
+        if len(X_test) == 0:  # all docs are scanned
             y_pred = []
         else:
             y_pred = model.predict(X_test)
     else:
         log.error("Mode not recognized, pick dev or test.")
         sys.exit()
-    if (len(y_pred) != 0):
+    if len(y_pred) != 0:
         predicted_tables = tables_test[np.flatnonzero(y_pred)]
         # todo: remove duplicate tables
         # pdf_idx_to_filtered_bboxes = filter_bboxes(predicted_tables, args.iou_thresh)
@@ -387,6 +398,7 @@ if __name__ == '__main__':
         # write tables to file
     else:
         pdf_idx_to_filtered_bboxes = []
-    bbox_file = open(args.test_pdf + '.bbox', 'w')
-    write_bbox_to_file(bbox_file, pdf_idx_to_filtered_bboxes, num_test,
-                       scanned_test, scanned_tables)
+    bbox_file = open(args.test_pdf + ".bbox", "w")
+    write_bbox_to_file(
+        bbox_file, pdf_idx_to_filtered_bboxes, num_test, scanned_test, scanned_tables
+    )

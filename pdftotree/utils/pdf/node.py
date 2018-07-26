@@ -1,8 +1,8 @@
-'''
+"""
 Created on Jun 10, 2016
 
 @author: xiao
-'''
+"""
 import numbers
 from collections import Counter
 
@@ -16,39 +16,41 @@ from pdftotree.utils.pdf.vector_utils import bound_bboxes, bound_elems
 
 def elem_type(elem):
     if isinstance(elem, LTLine):
-        return 'line'
+        return "line"
     if isinstance(elem, LTCurve):
-        return 'curve'
+        return "curve"
     if isinstance(elem, LTTextLine):
-        return 'text'
+        return "text"
     if isinstance(elem, LTFigure):
-        return 'figure'
-    return 'unkown'
+        return "figure"
+    return "unkown"
 
 
 class Node(LTComponent):
-    '''
+    """
     A rectangular region in the document representing certain local semantics.
     Also holds its data and features.
-    '''
+    """
 
     def __init__(self, elems):
-        '''
+        """
         Constructor
-        '''
+        """
         self.elems = elems
         self.sum_elem_bbox = 0
         for elem in elems:
             self.sum_elem_bbox = self.sum_elem_bbox + abs(
-                (elem.bbox[0] - elem.bbox[2]) * (elem.bbox[1] - elem.bbox[3]))
+                (elem.bbox[0] - elem.bbox[2]) * (elem.bbox[1] - elem.bbox[3])
+            )
         #     # self.sum_elem_bbox = self.sum_elem_bbox + len(elem.get_text())
         self.table_area_threshold = 0.7
         self.set_bbox(bound_elems(elems))
         # self.table_indicator = True
         self.type_counts = Counter(map(elem_type, elems))
-        if (elem_type(elems) not in ["figure", "unknown"]):
+        if elem_type(elems) not in ["figure", "unknown"]:
             self.feat_counts = Counter(
-                kv for e in elems for kv in six.iteritems(e.feats))
+                kv for e in elems for kv in six.iteritems(e.feats)
+            )
         else:
             self.feat_counts = 0
         self.type = "UNK"
@@ -64,18 +66,18 @@ class Node(LTComponent):
 
     def is_borderless(self):
         # at least this many segments for a table
-        return self.type_counts['line'] < 6
+        return self.type_counts["line"] < 6
 
     def is_table(self):
-        '''
+        """
         Count the node's number of mention al ignment in both axes to determine
         if the node is a table.
-        '''
-        if self.type_counts['text'] < 6 or 'figure' in self.type_counts:
+        """
+        if self.type_counts["text"] < 6 or "figure" in self.type_counts:
             return False
         for e in self.elems:
             # Characters written as curve are usually small, discard diagrams here
-            if elem_type(e) == 'curve' and e.height * e.width > 100:
+            if elem_type(e) == "curve" and e.height * e.width > 100:
                 return False
         # import re
         # space_re = '\\s+'
@@ -93,25 +95,28 @@ class Node(LTComponent):
         #     count_arr = max([ws_arr.count(i) for i in ws_arr])
         #     if(float(count_arr)/len(ws_arr) > 0.75):
         #         return True
-        if ((self.sum_elem_bbox /
-             (self.height * self.width)) > self.table_area_threshold):
+        if (
+            self.sum_elem_bbox / (self.height * self.width)
+        ) > self.table_area_threshold:
             return False
         has_many_x_align = False
         has_many_y_align = False
         for k, v in six.iteritems(self.feat_counts):
             font_key = k[0]
-            if v >= 2 and '-' in font_key:  # Text row or column with more than 2 elements
-                if font_key[-2] == 'x':
+            if (
+                v >= 2 and "-" in font_key
+            ):  # Text row or column with more than 2 elements
+                if font_key[-2] == "x":
                     has_many_x_align = True
-                if font_key[-2] == 'y':
+                if font_key[-2] == "y":
                     has_many_y_align = True
         return has_many_x_align and has_many_y_align
         # return 0.5
 
     def get_grid(self):
-        '''
+        """
         Standardize the layout of the table into grids
-        '''
+        """
         mentions, lines = _split_text_n_lines(self.elems)
         # Sort mentions in reading order where y values are snapped to half height-sized grid
         mentions.sort(key=lambda m: (m.yc_grid, m.xc))
@@ -120,8 +125,9 @@ class Node(LTComponent):
         return grid
 
     def _find_vbars_for_row(self, plane, row):
-        align_grid_size = sum(
-            m.height for m in row) / 2.0 / len(row)  # half the avg height
+        align_grid_size = (
+            sum(m.height for m in row) / 2.0 / len(row)
+        )  # half the avg height
         # Find all x_coords of vertical bars crossing this row
         ryc = sum(m.yc for m in row) / len(row)  # avg yc
         query_rect = (self.x0, ryc, self.x1, ryc)
@@ -138,8 +144,11 @@ class Node(LTComponent):
         return clustered_vbars
 
     def __str__(self, *args, **kwargs):
-        return '\t'.join(r.get_text().encode('utf8', 'replace')
-                         for r in self.elems if isinstance(r, LTTextLine))
+        return "\t".join(
+            r.get_text().encode("utf8", "replace")
+            for r in self.elems
+            if isinstance(r, LTTextLine)
+        )
 
 
 #############################################
@@ -173,9 +182,9 @@ def _find_col_parent_for_row(content):
 
 
 def _get_cols(row_content):
-    '''
+    """
     Counting the number columns based on the content of this row
-    '''
+    """
     cols = []
     subcell_col = []
     prev_bar = None
@@ -197,16 +206,16 @@ def _get_cols(row_content):
 def _row_str(row_content):
     def strfy(r):
         if r is None:
-            return 'None'
+            return "None"
         if isinstance(r, tuple):
             _c, r = r
         if isinstance(r, LTTextLine):
-            return r.get_text().encode('utf8', 'replace')
+            return r.get_text().encode("utf8", "replace")
         if isinstance(r, numbers.Number):
-            return '|'
+            return "|"
         return str(r)
 
-    return '\t'.join(strfy(r) for r in row_content)
+    return "\t".join(strfy(r) for r in row_content)
 
 
 def _get_rows(mentions):
@@ -227,7 +236,7 @@ def _get_rows(mentions):
 
 
 def _one_contains_other(s1, s2):
-    '''
+    """
     Whether one set contains the other
-    '''
+    """
     return min(len(s1), len(s2)) == len(s1 & s2)

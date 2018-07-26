@@ -1,7 +1,7 @@
 pdftotree
 =========
 
-|License| |Stars| |PyPI| |Version| |Issues| |Travis| |Coveralls|
+|License| |Stars| |PyPI| |Version| |Issues| |Travis| |Coveralls| |CodeStyle|
 
 Fonduer_ has been successfully extended to perform information extraction from
 richly formatted data such as tables. A crucial step in this process is the
@@ -177,9 +177,7 @@ your virtualenv by running::
 
     $ make dev
 
-You will also need flake8_ installed locally to run our code-style checks::
-
-    $ pip install flake8
+This will also install all the tools we use to enforce code-style.
 
 Then you can run our tests::
 
@@ -195,10 +193,12 @@ Then you can run our tests::
    :target: https://pypi.python.org/pypi/pdftotree
 .. |Issues| image:: https://img.shields.io/github/issues/HazyResearch/pdftotree.svg
    :target: https://github.com/HazyResearch/pdftotree/issues
-.. |Travis| image:: https://img.shields.io/travis/HazyResearch/pdftotree.svg
+.. |Travis| image:: https://img.shields.io/travis/HazyResearch/pdftotree/master.svg
    :target: https://travis-ci.org/HazyResearch/pdftotree
 .. |Coveralls| image:: https://img.shields.io/coveralls/github/HazyResearch/pdftotree.svg
    :target: https://coveralls.io/github/HazyResearch/pdftotree
+.. |CodeStyle| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+   :target: https://github.com/ambv/black
 .. _Fonduer: https://hazyresearch.github.io/snorkel/blog/fonduer.html
 .. _DocumentAnnotation: https://github.com/payalbajaj/DocumentAnnotation
 .. _PaleoDocs: http://i.stanford.edu/hazy/share/fonduer/pdftotree_paleo.tar.gz

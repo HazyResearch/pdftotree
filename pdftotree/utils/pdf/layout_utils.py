@@ -1,8 +1,8 @@
-'''
+"""
 Created on Jan 25, 2016
 
 @author: xiao
-'''
+"""
 import collections
 import logging
 from builtins import range
@@ -11,14 +11,14 @@ from itertools import chain
 import numpy as np
 from pdfminer.layout import LTAnno
 
-from pdftotree.utils.pdf.vector_utils import intersect, inside
+from pdftotree.utils.pdf.vector_utils import inside, intersect
 
 
 def traverse_layout(root, callback):
-    '''
+    """
     Tree walker and invokes the callback as it
     traverse pdf object tree
-    '''
+    """
     callback(root)
     if isinstance(root, collections.Iterable):
         for child in root:
@@ -26,10 +26,10 @@ def traverse_layout(root, callback):
 
 
 def get_near_items(tree, tree_key):
-    '''
+    """
     Check both possible neighbors for key
     in a binary tree
-    '''
+    """
     try:
         yield tree.floor_item(tree_key)
     except KeyError:
@@ -41,12 +41,12 @@ def get_near_items(tree, tree_key):
 
 
 def align_add(tree, key, item, align_thres=2.0):
-    '''
+    """
     Adding the item object to a binary tree with the given
     key while allow for small key differences
     close_enough_func that checks if two keys are
     within threshold
-    '''
+    """
     for near_key, near_list in get_near_items(tree, key):
         if abs(key - near_key) < align_thres:
             near_list.append(item)
@@ -118,10 +118,10 @@ def is_hline(l):
 
 
 def collect_table_content(table_bboxes, elems):
-    '''
+    """
     Returns a list of elements that are contained inside
     the corresponding supplied bbox.
-    '''
+    """
     # list of table content chars
     table_contents = [[] for _ in range(len(table_bboxes))]
     prev_content = None
@@ -150,29 +150,29 @@ def collect_table_content(table_bboxes, elems):
     return table_contents
 
 
-_bbox = collections.namedtuple('_bbox', ['bbox'])
-_inf_bbox = _bbox([float('inf')] * 4)
+_bbox = collections.namedtuple("_bbox", ["bbox"])
+_inf_bbox = _bbox([float("inf")] * 4)
 
 
 def _gaps_from(intervals):
-    '''
+    """
     From a list of intervals extract
     a list of sorted gaps in the form of [(g,i)]
     where g is the size of the ith gap.
-    '''
+    """
     sliding_window = zip(intervals, intervals[1:])
     gaps = [b[0] - a[1] for a, b in sliding_window]
     return gaps
 
 
 def project_onto(objs, axis, min_gap_size=4.0):
-    '''
+    """
     Projects object bboxes onto the axis and return the
     unioned intervals and groups of objects in intervals.
-    '''
-    if axis == 'x':
+    """
+    if axis == "x":
         axis = 0
-    if axis == 'y':
+    if axis == "y":
         axis = 1
     axis_end = axis + 2
     if axis == 0:  # if projecting onto X axis
@@ -215,13 +215,13 @@ def project_onto(objs, axis, min_gap_size=4.0):
 
 
 def recursive_xy_divide(elems, avg_font_size):
-    '''
+    """
     Recursively group/divide the document by white stripes
     by projecting elements onto alternating axes as intervals.
 
     avg_font_size: the minimum gap size between elements below
     which we consider interval continuous.
-    '''
+    """
     log = logging.getLogger(__name__)
     log.info(avg_font_size)
     objects = list(elems.mentions)
@@ -232,12 +232,12 @@ def recursive_xy_divide(elems, avg_font_size):
     # bboxes can be recursively reconstructed from
     # the leaves
     def divide(objs, bbox, h_split=True, is_single=False):
-        '''
+        """
         Recursive wrapper for splitting a list of objects
         with bounding boxes.
         h_split: whether to split along y axis, otherwise
         we split along x axis.
-        '''
+        """
         if not objs:
             return []
 
@@ -268,6 +268,6 @@ def recursive_xy_divide(elems, avg_font_size):
     full_page_bbox = (0, 0, elems.layout.width, elems.layout.height)
     # Filter out invalid objects
     objects = [o for o in objects if inside(full_page_bbox, o.bbox)]
-    log.info('avg_font_size for dividing', avg_font_size)
+    log.info("avg_font_size for dividing", avg_font_size)
     tree = divide(objects, full_page_bbox) if objects else []
     return bboxes, tree

@@ -1,14 +1,13 @@
-'''
+"""
 Created on Dec 2, 2015
 
 @author: xiao
-'''
+"""
 from __future__ import division
-from builtins import zip
-from builtins import range
-from builtins import object
+
 import bisect
 import logging
+from builtins import object, range, zip
 from collections import defaultdict
 from functools import cmp_to_key
 from pprint import pformat
@@ -21,30 +20,30 @@ from pdftotree.utils.pdf.vector_utils import inside, reading_order
 
 
 class Cell(object):
-    '''Represents a cell with no visual dividers inside'''
+    """Represents a cell with no visual dividers inside"""
 
     def __init__(self, origin, texts=[], rowspan=1, colspan=1):
-        '''
+        """
         origin: the top left grid coordinate of the cell
-        '''
+        """
         self.rowstart, self.colstart = origin
         self.rowend = self.rowstart + rowspan
         self.colend = self.colstart + colspan
         self.texts = texts
 
     def __str__(self, *args, **kwargs):
-        return ','.join([m.get_text().encode('utf8') for m in self.texts])
+        return ",".join([m.get_text().encode("utf8") for m in self.texts])
 
 
 class Grid(object):
-    '''
+    """
     A rendered grid to capture structural layout info
-    '''
+    """
 
     def __init__(self, mentions, lines, region, min_cell_size=6.0):
-        '''
+        """
         Constructor
-        '''
+        """
         self.min_cell_size = min_cell_size
         vlines, hlines = _split_vlines_hlines(lines)
 
@@ -53,10 +52,8 @@ class Grid(object):
 
         # Remove closely clustered lines
         # Also make sure there is at least 1 mega column for the table
-        self.xs = _retain_centroids(self.xs + [region.x0, region.x1],
-                                    min_cell_size)
-        self.ys = _retain_centroids(self.ys + [region.y0, region.y1],
-                                    min_cell_size)
+        self.xs = _retain_centroids(self.xs + [region.x0, region.x1], min_cell_size)
+        self.ys = _retain_centroids(self.ys + [region.y0, region.y1], min_cell_size)
 
         self.xranges = list(zip(self.xs, self.xs[1:]))
         self.yranges = list(zip(self.ys, self.ys[1:]))
@@ -66,7 +63,8 @@ class Grid(object):
 
         # Grid contents
         self._grid = np.full(
-            [self.num_rows, self.num_cols], None, dtype=np.dtype(object))
+            [self.num_rows, self.num_cols], None, dtype=np.dtype(object)
+        )
         grid = self._grid
 
         # Record whether a particular cell boundary is present
@@ -104,8 +102,7 @@ class Grid(object):
             bbox = (x0, y0, x1, y1)
             # Keep mentions whose centers are inside the cell
             cell.texts = [
-                m for m in text_plane.find(bbox)
-                if inside(bbox, (m.xc, m.yc) * 2)
+                m for m in text_plane.find(bbox) if inside(bbox, (m.xc, m.yc) * 2)
             ]
 
         # TODO: provide HTML conversion here
@@ -119,9 +116,9 @@ class Grid(object):
         return self.to_dataframe().to_html(index=False, header=False)
 
     def get_normalized_grid(self):
-        '''
+        """
         Analyzes subcell structure
-        '''
+        """
         log = logging.getLogger(__name__)
         # Resolve multirow mentions, TODO: validate against all PDFs
         #  subcol_count = 0
@@ -134,7 +131,7 @@ class Grid(object):
                 cell.texts.sort(key=cmp_to_key(reading_order))
                 #                intervals, groups = project_onto(cell.texts, axis='x', self.min_cell_size)
                 #  prev = None
-                log.debug('=' * 50)
+                log.debug("=" * 50)
                 for m in cell.texts:
                     subrow_across_cell[m.yc_grid].append(m)
                     #  prev = m
@@ -149,11 +146,11 @@ class Grid(object):
         return mega_rows
 
     def _mark_grid_bounds(self, plane, region_bbox):
-        '''
+        """
         Assume all lines define a complete grid over the region_bbox.
         Detect which lines are missing so that we can recover merged
         cells.
-        '''
+        """
         # Grid boundaries
         vbars = np.zeros([self.num_rows, self.num_cols + 1], dtype=np.bool)
         hbars = np.zeros([self.num_rows + 1, self.num_cols], dtype=np.bool)
@@ -161,8 +158,7 @@ class Grid(object):
         def closest_idx(arr, elem):
             left = bisect.bisect_left(arr, elem) - 1
             right = bisect.bisect_right(arr, elem) - 1
-            return left if abs(arr[left] - elem) < abs(
-                arr[right] - elem) else right
+            return left if abs(arr[left] - elem) < abs(arr[right] - elem) else right
 
         # Figure out which separating segments are missing, i.e. merge cells
         for row, (y0, y1) in enumerate(self.yranges):
@@ -182,7 +178,7 @@ class Grid(object):
 
 
 def _retain_centroids(numbers, thres):
-    '''Only keep one number for each cluster within thres of each other'''
+    """Only keep one number for each cluster within thres of each other"""
     numbers.sort()
     prev = -1
     ret = []
@@ -194,7 +190,7 @@ def _retain_centroids(numbers, thres):
 
 
 def _split_vlines_hlines(lines):
-    '''Separates lines into horizontal and vertical ones'''
+    """Separates lines into horizontal and vertical ones"""
     vlines, hlines = [], []
     for line in lines:
         (vlines if line.x1 - line.x0 < 0.1 else hlines).append(line)
@@ -202,8 +198,8 @@ def _split_vlines_hlines(lines):
 
 
 def _npiter(arr):
-    '''Wrapper for iterating numpy array'''
-    for a in np.nditer(arr, flags=['refs_ok']):
+    """Wrapper for iterating numpy array"""
+    for a in np.nditer(arr, flags=["refs_ok"]):
         c = a.item()
         if c is not None:
             yield c

@@ -1,11 +1,12 @@
-'''
+"""
 Created on Oct 21, 2015
 
 @author: xiao
 
 
-'''
+"""
 from collections import namedtuple
+
 import numpy as np
 
 # bbox indices
@@ -15,7 +16,7 @@ x1 = 2
 y1 = 3
 
 
-class Segment(namedtuple('Segment', ['e', 'vector'])):
+class Segment(namedtuple("Segment", ["e", "vector"])):
     __slots__ = ()
 
     @property
@@ -29,16 +30,15 @@ class Segment(namedtuple('Segment', ['e', 'vector'])):
         return bool(self.vector[y0])
 
     def __str__(self, *args, **kwargs):
-        return ' '.join(
-            str(x) for x in [self.e, self.vector, self.e.linewidth])
+        return " ".join(str(x) for x in [self.e, self.vector, self.e.linewidth])
 
 
 def vectorize(e, tolerance=0.1):
-    '''
+    """
     vectorizes the pdf object's bounding box
     min_width is the width under which we consider it a line
     instead of a big rectangle
-    '''
+    """
     tolerance = max(tolerance, e.linewidth)
     is_high = e.height > tolerance
     is_wide = e.width > tolerance
@@ -50,13 +50,16 @@ def vectorize(e, tolerance=0.1):
 
 
 def aligned(e1, e2):
-    '''
+    """
     alignment is determined by two boxes having one exactly the same
     attribute, which could mean parallel, perpendicularly forming a
     corner etc.
-    '''
-    return (any(close(c1, c2) for c1, c2 in zip(e1.bbox, e2.bbox))
-            or x_center_aligned(e1, e2) or y_center_aligned(e1, e2))
+    """
+    return (
+        any(close(c1, c2) for c1, c2 in zip(e1.bbox, e2.bbox))
+        or x_center_aligned(e1, e2)
+        or y_center_aligned(e1, e2)
+    )
 
 
 def x_center_aligned(e1, e2):
@@ -92,18 +95,18 @@ def l1(c1, c2):
 
 
 def segment_diff(s1, s2):
-    '''
+    """
     Returns the sum of absolute difference between
     two segments' end points.
     Only perfectly aligned segments return 0
-    '''
+    """
     return abs(s1[0] - s2[0]) + abs(s1[1] - s2[1])
 
 
 def bound_bboxes(bboxes):
-    '''
+    """
     Finds the minimal bbox that contains all given bboxes
-    '''
+    """
     group_x0 = min(map(lambda l: l[x0], bboxes))
     group_y0 = min(map(lambda l: l[y0], bboxes))
     group_x1 = max(map(lambda l: l[x1], bboxes))
@@ -112,9 +115,9 @@ def bound_bboxes(bboxes):
 
 
 def bound_elems(elems):
-    '''
+    """
     Finds the minimal bbox that contains all given elems
-    '''
+    """
     group_x0 = min(map(lambda l: l.x0, elems))
     group_y0 = min(map(lambda l: l.y0, elems))
     group_x1 = max(map(lambda l: l.x1, elems))
@@ -123,20 +126,23 @@ def bound_elems(elems):
 
 
 def intersect(a, b):
-    '''
+    """
     Check if two rectangles intersect
-    '''
-    if (a[x0] == a[x1] or a[y0] == a[y1]):
+    """
+    if a[x0] == a[x1] or a[y0] == a[y1]:
         return False
-    if (b[x0] == b[x1] or b[y0] == b[y1]):
+    if b[x0] == b[x1] or b[y0] == b[y1]:
         return False
-    return a[x0] <= b[x1] and b[x0] <= a[x1] \
-        and a[y0] <= b[y1] and b[y0] <= a[y1]
+    return a[x0] <= b[x1] and b[x0] <= a[x1] and a[y0] <= b[y1] and b[y0] <= a[y1]
 
 
 def inside(outer, inner):
-    return inner[x0] >= outer[x0] and inner[x1] <= outer[x1] \
-        and inner[y0] >= outer[y0] and inner[y0] <= outer[y1]
+    return (
+        inner[x0] >= outer[x0]
+        and inner[x1] <= outer[x1]
+        and inner[y0] >= outer[y0]
+        and inner[y0] <= outer[y1]
+    )
 
 
 _stretch_dir = np.array([-1, -1, 1, 1])
@@ -147,9 +153,9 @@ def enlarge(bbox, delta):
 
 
 def reading_order(e1, e2):
-    '''
+    """
     A comparator to sort bboxes from top to bottom, left to right
-    '''
+    """
     b1 = e1.bbox
     b2 = e2.bbox
     if round(b1[y0]) == round(b2[y0]) or round(b1[y1]) == round(b2[y1]):
@@ -158,9 +164,9 @@ def reading_order(e1, e2):
 
 
 def xy_reading_order(e1, e2):
-    '''
+    """
     A comparator to sort bboxes from left to right, top to bottom
-    '''
+    """
     b1 = e1.bbox
     b2 = e2.bbox
     if round(b1[x0]) == round(b2[x0]):
@@ -169,21 +175,20 @@ def xy_reading_order(e1, e2):
 
 
 def column_order(b1, b2):
-    '''
+    """
     A comparator that sorts bboxes first by "columns", where a column is made
     up of all bboxes that overlap, then by vertical position in each column.
 
     b1 = [b1.type, b1.top, b1.left, b1.bottom, b1.right]
     b2 = [b2.type, b2.top, b2.left, b2.bottom, b2.right]
-    '''
+    """
     (top, left, bottom) = (1, 2, 3)
     # TODO(senwu): Reimplement the functionality of this comparator to
     # detect the number of columns, and sort those in reading order.
 
     # TODO: This is just a simple top to bottom, left to right comparator
     # for now.
-    if (round(b1[top]) == round(b2[top])
-            or round(b1[bottom]) == round(b2[bottom])):
+    if round(b1[top]) == round(b2[top]) or round(b1[bottom]) == round(b2[bottom]):
         return float_cmp(b1[left], b2[left])
     return float_cmp(b1[top], b2[top])
 
@@ -205,13 +210,13 @@ def float_cmp(f1, f2):
 
 
 def merge_intervals(elems, overlap_thres=2.0):
-    '''
+    """
     Project in x axis
     Sort by start
     Go through segments and keep max x1
 
     Return a list of non-overlapping intervals
-    '''
+    """
     overlap_thres = max(0.0, overlap_thres)
     ordered = sorted(elems, key=lambda e: e.x0)
 
