@@ -20,7 +20,7 @@ before_script:
   - cd ../../
 
 script:
-  - coverage run --source=pdftotree setup.py test
+  - coverage run --source=pdftotree -m pytest tests -v -rsXx
   - python setup.py -q install
   - pdftotree tests/input/112823.pdf
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from tests.context import pdftotree
+import pdftotree
 
 
 def test_heuristic_completion():

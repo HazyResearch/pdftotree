@@ -6,7 +6,7 @@ dev:
 	pre-commit install
 
 test: $(TESTDATA)/paleo_visual_model.h5 dev check
-	python setup.py test
+	pytest tests -v -rsXx
 
 $(TESTDATA)/paleo_visual_model.h5:
 	cd tests/input/ && ./download_vision_model.sh
