@@ -8,10 +8,10 @@ import sys
 from builtins import range, str
 
 import numpy as np
+from sklearn import linear_model, metrics, preprocessing
 
 from pdftotree.ml.TableExtractML import TableExtractorML
 from pdftotree.utils.bbox_utils import compute_iou, doOverlap, isContained
-from sklearn import linear_model, metrics, preprocessing
 
 
 def get_logger(name):
