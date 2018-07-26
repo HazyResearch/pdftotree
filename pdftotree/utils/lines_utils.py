@@ -10,8 +10,14 @@ def reorder_lines(lines, tol=TOLERANCE):
     reordered_lines = []
     for line in lines:
         # we divide by tol and multiply by tol to truncate numbers, stairs function
-        reordered_lines += [(int(round(line.y0 / tol) * tol), int(round(line.x0 / tol) * tol),
-                             int(round(line.y1 / tol) * tol), int(round(line.x1 / tol) * tol))]
+        reordered_lines += [
+            (
+                int(round(line.y0 / tol) * tol),
+                int(round(line.x0 / tol) * tol),
+                int(round(line.y1 / tol) * tol),
+                int(round(line.x1 / tol) * tol),
+            )
+        ]
     return reordered_lines
 
 
@@ -31,7 +37,9 @@ def merge_vertical_lines(lines, tol=TOLERANCE):
                 y0, x0, y1, x1 = merged_lines[-1]
                 merged_lines[-1] = (y0, x0, line[2], x1)
             else:
-                merged_lines.append(line)  # lines are vertically aligned but do not intersect
+                merged_lines.append(
+                    line
+                )  # lines are vertically aligned but do not intersect
         else:
             merged_lines.append(line)
     return merged_lines
@@ -53,7 +61,9 @@ def merge_horizontal_lines(lines, tol=TOLERANCE):
                 y0, x0, y1, x1 = merged_lines[-1]
                 merged_lines[-1] = (y0, x0, y1, line[3])
             else:
-                merged_lines.append(line)  # lines are horizontally aligned but do not intersect
+                merged_lines.append(
+                    line
+                )  # lines are horizontally aligned but do not intersect
         else:
             merged_lines.append(line)
     return merged_lines
@@ -66,7 +76,9 @@ def get_vertical_and_horizontal(lines):
     :return: vertical_lines, horitontal_lines (2 lists of coordinates)
     """
     # TODO: add some angle tolerance when lines are not perfectly aligned (eg: scanned pdf)
-    vertical_lines = sorted([e for e in lines if e[1] == e[3]], key=lambda tup: (tup[1], tup[0]))
+    vertical_lines = sorted(
+        [e for e in lines if e[1] == e[3]], key=lambda tup: (tup[1], tup[0])
+    )
     horitontal_lines = sorted([e for e in lines if e[0] == e[2]])
     if len(vertical_lines) > 0:
         vertical_lines = merge_vertical_lines(vertical_lines)

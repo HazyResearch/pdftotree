@@ -1,10 +1,10 @@
-'''
+"""
 Created on Oct 12, 2015
 Various routines to work with pdf objects
 extracted with PDFminer
 
 @author: xiao
-'''
+"""
 import collections
 import logging
 import os
@@ -12,8 +12,16 @@ import re
 import string
 
 from pdfminer.converter import PDFPageAggregator
-from pdfminer.layout import (LAParams, LTAnno, LTChar, LTComponent, LTCurve,
-                             LTFigure, LTLine, LTTextLine)
+from pdfminer.layout import (
+    LAParams,
+    LTAnno,
+    LTChar,
+    LTComponent,
+    LTCurve,
+    LTFigure,
+    LTLine,
+    LTTextLine,
+)
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdfminer.pdfpage import PDFPage
@@ -22,53 +30,56 @@ from pdfminer.utils import apply_matrix_pt
 
 from pdftotree.utils.img_utils import normalize_bbox, normalize_pts
 from pdftotree.utils.pdf.layout_utils import traverse_layout
+
 #  from pdftotree.utils.pdf.vector_utils import *
 
 # Compact wrapper representation for the pdf
 PDFElems = collections.namedtuple(
-    'PDFElems',
-    ['mentions', 'segments', 'curves', 'figures', 'layout', 'chars'])
+    "PDFElems", ["mentions", "segments", "curves", "figures", "layout", "chars"]
+)
 
 
 class CustomPDFPageAggregator(PDFPageAggregator):
-    '''
+    """
     A custom version of the default pdf miner stateful draw call
     interpreter. Handles the creation of python object from pdf draw
     calls.
     Changes the way LTCurves are created - break up large polylines
     and rectangles into standard segments.
-    '''
-    line_only_shape = re.compile('ml+h?')
+    """
+
+    line_only_shape = re.compile("ml+h?")
 
     def paint_path(self, gstate, stroke, fill, evenodd, path):
-        '''
+        """
         Converting long paths to small segments each time we m=Move
         or h=ClosePath for polygon
-        '''
-        shape = ''.join(x[0] for x in path)
+        """
+        shape = "".join(x[0] for x in path)
         prev_split = 0
         for i in range(len(shape)):
-            if shape[i] == 'm' and prev_split != i:
-                self.paint_single_path(gstate, stroke, fill, evenodd,
-                                       path[prev_split:i])
+            if shape[i] == "m" and prev_split != i:
+                self.paint_single_path(
+                    gstate, stroke, fill, evenodd, path[prev_split:i]
+                )
                 prev_split = i
-            if shape[i] == 'h':
-                self.paint_single_path(gstate, stroke, fill, evenodd,
-                                       path[prev_split:i + 1])
+            if shape[i] == "h":
+                self.paint_single_path(
+                    gstate, stroke, fill, evenodd, path[prev_split : i + 1]
+                )
                 prev_split = i + 1
 
         # clean up remaining segments
         if prev_split < len(shape):
-            self.paint_single_path(gstate, stroke, fill, evenodd,
-                                   path[prev_split:])
+            self.paint_single_path(gstate, stroke, fill, evenodd, path[prev_split:])
 
     def paint_single_path(self, gstate, stroke, fill, evenodd, path):
-        '''
+        """
         Converting a single path draw command into lines and curves objects
-        '''
+        """
         if len(path) < 2:
             return
-        shape = ''.join(x[0] for x in path)
+        shape = "".join(x[0] for x in path)
 
         pts = []
         for p in path:
@@ -85,13 +96,11 @@ class CustomPDFPageAggregator(PDFPageAggregator):
                     break
             if not has_slope:
                 for i in range(len(pts) - 1):
-                    self.cur_item.add(
-                        LTLine(gstate.linewidth, pts[i], pts[i + 1]))
+                    self.cur_item.add(LTLine(gstate.linewidth, pts[i], pts[i + 1]))
 
                 # Adding the closing line for a polygon, especially rectangles
-                if shape.endswith('h'):
-                    self.cur_item.add(
-                        LTLine(gstate.linewidth, pts[0], pts[-1]))
+                if shape.endswith("h"):
+                    self.cur_item.add(LTLine(gstate.linewidth, pts[0], pts[-1]))
                 return
 
         # Add the curve as an arbitrary polyline (belzier curve info is lost here)
@@ -99,23 +108,24 @@ class CustomPDFPageAggregator(PDFPageAggregator):
 
 
 def analyze_pages(file_name, char_margin=1.0):
-    '''
+    """
     Input: the file path to the PDF file
     Output: yields the layout object for each page in the PDF
-    '''
+    """
     log = logging.getLogger(__name__)
     # Open a PDF file.
-    with open(os.path.realpath(file_name), 'rb') as fp:
+    with open(os.path.realpath(file_name), "rb") as fp:
         # Create a PDF parser object associated with the file object.
         parser = PDFParser(fp)
         # Create a PDF document object that stores the document structure.
         # Supply the password for initialization.
-        document = PDFDocument(parser, password='')
+        document = PDFDocument(parser, password="")
         # Create a PDF resource manager object that stores shared resources.
         rsrcmgr = PDFResourceManager()
         # Set parameters for analysis.
         laparams = LAParams(
-            char_margin=char_margin, word_margin=0.1, detect_vertical=True)
+            char_margin=char_margin, word_margin=0.1, detect_vertical=True
+        )
         # Create a PDF page aggregator object.
         device = CustomPDFPageAggregator(rsrcmgr, laparams=laparams)
         # Create a PDF interpreter object.
@@ -125,19 +135,20 @@ def analyze_pages(file_name, char_margin=1.0):
             try:
                 interpreter.process_page(page)
             except OverflowError as oe:
-                log.exception("{}, skipping page {} of {}".format(
-                    oe, page_num, file_name))
+                log.exception(
+                    "{}, skipping page {} of {}".format(oe, page_num, file_name)
+                )
                 continue
             layout = device.get_result()
             yield layout
 
 
 def normalize_pdf(layout, scaler):
-    '''
+    """
     Normalizes pdf object coordinates (bot left) to image
     conventions (top left origin).
     Returns the list of chars and average char size
-    '''
+    """
     chars = []
     mentions = []
     height = scaler * layout.height
@@ -157,8 +168,7 @@ def normalize_pdf(layout, scaler):
             if isinstance(m, LTCurve):
                 m.pts = normalize_pts(m.pts, height, scaler)
                 # Only keep longer lines here
-                if isinstance(m,
-                              LTLine) and max(m.width, m.height) > pts_thres:
+                if isinstance(m, LTLine) and max(m.width, m.height) > pts_thres:
                     segments.append(m)
                     return
                 # Here we exclude straight lines from curves
@@ -209,9 +219,9 @@ def normalize_pdf(layout, scaler):
 
 
 def _print_dict(elem_dict):
-    '''
+    """
     Print a dict in a readable way
-    '''
+    """
     for key, value in sorted(elem_dict.iteritems()):
         if isinstance(value, collections.Iterable):
             print(key, len(value))
@@ -226,10 +236,10 @@ def _font_size_of(ch):
 
 
 def _font_of_mention(m):
-    '''
+    """
     Returns the font type and size of the first alphanumeric
     char in the text or None if there isn't any.
-    '''
+    """
     for ch in m:
         if isinstance(ch, LTChar) and ch.get_text().isalnum():
             return (ch.fontname, _font_size_of(ch))
@@ -238,7 +248,7 @@ def _font_of_mention(m):
 
 # Initialize the set of chars allowed in output
 _ascii_allowed = [False] * 128
-_forbidden_chars = '\n\t'
+_forbidden_chars = "\n\t"
 for c in string.printable:
     _ascii_allowed[ord(c)] = True
 for c in _forbidden_chars:
@@ -246,9 +256,9 @@ for c in _forbidden_chars:
 
 
 def _allowed_char(c):
-    '''
+    """
     Returns whether the given unicode char is allowed in output
-    '''
+    """
     c = ord(c)
     if c < 0:
         return False
@@ -260,9 +270,8 @@ def _allowed_char(c):
 
 
 def keep_allowed_chars(text):
-    '''
+    """
     Cleans the text for output
-    '''
+    """
     #     print ','.join(str(ord(c)) for c in text)
-    return ''.join(
-        ' ' if c == '\n' else c for c in text.strip() if _allowed_char(c))
+    return "".join(" " if c == "\n" else c for c in text.strip() if _allowed_char(c))

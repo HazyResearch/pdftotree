@@ -1,23 +1,23 @@
-'''
+"""
 Handles abstract rendering of the layout
 in order to extract local visual features
 
 Created on Jan 28, 2016
 
 @author: xiao
-'''
+"""
 import logging
 
 import numpy as np
-
 from pdf.vector_utils import x0, x1, y0, y1
 
 
 class Renderer(object):
-    '''
+    """
     enumeration objects to be placed into the
     rendered image
-    '''
+    """
+
     empty = 0
     horizontal_line = -1
     vertical_line = -2
@@ -27,11 +27,11 @@ class Renderer(object):
     misc = -6
 
     def __init__(self, elems, scaler=1):
-        '''
+        """
         Initializes the rendered object grid with specified
         scaler so we can map original coordinates into the
         new grid map.
-        '''
+        """
         self.log = logging.getLogger(__name__)
         self.scaler = scaler
         layout = elems.layout
@@ -55,10 +55,10 @@ class Renderer(object):
             self.draw_rect(figure.bbox, self.img)
 
     def draw_rect(self, bbox, cell_val):
-        '''
+        """
         Fills the bbox with the content values
         Float bbox values are normalized to have non-zero area
-        '''
+        """
         new_x0 = int(bbox[x0])
         new_y0 = int(bbox[y0])
         new_x1 = max(new_x0 + 1, int(bbox[x1]))
@@ -68,7 +68,7 @@ class Renderer(object):
 
     @staticmethod
     def is_mention(cell_val):
-        '''
+        """
         Nonnegative values in grid cells are reserved for mention ids
-        '''
+        """
         return cell_val >= 0
