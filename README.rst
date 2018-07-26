@@ -193,7 +193,7 @@ Then you can run our tests::
    :target: https://pypi.python.org/pypi/pdftotree
 .. |Issues| image:: https://img.shields.io/github/issues/HazyResearch/pdftotree.svg
    :target: https://github.com/HazyResearch/pdftotree/issues
-.. |Travis| image:: https://img.shields.io/travis/HazyResearch/pdftotree.svg
+.. |Travis| image:: https://img.shields.io/travis/HazyResearch/pdftotree/master.svg
    :target: https://travis-ci.org/HazyResearch/pdftotree
 .. |Coveralls| image:: https://img.shields.io/coveralls/github/HazyResearch/pdftotree.svg
    :target: https://coveralls.io/github/HazyResearch/pdftotree
