@@ -3,6 +3,8 @@ pdftotree
 
 |License| |Stars| |PyPI| |Version| |Issues| |Travis| |Coveralls| |CodeStyle|
 
+``pdftotree`` *is still in early development and is NOT stable at this time.*
+
 Fonduer_ has been successfully extended to perform information extraction from
 richly formatted data such as tables. A crucial step in this process is the
 construction of the hierarchical tree of context objects such as text blocks,
