@@ -12,6 +12,7 @@ setup(
         "IPython",
         "PyPDF2",
         "beautifulsoup4",
+        "chardet",
         "future",
         "h5py",
         "keras==2.0.8",
