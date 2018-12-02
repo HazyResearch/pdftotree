@@ -75,7 +75,8 @@ def get_vertical_and_horizontal(lines):
     :param lines: list of lines coordinates
     :return: vertical_lines, horitontal_lines (2 lists of coordinates)
     """
-    # TODO: add some angle tolerance when lines are not perfectly aligned (eg: scanned pdf)
+    # TODO: add some angle tolerance when lines are not perfectly aligned (eg:
+    # scanned pdf)
     vertical_lines = sorted(
         [e for e in lines if e[1] == e[3]], key=lambda tup: (tup[1], tup[0])
     )
@@ -85,29 +86,6 @@ def get_vertical_and_horizontal(lines):
     if len(horitontal_lines) > 0:
         horitontal_lines = merge_horizontal_lines(horitontal_lines)
     return vertical_lines, horitontal_lines
-
-
-# def extend_vertical_lines_(vertical_lines, horizontal_lines):
-#     j = 0
-#     i = 0
-#     new_vertical_lines = []
-#     while i < len(horizontal_lines) and j < len(vertical_lines):
-#         if int(horizontal_lines[i][0]) == int(vertical_lines[j][0]):
-#             if int(vertical_lines[j][1]) > int(horizontal_lines[i][1]) and int(vertical_lines[j][1]) < int(
-#                     horizontal_lines[i][3]):
-#                 v = vertical_lines[j]
-#                 h = horizontal_lines[i]
-#                 new_vertical_lines.append((h[0], h[1], v[2], h[1]))
-#                 new_vertical_lines.append((h[0], h[3], v[2], h[3]))
-#                 j += 1
-#                 i += 1
-#             else:
-#                 i += 1
-#         elif int(horizontal_lines[i][0]) < int(vertical_lines[j][0]):
-#             i += 1
-#         else:
-#             j += 1
-#     return new_vertical_lines
 
 
 def extend_vertical_lines(horizontal_lines, tol=TOLERANCE):

@@ -44,9 +44,9 @@ def vectorize(e, tolerance=0.1):
     is_wide = e.width > tolerance
     # if skewed towards a line
     if is_wide and not is_high:
-        return (e.width, 0.)
+        return (e.width, 0.0)
     if is_high and not is_wide:
-        return (0., e.height)
+        return (0.0, e.height)
 
 
 def aligned(e1, e2):

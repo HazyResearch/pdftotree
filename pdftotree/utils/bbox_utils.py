@@ -146,4 +146,4 @@ def compute_iou(bbox1, bbox2):
             - intersection
         )
         return float(intersection) / float(union)
-    return 0.
+    return 0.0

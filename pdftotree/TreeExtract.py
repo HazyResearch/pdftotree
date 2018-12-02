@@ -133,8 +133,7 @@ class TreeExtractor(object):
         alignments_bboxes, alignment_features = self.get_candidates_alignments(
             page_num, elems
         )
-        # print "Page Num: ", page_num, "Line bboxes: ", len(lines_bboxes), ", Alignment bboxes: ", len(alignments_bboxes)
-        # alignment_features += get_alignment_features(lines_bboxes, elems, font_stat)
+
         boxes = alignments_bboxes
         if len(boxes) == 0:
             self.log.info("No boxes were found on page {}.".format(page_num))
@@ -208,15 +207,15 @@ class TreeExtractor(object):
         # use ML to get tables
         elif model_type == "ml":
             for page_num in self.elems.keys():
-                table_candidates, candidates_features = self.get_candidates_and_features_page_num(
+                t_cands, cand_feats = self.get_candidates_and_features_page_num(
                     page_num
                 )
                 tables[page_num] = []
-                if len(candidates_features) != 0:
-                    table_predictions = model.predict(candidates_features)
+                if len(cand_feats) != 0:
+                    table_predictions = model.predict(cand_feats)
                     tables[page_num] = [
-                        table_candidates[i]
-                        for i in range(len(table_candidates))
+                        t_cands[i]
+                        for i in range(len(t_cands))
                         if table_predictions[i] > 0.5
                     ]
 

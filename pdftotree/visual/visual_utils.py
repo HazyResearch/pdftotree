@@ -81,8 +81,8 @@ def get_bboxes(
     prop_scale=1.2,
 ):
     """
-    Uses selective search to generate candidate bounding boxes and keeps the ones that have the largest
-    iou with the predicted mask.
+    Uses selective search to generate candidate bounding boxes and keeps the
+    ones that have the largest iou with the predicted mask.
 
     :param img: original image
     :param mask: predicted mask
@@ -90,8 +90,10 @@ def get_bboxes(
     :param score_thresh: scre threshold to consider prediction is True
     :param iou_thresh: iou threshold to consider a candidate is a correct region
     :param prop_size: selective search parameter
-    :param prop_scale: selective search parameter, larger prop_scale favorizes large boudning boxes
-    :return: list of bounding boxes and ious, boudning boxes are tuples (left, top, width, height)
+    :param prop_scale: selective search parameter, larger prop_scale favorizes
+        large boudning boxes
+    :return: list of bounding boxes and ious, boudning boxes are tuples (left,
+        top, width, height)
     """
     min_size = int(img.shape[0] * prop_size * img.shape[1] * prop_size)
     scale = int(img.shape[0] * prop_scale)
@@ -101,7 +103,7 @@ def get_bboxes(
     )
     rect = [None] * nb_boxes
     max_iou = -1 * np.ones(nb_boxes)
-    mask = 1. * (mask > score_thresh)
+    mask = 1.0 * (mask > score_thresh)
     # compute iou for each candidate bounding box and save top nb_bboxes
     for region in regions:
         left, top, width, height = region["rect"]

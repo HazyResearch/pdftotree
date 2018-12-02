@@ -64,7 +64,7 @@ def get_text_sparsity(bbox, mentions):
     try:
         return 1.0 * text_area / bbox_area
     except ZeroDivisionError:
-        return 0.
+        return 0.0
 
 
 def symbols_and_numbers_density(bbox, mentions):

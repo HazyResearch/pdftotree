@@ -118,7 +118,8 @@ class Node(LTComponent):
         Standardize the layout of the table into grids
         """
         mentions, lines = _split_text_n_lines(self.elems)
-        # Sort mentions in reading order where y values are snapped to half height-sized grid
+        # Sort mentions in reading order where y values are snapped to half
+        # height-sized grid
         mentions.sort(key=lambda m: (m.yc_grid, m.xc))
 
         grid = Grid(mentions, lines, self)

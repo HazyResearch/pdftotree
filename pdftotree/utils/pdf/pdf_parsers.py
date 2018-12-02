@@ -1313,7 +1313,7 @@ def get_most_common_font_pts(mentions, font_stat):
                 count += 1
         return height_sum / count
 
-    except IndexError as ie:
+    except IndexError:
         log.info("No text found on page. Default most_common_font_pts to 2.0")
         return 2.0
 
@@ -1337,6 +1337,6 @@ def get_char_width(boxes):
         num_char_sum = num_char_sum + len(b.get_text())
     try:
         return box_len_sum / num_char_sum
-    except ZeroDivisionError as ze:
+    except ZeroDivisionError:
         log.warning("No text found. Defaulting to char_width = 2.0.")
         return 2.0

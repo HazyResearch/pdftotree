@@ -202,7 +202,7 @@ class TableExtractorML(object):
         font_stat = self.font_stats[page_num]
         try:
             nodes, features = parse_layout(elems, font_stat)
-        except Exception as e:
+        except Exception:
             nodes, features = [], []
         return (
             [

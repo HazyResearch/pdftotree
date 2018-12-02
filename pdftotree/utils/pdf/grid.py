@@ -129,8 +129,6 @@ class Grid(object):
             for col_id, cell in enumerate(row):
                 # Keep cell text in reading order
                 cell.texts.sort(key=cmp_to_key(reading_order))
-                #                intervals, groups = project_onto(cell.texts, axis='x', self.min_cell_size)
-                #  prev = None
                 log.debug("=" * 50)
                 for m in cell.texts:
                     subrow_across_cell[m.yc_grid].append(m)
