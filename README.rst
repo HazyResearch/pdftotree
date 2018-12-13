@@ -3,7 +3,7 @@ pdftotree
 
 |License| |Stars| |PyPI| |Version| |Issues| |Travis| |Coveralls| |CodeStyle|
 
-``pdftotree`` *is still in early development and is NOT stable at this time.*
+**WARNING**: ``pdftotree`` *is still in early development and is NOT stable at this time. It has NOT yet been integrated with Fonduer.* 
 
 Fonduer_ has been successfully extended to perform information extraction from
 richly formatted data such as tables. A crucial step in this process is the
