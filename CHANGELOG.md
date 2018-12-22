@@ -9,5 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - [@lukehsiao][lh]: Temporarily add `chardet` to requirements until
   `pdfminer.six` issue #213 is fixed.
+- [@mgoo][mgoo]: Fix ValueError when a Node instance is a single element.
+  ([#49](https://github.com/HazyResearch/pdftotree/pull/49))
 
 [lh]: https://github.com/lukehsiao
+[mgoo]: https://github.com/mgoo
