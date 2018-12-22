@@ -36,6 +36,8 @@ class Node(LTComponent):
         """
         Constructor
         """
+        if not isinstance(elems, list):
+            elems = [elems]
         self.elems = elems
         self.sum_elem_bbox = 0
         for elem in elems:
