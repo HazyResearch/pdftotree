@@ -3,7 +3,7 @@ pdftotree
 
 |License| |Stars| |PyPI| |Version| |Issues| |Travis| |Coveralls| |CodeStyle|
 
-**WARNING**: ``pdftotree`` *is experimental code and is NOT stable at this time. It is not integrated with or supported by Fonduer.*
+**WARNING**: ``pdftotree`` *is experimental code and is NOT stable or maintained. It is not integrated with or supported by Fonduer.*
 
 Fonduer_ has been successfully extended to perform information extraction from
 richly formatted data such as tables. A crucial step in this process is the
@@ -137,7 +137,7 @@ Ground Truth File Format
   corresponding PDF list. Labels take the form of semicolon-separated tuples
   containing the values ``(page_num, page_width, page_height, top, left,
   bottom, right)``. For example::
-  
+
       (10, 696, 951, 634, 366, 832, 653);(14, 696, 951, 720, 62, 819, 654);(4, 696, 951, 152, 66, 813, 654);(7, 696, 951, 415, 57, 833, 647);(8, 696, 951, 163, 370, 563, 652)
       (11, 713, 951, 97, 47, 204, 676);(11, 713, 951, 261, 45, 357, 673);(3, 713, 951, 110, 44, 355, 676);(8, 713, 951, 763, 55, 903, 687)
       (5, 672, 951, 88, 57, 203, 578);(5, 672, 951, 593, 60, 696, 579)
