@@ -5,12 +5,12 @@ pdftotree
 
 **WARNING**: ``pdftotree`` *is experimental code and is NOT stable or maintained. It is not integrated with or supported by Fonduer.*
 
-Fonduer_ has been successfully extended to perform information extraction from
-richly formatted data such as tables. A crucial step in this process is the
-construction of the hierarchical tree of context objects such as text blocks,
-figures, tables, etc. The system currently uses PDF to HTML conversion provided
-by Adobe Acrobat. However, Adobe Acrobat is not an open source tool, which may
-be inconvenient for Fonduer users.
+Fonduer_ performs knowledge base construction from richly formatted data such
+as tables. A crucial step in this process is the construction of the
+hierarchical tree of context objects such as text blocks, figures, tables, etc.
+The system currently uses PDF to HTML conversion provided by Adobe Acrobat.
+However, Adobe Acrobat is not an open source tool, which may be inconvenient
+for Fonduer users.
 
 This package is the result of building our own module as replacement to Adobe
 Acrobat. Several open source tools are available for pdf to html conversion but
@@ -201,7 +201,7 @@ Then you can run our tests::
    :target: https://coveralls.io/github/HazyResearch/pdftotree
 .. |CodeStyle| image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :target: https://github.com/ambv/black
-.. _Fonduer: https://hazyresearch.github.io/snorkel/blog/fonduer.html
+.. _Fonduer: https://github.com/HazyResearch/fonduer
 .. _DocumentAnnotation: https://github.com/payalbajaj/DocumentAnnotation
 .. _PaleoDocs: http://i.stanford.edu/hazy/share/fonduer/pdftotree_paleo.tar.gz
 .. _version file: https://github.com/HazyResearch/pdftotree/blob/master/pdftotree/_version.py
