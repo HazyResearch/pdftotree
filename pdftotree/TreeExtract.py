@@ -1,6 +1,5 @@
 import html
 import logging
-import re
 from functools import cmp_to_key
 from typing import Any, Dict
 
@@ -275,15 +274,15 @@ class TreeExtractor(object):
                     page_html += (
                         "<"
                         + box[0]
-                        + " char='"
+                        + " cuts='"
                         + char_html
-                        + "', top='"
+                        + "' top='"
                         + top_html
-                        + "', left='"
+                        + "' left='"
                         + left_html
-                        + "', bottom='"
+                        + "' bottom='"
                         + bottom_html
-                        + "', right='"
+                        + "' right='"
                         + right_html
                         + "'>"
                         + box_html
@@ -346,26 +345,16 @@ class TreeExtractor(object):
         elems = get_mentions_within_bbox(box, self.elems[page_num].mentions)
         elems.sort(key=cmp_to_key(reading_order))
         for elem in elems:
-            chars = self.get_char_boundaries(elem)
-            for char in chars:
-                temp = char[0]
-                if not re.match(r"[\x00-\x1F]", temp):
-                    char_html += char[0] + sep
-                    top_html += str(char[1]) + sep
-                    left_html += str(char[2]) + sep
-                    bottom_html += str(char[3]) + sep
-                    right_html += str(char[4]) + sep
             words = self.get_word_boundaries(elem)
-            for word in words:
-                #  node_html += (
-                #      "<word top=" + str(word[1]) + " left=" + str(word[2]) +
-                #      " bottom=" + str(word[3]) + " right=" + str(word[4]) +
-                #      ">" + str(word[0].encode('utf-8')) + "</word> ")
-                node_html += word[0] + " "
+            node_html = sep.join([word[0] for word in words])
+            top_html = " ".join([str(int(word[1])) for word in words])
+            left_html = " ".join([str(int(word[2])) for word in words])
+            bottom_html = " ".join([str(int(word[3])) for word in words])
+            right_html = " ".join([str(int(word[4])) for word in words])
+            char_html = " ".join([str(len(word[0]) + len(sep)) for word in words])
 
         # escape special HTML chars
         node_html = html.escape(node_html)
-        char_html = html.escape(char_html)
         return node_html, char_html, top_html, left_html, bottom_html, right_html
 
     def get_html_table(self, table, page_num):
@@ -395,33 +384,27 @@ class TreeExtractor(object):
                     elems.sort(key=cmp_to_key(reading_order))
                     word_td = ""
                     for elem in elems:
-                        chars = self.get_char_boundaries(elem)
-                        for char in chars:
-                            temp = char[0]
-                            if not re.match(r"[\x00-\x1F]", temp):
-                                char_html += char[0].replace("'", '"') + sep
-                                top_html += str(char[1]) + sep
-                                left_html += str(char[2]) + sep
-                                bottom_html += str(char[3]) + sep
-                                right_html += str(char[4]) + sep
                         words = self.get_word_boundaries(elem)
-                        for word in words:
-                            temp = word[0]
-                            if not re.match(r"[\x00-\x1F]", temp):
-                                word_td += word[0] + sep
+                        word_td = sep.join([word[0] for word in words])
+                        top_html = " ".join([str(int(word[1])) for word in words])
+                        left_html = " ".join([str(int(word[2])) for word in words])
+                        bottom_html = " ".join([str(int(word[3])) for word in words])
+                        right_html = " ".join([str(int(word[4])) for word in words])
+                        char_html = " ".join(
+                            [str(len(word[0]) + len(sep)) for word in words]
+                        )
                     # escape special HTML chars
                     word_td = html.escape(word_td)
-                    char_html = html.escape(char_html)
                     row_str += (
-                        "<td char='"
+                        "<td cuts='"
                         + char_html
-                        + "', top='"
+                        + "' top='"
                         + top_html
-                        + "', left='"
+                        + "' left='"
                         + left_html
-                        + "', bottom='"
+                        + "' bottom='"
                         + bottom_html
-                        + "', right='"
+                        + "' right='"
                         + right_html
                         + "'>"
                         + word_td.strip()
