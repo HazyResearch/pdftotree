@@ -66,17 +66,12 @@ def parse(
         log.info("Tree structure built, creating html...")
         pdf_html = extractor.get_html_tree()
         log.info("HTML created.")
-        pdf_filename = os.path.basename(pdf_file)
         # Check html_path exists, create if not
         pdf_html = re.sub(r"[\x00-\x1F]+", "", pdf_html)
 
         if html_path is None:
             return pdf_html
-        elif not os.path.exists(html_path):
-            os.makedirs(html_path)
-        with codecs.open(
-            html_path + pdf_filename[:-4] + ".html", encoding="utf-8", mode="w"
-        ) as f:
+        with codecs.open(html_path, encoding="utf-8", mode="w") as f:
             f.write(pdf_html)
         if visualize:
             visualize_tree(pdf_file, pdf_tree, html_path)
