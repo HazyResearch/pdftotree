@@ -25,7 +25,7 @@ setup(
         "six",
         "sklearn",
         "tabula-py",
-        "tensorflow",
+        "tensorflow<2.0",
         "wand",
     ],
     keywords=["pdf", "parsing", "html"],
