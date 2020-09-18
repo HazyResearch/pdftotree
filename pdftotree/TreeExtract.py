@@ -2,6 +2,7 @@ import html
 import logging
 import re
 from functools import cmp_to_key
+from typing import Any, Dict
 
 import numpy as np
 import tabula
@@ -19,7 +20,7 @@ from pdftotree.utils.lines_utils import (
     reorder_lines,
 )
 from pdftotree.utils.pdf.pdf_parsers import parse_layout, parse_tree_structure
-from pdftotree.utils.pdf.pdf_utils import analyze_pages, normalize_pdf
+from pdftotree.utils.pdf.pdf_utils import PDFElems, analyze_pages, normalize_pdf
 from pdftotree.utils.pdf.vector_utils import column_order, reading_order
 
 
@@ -31,8 +32,8 @@ class TreeExtractor(object):
     def __init__(self, pdf_file):
         self.log = logging.getLogger(__name__)
         self.pdf_file = pdf_file
-        self.elems = {}
-        self.font_stats = {}
+        self.elems: Dict[int, PDFElems] = {}  # key represents page_num
+        self.font_stats: Dict[int, Any] = {}  # key represents page_num
         self.lines_bboxes = []
         self.alignments_bboxes = []
         self.intersection_bboxes = []
@@ -41,7 +42,7 @@ class TreeExtractor(object):
         self.features = []
         self.iou_thresh = 0.8
         self.scanned = False
-        self.tree = {}
+        self.tree: Dict[int, Any] = {}  # key represents page_num
         self.html = ""
 
     def identify_scanned_page(self, boxes, page_bbox, page_width, page_height):
@@ -184,7 +185,7 @@ class TreeExtractor(object):
     def get_font_stats(self):
         return self.font_stats
 
-    def get_tree_structure(self, model_type, model, favor_figures):
+    def get_tree_structure(self, model_type, model, favor_figures) -> Dict[str, Any]:
         tables = {}
         # use vision to get tables
         if model_type == "vision":

@@ -10,6 +10,8 @@ import logging
 import os
 import re
 import string
+from collections import Counter
+from typing import Any, List, NamedTuple, Tuple, Union
 
 from pdfminer.converter import PDFPageAggregator
 from pdfminer.layout import (
@@ -33,10 +35,15 @@ from pdftotree.utils.pdf.layout_utils import traverse_layout
 
 #  from pdftotree.utils.pdf.vector_utils import *
 
+
 # Compact wrapper representation for the pdf
-PDFElems = collections.namedtuple(
-    "PDFElems", ["mentions", "segments", "curves", "figures", "layout", "chars"]
-)
+class PDFElems(NamedTuple):
+    mentions: List[LTTextLine]
+    segments: List[LTLine]
+    curves: List[LTCurve]
+    figures: List[LTFigure]
+    layout: Any  # assigned to by PDFPageAggregator.get_result
+    chars: List[Union[LTChar, LTAnno]]
 
 
 class CustomPDFPageAggregator(PDFPageAggregator):
@@ -143,7 +150,7 @@ def analyze_pages(file_name, char_margin=1.0):
             yield layout
 
 
-def normalize_pdf(layout, scaler):
+def normalize_pdf(layout, scaler) -> Tuple[PDFElems, Counter]:
     """
     Normalizes pdf object coordinates (bot left) to image
     conventions (top left origin).

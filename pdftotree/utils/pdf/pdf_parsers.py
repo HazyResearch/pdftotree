@@ -10,6 +10,7 @@ import operator
 from builtins import filter, range, str, zip
 from collections import defaultdict
 from functools import cmp_to_key
+from typing import Dict, List, Tuple
 
 from pdfminer.layout import LTTextLine
 from pdfminer.utils import Plane
@@ -852,7 +853,7 @@ def extract_text_candidates(
     boxes_figures,
     page_width,
     page_height,
-):
+) -> Tuple[Dict[str, List], bool]:
     log = logging.getLogger(__name__)
     # Filter out boxes with zero width or height
     filtered_boxes = []
