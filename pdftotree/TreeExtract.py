@@ -281,11 +281,10 @@ class TreeExtractor(object):
                 elif box[0] == "figure":
                     fig_element = doc.createElement("figure")
                     page.appendChild(fig_element)
-                    top, left, bottom, right = tuple([str(int(i)) for i in box[1:]])
-                    fig_element.setAttribute("top", top)
-                    fig_element.setAttribute("left", left)
-                    fig_element.setAttribute("bottom", bottom)
-                    fig_element.setAttribute("right", right)
+                    top, left, bottom, right = tuple([int(i) for i in box[1:]])
+                    fig_element.setAttribute(
+                        "title", f"bbox {left} {top} {right} {bottom}"
+                    )
                 else:
                     element = self.get_html_others(box[0], box[1:], page_num)
                     page.appendChild(element)
@@ -331,35 +330,26 @@ class TreeExtractor(object):
         return mention_chars
 
     def get_html_others(self, tag, box, page_num) -> Element:
-        sep = " "
-
-        element = self.doc.createElement(tag)
-        node_html = []
-        top_html = []
-        left_html = []
-        bottom_html = []
-        right_html = []
-        char_html = []
+        element = self.doc.createElement("p")
+        element.setAttribute("class", "ocr_par")
+        top, left, bottom, right = tuple([int(x) for x in box])
+        element.setAttribute("title", f"bbox {left} {top} {right} {bottom}")
         elems = get_mentions_within_bbox(box, self.elems[page_num].mentions)
         elems.sort(key=cmp_to_key(reading_order))
         for elem in elems:
             words = self.get_word_boundaries(elem)
             for word in words:
-                node_html.append(word[0])
-                top_html.append(str(int(word[1])))
-                left_html.append(str(int(word[2])))
-                bottom_html.append(str(int(word[3])))
-                right_html.append(str(int(word[4])))
-                char_html.append(str(len(word[0]) + len(sep)))
+                top, left, bottom, right = tuple([int(x) for x in word[1:]])
+                # escape special HTML chars
+                text = html.escape(word[0])
 
-        # escape special HTML chars
-        node_html = html.escape(sep.join(node_html))
-        element.setAttribute("cuts", " ".join(char_html))
-        element.setAttribute("top", " ".join(top_html))
-        element.setAttribute("left", " ".join(left_html))
-        element.setAttribute("bottom", " ".join(bottom_html))
-        element.setAttribute("right", " ".join(right_html))
-        element.appendChild(self.doc.createTextNode(node_html))
+                word_element = self.doc.createElement("span")
+                element.appendChild(word_element)
+                word_element.setAttribute("class", "ocrx_word")
+                word_element.setAttribute(
+                    "title", f"bbox {left} {top} {right} {bottom}"
+                )
+                word_element.appendChild(self.doc.createTextNode(text))
         return element
 
     def get_html_table(self, table, page_num) -> Element:
@@ -381,31 +371,23 @@ class TreeExtractor(object):
                         column["top"] + column["height"],
                         column["left"] + column["width"],
                     ]
-                    top_html = ""
-                    left_html = ""
-                    bottom_html = ""
-                    right_html = ""
-                    char_html = ""
-                    sep = " "
                     elems = get_mentions_within_bbox(box, self.elems[page_num].mentions)
                     elems.sort(key=cmp_to_key(reading_order))
-                    word_td = ""
                     for elem in elems:
                         words = self.get_word_boundaries(elem)
-                        word_td = sep.join([word[0] for word in words])
-                        top_html = " ".join([str(int(word[1])) for word in words])
-                        left_html = " ".join([str(int(word[2])) for word in words])
-                        bottom_html = " ".join([str(int(word[3])) for word in words])
-                        right_html = " ".join([str(int(word[4])) for word in words])
-                        char_html = " ".join(
-                            [str(len(word[0]) + len(sep)) for word in words]
-                        )
-                    # escape special HTML chars
-                    word_td = html.escape(word_td)
-                    col_element.setAttribute("cuts", char_html)
-                    col_element.setAttribute("top", top_html)
-                    col_element.setAttribute("left", left_html)
-                    col_element.setAttribute("bottom", bottom_html)
-                    col_element.setAttribute("right", right_html)
-                    col_element.appendChild(self.doc.createTextNode(word_td.strip()))
+                        for word in words:
+                            top = int(word[1])
+                            left = int(word[2])
+                            bottom = int(word[3])
+                            right = int(word[4])
+                            # escape special HTML chars
+                            text = html.escape(word[0])
+
+                            word_element = self.doc.createElement("span")
+                            col_element.appendChild(word_element)
+                            word_element.setAttribute("class", "ocrx_word")
+                            word_element.setAttribute(
+                                "title", f"bbox {left} {top} {right} {bottom}"
+                            )
+                            word_element.appendChild(self.doc.createTextNode(text))
         return table_element
