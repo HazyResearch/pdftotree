@@ -1,6 +1,7 @@
 import string
 from builtins import str
 from collections import defaultdict
+from typing import List
 
 from pdfminer.layout import LTTextLine
 
@@ -34,7 +35,7 @@ def get_height_coverage(bbox):
 # ******************* Text Coverage Features *************************************
 
 
-def get_mentions_within_bbox(bbox, mentions):
+def get_mentions_within_bbox(bbox, mentions) -> List[LTTextLine]:
     mentions_within_bbox = []
     for mention in mentions:
         bbox_mention = (
