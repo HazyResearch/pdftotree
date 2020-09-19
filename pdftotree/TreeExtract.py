@@ -249,7 +249,7 @@ class TreeExtractor(object):
         head.appendChild(meta)
         meta = doc.createElement("meta")
         meta.setAttribute("name", "ocr-capabilities")
-        meta.setAttribute("content", "ocr_page ocr_carea ocr_table ocrx_word")
+        meta.setAttribute("content", "ocr_page ocr_table ocrx_block ocrx_word")
         head.appendChild(meta)
         html.appendChild(head)
         doc.appendChild(html)
@@ -333,8 +333,8 @@ class TreeExtractor(object):
         return mention_chars
 
     def get_html_others(self, tag: str, box: List[float], page_num: int) -> Element:
-        element = self.doc.createElement("p")
-        element.setAttribute("class", "ocr_par")
+        element = self.doc.createElement("div")
+        element.setAttribute("class", "ocrx_block")
         top, left, bottom, right = tuple([int(x) for x in box])
         element.setAttribute("title", f"bbox {left} {top} {right} {bottom}")
         elems: List[LTTextLine] = get_mentions_within_bbox(
