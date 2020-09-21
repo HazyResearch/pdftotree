@@ -12,9 +12,9 @@ $(TESTDATA)/paleo_visual_model.h5:
 	cd tests/input/ && ./download_vision_model.sh
 
 check:
-	isort -rc -c bin/
-	isort -rc -c tests/
-	isort -rc -c pdftotree/
+	isort -c bin/
+	isort -c tests/
+	isort -c pdftotree/
 	black bin/ --check
 	black tests/ --check
 	black pdftotree/ --check
