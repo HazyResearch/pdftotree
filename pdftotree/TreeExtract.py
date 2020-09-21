@@ -335,6 +335,7 @@ class TreeExtractor(object):
     def get_html_others(self, tag: str, box: List[float], page_num: int) -> Element:
         element = self.doc.createElement("div")
         element.setAttribute("class", "ocrx_block")
+        element.setAttribute("pdftotree", tag)  # for backward-compatibility
         top, left, bottom, right = tuple([int(x) for x in box])
         element.setAttribute("title", f"bbox {left} {top} {right} {bottom}")
         elems: List[LTTextLine] = get_mentions_within_bbox(
