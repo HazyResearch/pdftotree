@@ -4,7 +4,6 @@ import re
 from functools import cmp_to_key
 
 import numpy as np
-import six  # Python 2-3 compatibility
 import tabula
 from pdfminer.layout import LTChar
 from pdfminer.utils import Plane
@@ -258,17 +257,11 @@ class TreeExtractor(object):
                 if box[0] == "table":
                     table = box[1:]
                     table_html = self.get_html_table(table, page_num)
-                    if six.PY2:
-                        page_html += table_html.decode("utf-8")
-                    elif six.PY3:
-                        page_html += table_html
+                    page_html += table_html
                 elif box[0] == "figure":
                     fig_str = [str(i) for i in box[1:]]
                     fig_html = "<figure bbox=" + ",".join(fig_str) + "></figure>"
-                    if six.PY2:
-                        page_html += fig_html.decode("utf-8")
-                    elif six.PY3:
-                        page_html += fig_html
+                    page_html += fig_html
                 else:
                     (
                         box_html,
@@ -354,10 +347,7 @@ class TreeExtractor(object):
         for elem in elems:
             chars = self.get_char_boundaries(elem)
             for char in chars:
-                if six.PY2:
-                    temp = char[0].encode("utf-8")
-                elif six.PY3:
-                    temp = char[0]
+                temp = char[0]
                 if not re.match(r"[\x00-\x1F]", temp):
                     char_html += char[0] + sep
                     top_html += str(char[1]) + sep
@@ -406,10 +396,7 @@ class TreeExtractor(object):
                     for elem in elems:
                         chars = self.get_char_boundaries(elem)
                         for char in chars:
-                            if six.PY2:
-                                temp = char[0].encode("utf-8")
-                            else:
-                                temp = char[0]
+                            temp = char[0]
                             if not re.match(r"[\x00-\x1F]", temp):
                                 char_html += char[0].replace("'", '"') + sep
                                 top_html += str(char[1]) + sep
@@ -418,10 +405,7 @@ class TreeExtractor(object):
                                 right_html += str(char[4]) + sep
                         words = self.get_word_boundaries(elem)
                         for word in words:
-                            if six.PY2:
-                                temp = word[0].encode("utf-8")
-                            elif six.PY3:
-                                temp = word[0]
+                            temp = word[0]
                             if not re.match(r"[\x00-\x1F]", temp):
                                 word_td += word[0] + sep
                     # escape special HTML chars
