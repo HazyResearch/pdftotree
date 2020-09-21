@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import os
+
 import pdftotree
 
 
@@ -6,6 +8,13 @@ def test_heuristic_completion():
     """Simply test that parse runs to completion without errors."""
     output = pdftotree.parse("tests/input/paleo.pdf")
     assert output is not None
+
+
+def test_cli_should_output_at_given_path(tmp_path):
+    """Test if CLI produces an HTML at a given path."""
+    html_path = os.path.join(tmp_path, "paleo.html")
+    pdftotree.parse("tests/input/paleo.pdf", html_path)
+    assert os.path.isfile(html_path)
 
 
 def test_ml_completion():
