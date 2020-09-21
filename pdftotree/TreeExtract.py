@@ -189,7 +189,7 @@ class TreeExtractor(object):
         tables = {}
         # use vision to get tables
         if model_type == "vision":
-            from pdftotree.visual.visual_utils import predict_heatmap, get_bboxes
+            from pdftotree.visual.visual_utils import get_bboxes, predict_heatmap
 
             for page_num in self.elems.keys():
                 page_width = int(self.elems[page_num].layout.width)
