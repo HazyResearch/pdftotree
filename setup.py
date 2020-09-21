@@ -21,7 +21,6 @@ setup(
         "pillow",
         "scipy",
         "selectivesearch",
-        "six",
         "sklearn",
         "tabula-py",
         "tensorflow<2.0",

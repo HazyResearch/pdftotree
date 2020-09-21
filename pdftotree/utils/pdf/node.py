@@ -6,7 +6,6 @@ Created on Jun 10, 2016
 import numbers
 from collections import Counter
 
-import six  # Python 2-3 compatibility
 from pdfminer.layout import LTComponent, LTCurve, LTFigure, LTLine, LTTextLine
 
 from pdftotree.utils.pdf.grid import Grid
@@ -50,9 +49,7 @@ class Node(LTComponent):
         # self.table_indicator = True
         self.type_counts = Counter(map(elem_type, elems))
         if elem_type(elems) not in ["figure", "unknown"]:
-            self.feat_counts = Counter(
-                kv for e in elems for kv in six.iteritems(e.feats)
-            )
+            self.feat_counts = Counter(kv for e in elems for kv in e.feats.items())
         else:
             self.feat_counts = 0
         self.type = "UNK"
@@ -103,7 +100,7 @@ class Node(LTComponent):
             return False
         has_many_x_align = False
         has_many_y_align = False
-        for k, v in six.iteritems(self.feat_counts):
+        for k, v in self.feat_counts.items():
             font_key = k[0]
             if (
                 v >= 2 and "-" in font_key
