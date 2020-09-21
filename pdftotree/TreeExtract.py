@@ -342,6 +342,13 @@ class TreeExtractor(object):
         )
         elems.sort(key=cmp_to_key(reading_order))
         for elem in elems:
+            line_element = self.doc.createElement("span")
+            element.appendChild(line_element)
+            line_element.setAttribute("class", "ocrx_line")
+            line_element.setAttribute(
+                "title",
+                f"bbox {int(elem.x0)} {int(elem.y0)} {int(elem.x1)} {int(elem.y1)}",
+            )
             words = self.get_word_boundaries(elem)
             for word in words:
                 top, left, bottom, right = tuple([int(x) for x in word[1:]])
@@ -349,7 +356,7 @@ class TreeExtractor(object):
                 text = html.escape(word[0])
 
                 word_element = self.doc.createElement("span")
-                element.appendChild(word_element)
+                line_element.appendChild(word_element)
                 word_element.setAttribute("class", "ocrx_word")
                 word_element.setAttribute(
                     "title", f"bbox {left} {top} {right} {bottom}"
