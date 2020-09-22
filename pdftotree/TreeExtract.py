@@ -1,11 +1,12 @@
 import html
 import logging
 from functools import cmp_to_key
-from typing import Any, Dict
+from typing import Any, Dict, List, Tuple
+from xml.dom.minidom import Document, Element
 
 import numpy as np
 import tabula
-from pdfminer.layout import LTChar
+from pdfminer.layout import LTChar, LTTextLine
 from pdfminer.utils import Plane
 
 from pdftotree._version import __version__
@@ -290,15 +291,17 @@ class TreeExtractor(object):
                     page.appendChild(element)
         return doc.toprettyxml()
 
-    def get_word_boundaries(self, mention):
+    def get_word_boundaries(
+        self, mention: LTTextLine
+    ) -> List[Tuple[str, float, float, float, float]]:
         mention_text = mention.get_text()
-        mention_chars = []
+        mention_chars: List[Tuple[str, int, int, int, int]] = []
         for obj in mention:
             if isinstance(obj, LTChar):
                 x0, y0, x1, y1 = obj.bbox
                 mention_chars.append([obj.get_text(), y0, x0, y1, x1])
         words = []
-        mention_words = mention_text.split()
+        mention_words: List[str] = mention_text.split()  # word split by " " (space)
         char_idx = 0
         for word in mention_words:
             curr_word = [word, float("Inf"), float("Inf"), float("-Inf"), float("-Inf")]
@@ -329,12 +332,14 @@ class TreeExtractor(object):
                 mention_chars.append([obj.get_text(), y0, x0, y1, x1])
         return mention_chars
 
-    def get_html_others(self, tag, box, page_num) -> Element:
+    def get_html_others(self, tag: str, box: List[float], page_num: int) -> Element:
         element = self.doc.createElement("p")
         element.setAttribute("class", "ocr_par")
         top, left, bottom, right = tuple([int(x) for x in box])
         element.setAttribute("title", f"bbox {left} {top} {right} {bottom}")
-        elems = get_mentions_within_bbox(box, self.elems[page_num].mentions)
+        elems: List[LTTextLine] = get_mentions_within_bbox(
+            box, self.elems[page_num].mentions
+        )
         elems.sort(key=cmp_to_key(reading_order))
         for elem in elems:
             words = self.get_word_boundaries(elem)
