@@ -1,5 +1,3 @@
-from __future__ import division
-
 import string
 from builtins import str
 from collections import defaultdict

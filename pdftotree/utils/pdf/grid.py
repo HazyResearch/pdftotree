@@ -3,8 +3,6 @@ Created on Dec 2, 2015
 
 @author: xiao
 """
-from __future__ import division
-
 import bisect
 import logging
 from builtins import object, range, zip

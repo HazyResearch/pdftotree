@@ -4,8 +4,6 @@ Parsing raw PDF data into python data structures
 
 @author: xiao
 """
-from __future__ import division
-
 import logging
 import math
 import operator
