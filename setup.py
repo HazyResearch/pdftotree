@@ -11,7 +11,6 @@ setup(
     install_requires=[
         "IPython",
         "beautifulsoup4",
-        "future",
         "keras==2.0.8",
         "numpy",
         "pandas",
