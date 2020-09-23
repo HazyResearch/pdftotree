@@ -26,9 +26,10 @@ def test_output_should_conform_to_hocr(tmp_path):
         assert all([line.decode("utf-8").startswith("ok") for line in proc.stderr])
 
 
-def test_visualize_output():
+def test_visualize_output(tmp_path):
     """Test if an output can be visualzied."""
-    pdftotree.parse("tests/input/md.pdf", visualize=True)
+    html_path = os.path.join(tmp_path, "md.html")
+    pdftotree.parse("tests/input/md.pdf", html_path, visualize=True)
 
 
 def test_ml_completion():
