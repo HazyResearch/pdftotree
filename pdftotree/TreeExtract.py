@@ -242,17 +242,23 @@ class TreeExtractor(object):
         doc = Document()
         self.doc = doc
         html = doc.createElement("html")
+        doc.appendChild(html)
         head = doc.createElement("head")
+        html.appendChild(head)
+        # meta
         meta = doc.createElement("meta")
+        head.appendChild(meta)
         meta.setAttribute("name", "ocr-system")
         meta.setAttribute("content", f"Converted from PDF by pdftotree {__version__}")
-        head.appendChild(meta)
         meta = doc.createElement("meta")
+        head.appendChild(meta)
         meta.setAttribute("name", "ocr-capabilities")
         meta.setAttribute("content", "ocr_page ocr_table ocrx_block ocrx_word")
+        meta = doc.createElement("meta")
         head.appendChild(meta)
-        html.appendChild(head)
-        doc.appendChild(html)
+        meta.setAttribute("name", "ocr-number-of-pages")
+        meta.setAttribute("content", f"{len(self.elems.keys())}")
+        # body
         body = doc.createElement("body")
         html.appendChild(body)
         for page_num in self.elems.keys():  # 1-based
