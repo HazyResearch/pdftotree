@@ -10,7 +10,7 @@ notifications:
 
 install:
   - sudo apt-get -qq update
-  - sudo apt-get install libmagickwand-dev  # required by Wand
+  - sudo apt-get install libmagickwand-dev ghostscript  # required by Wand
   - sudo rm -rf /etc/ImageMagick-6/policy.xml  # HazyResearch/fonduer#170
   - make dev
   - pip install coveralls
