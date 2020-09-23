@@ -26,6 +26,11 @@ def test_output_should_conform_to_hocr(tmp_path):
         assert all([line.decode("utf-8").startswith("ok") for line in proc.stderr])
 
 
+def test_visualize_output():
+    """Test if an output can be visualzied."""
+    pdftotree.parse("tests/input/md.pdf", visualize=True)
+
+
 def test_ml_completion():
     """Simply test that ML-based parse runs without errors."""
     output = pdftotree.parse(

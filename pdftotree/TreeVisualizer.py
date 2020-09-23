@@ -1,7 +1,17 @@
 import subprocess
 
 from bs4 import BeautifulSoup
-from IPython.display import display
+
+try:
+    from IPython import get_ipython
+
+    if "IPKernelApp" not in get_ipython().config:
+        raise ImportError("console")
+except (AttributeError, ImportError):
+    from wand.display import display
+else:
+    from IPython.display import display
+
 from wand.color import Color
 from wand.drawing import Drawing
 from wand.image import Image

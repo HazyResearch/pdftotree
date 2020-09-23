@@ -73,7 +73,7 @@ This takes a PDF file as input and produces an hOCR file as output::
       -f FAVOR_FIGURES, --favor_figures FAVOR_FIGURES
                             Whether figures must be favored over other parts such
                             as tables and section headers
-      -V, --visualize       Whether to output visualization images for the tree
+      -V, --visualize       Whether to output visualization images
       -d, --dry-run         Run pdftotree, but do not save any output or print to
                             console.
       -v, --verbose         Output INFO level logging.
