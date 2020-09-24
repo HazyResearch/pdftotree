@@ -1,14 +1,15 @@
 import html
 import logging
-import re
 from functools import cmp_to_key
-from typing import Any, Dict
+from typing import Any, Dict, List, Tuple
+from xml.dom.minidom import Document, Element
 
 import numpy as np
 import tabula
-from pdfminer.layout import LTChar
+from pdfminer.layout import LTChar, LTTextLine
 from pdfminer.utils import Plane
 
+from pdftotree._version import __version__
 from pdftotree.ml.features import get_lines_features, get_mentions_within_bbox
 from pdftotree.utils.bbox_utils import get_rectangles
 from pdftotree.utils.lines_utils import (
@@ -43,7 +44,6 @@ class TreeExtractor(object):
         self.iou_thresh = 0.8
         self.scanned = False
         self.tree: Dict[int, Any] = {}  # key represents page_num
-        self.html = ""
 
     def identify_scanned_page(self, boxes, page_bbox, page_width, page_height):
         plane = Plane(page_bbox)
@@ -238,10 +238,30 @@ class TreeExtractor(object):
             )
         return self.tree
 
-    def get_html_tree(self):
-        self.html = "<html>"
-        for page_num in self.elems.keys():
-            page_html = "<div id=" + str(page_num) + ">"
+    def get_html_tree(self) -> str:
+        doc = Document()
+        self.doc = doc
+        html = doc.createElement("html")
+        doc.appendChild(html)
+        head = doc.createElement("head")
+        html.appendChild(head)
+        # meta
+        meta = doc.createElement("meta")
+        head.appendChild(meta)
+        meta.setAttribute("name", "ocr-system")
+        meta.setAttribute("content", f"Converted from PDF by pdftotree {__version__}")
+        meta = doc.createElement("meta")
+        head.appendChild(meta)
+        meta.setAttribute("name", "ocr-capabilities")
+        meta.setAttribute("content", "ocr_page ocr_table ocrx_block ocrx_word")
+        meta = doc.createElement("meta")
+        head.appendChild(meta)
+        meta.setAttribute("name", "ocr-number-of-pages")
+        meta.setAttribute("content", f"{len(self.elems.keys())}")
+        # body
+        body = doc.createElement("body")
+        html.appendChild(body)
+        for page_num in self.elems.keys():  # 1-based
             boxes = []
             for clust in self.tree[page_num]:
                 for (pnum, pwidth, pheight, top, left, bottom, right) in self.tree[
@@ -250,61 +270,44 @@ class TreeExtractor(object):
                     boxes += [
                         [clust.lower().replace(" ", "_"), top, left, bottom, right]
                     ]
-
+            page = doc.createElement("div")
+            page.setAttribute("class", "ocr_page")
+            page.setAttribute("id", f"page_{page_num}")
+            page.setAttribute(
+                "title", f"bbox 0 0 {int(pwidth)} {int(pheight)}; ppageno {page_num-1}"
+            )
+            body.appendChild(page)
             # TODO: We need to detect columns and sort acccordingly.
             boxes.sort(key=cmp_to_key(column_order))
 
             for box in boxes:
                 if box[0] == "table":
-                    table = box[1:]
-                    table_html = self.get_html_table(table, page_num)
-                    page_html += table_html
+                    table = box[1:]  # bbox
+                    table_element = self.get_html_table(table, page_num)
+                    page.appendChild(table_element)
                 elif box[0] == "figure":
-                    fig_str = [str(i) for i in box[1:]]
-                    fig_html = "<figure bbox=" + ",".join(fig_str) + "></figure>"
-                    page_html += fig_html
-                else:
-                    (
-                        box_html,
-                        char_html,
-                        top_html,
-                        left_html,
-                        bottom_html,
-                        right_html,
-                    ) = self.get_html_others(box[1:], page_num)
-                    page_html += (
-                        "<"
-                        + box[0]
-                        + " char='"
-                        + char_html
-                        + "', top='"
-                        + top_html
-                        + "', left='"
-                        + left_html
-                        + "', bottom='"
-                        + bottom_html
-                        + "', right='"
-                        + right_html
-                        + "'>"
-                        + box_html
-                        + "</"
-                        + box[0]
-                        + ">"
+                    fig_element = doc.createElement("figure")
+                    page.appendChild(fig_element)
+                    top, left, bottom, right = [int(i) for i in box[1:]]
+                    fig_element.setAttribute(
+                        "title", f"bbox {left} {top} {right} {bottom}"
                     )
-            page_html += "</div>"
-            self.html += page_html
-        self.html += "</html>"
-        return self.html
+                else:
+                    element = self.get_html_others(box[0], box[1:], page_num)
+                    page.appendChild(element)
+        return doc.toprettyxml()
 
-    def get_word_boundaries(self, mention):
+    def get_word_boundaries(
+        self, mention: LTTextLine
+    ) -> List[Tuple[str, float, float, float, float]]:
         mention_text = mention.get_text()
-        mention_chars = []
+        mention_chars: List[Tuple[str, int, int, int, int]] = []
         for obj in mention:
             if isinstance(obj, LTChar):
                 x0, y0, x1, y1 = obj.bbox
                 mention_chars.append([obj.get_text(), y0, x0, y1, x1])
         words = []
-        mention_words = mention_text.split()
+        mention_words: List[str] = mention_text.split()  # word split by " " (space)
         char_idx = 0
         for word in mention_words:
             curr_word = [word, float("Inf"), float("Inf"), float("-Inf"), float("-Inf")]
@@ -335,111 +338,75 @@ class TreeExtractor(object):
                 mention_chars.append([obj.get_text(), y0, x0, y1, x1])
         return mention_chars
 
-    def get_html_others(self, box, page_num):
-        node_html = ""
-        top_html = ""
-        left_html = ""
-        bottom_html = ""
-        right_html = ""
-        char_html = ""
-        sep = " "
-        elems = get_mentions_within_bbox(box, self.elems[page_num].mentions)
+    def get_html_others(self, tag: str, box: List[float], page_num: int) -> Element:
+        element = self.doc.createElement("div")
+        element.setAttribute("class", "ocrx_block")
+        element.setAttribute("pdftotree", tag)  # for backward-compatibility
+        top, left, bottom, right = [int(x) for x in box]
+        element.setAttribute("title", f"bbox {left} {top} {right} {bottom}")
+        elems: List[LTTextLine] = get_mentions_within_bbox(
+            box, self.elems[page_num].mentions
+        )
         elems.sort(key=cmp_to_key(reading_order))
         for elem in elems:
-            chars = self.get_char_boundaries(elem)
-            for char in chars:
-                temp = char[0]
-                if not re.match(r"[\x00-\x1F]", temp):
-                    char_html += char[0] + sep
-                    top_html += str(char[1]) + sep
-                    left_html += str(char[2]) + sep
-                    bottom_html += str(char[3]) + sep
-                    right_html += str(char[4]) + sep
+            line_element = self.doc.createElement("span")
+            element.appendChild(line_element)
+            line_element.setAttribute("class", "ocrx_line")
+            line_element.setAttribute(
+                "title",
+                f"bbox {int(elem.x0)} {int(elem.y0)} {int(elem.x1)} {int(elem.y1)}",
+            )
             words = self.get_word_boundaries(elem)
             for word in words:
-                #  node_html += (
-                #      "<word top=" + str(word[1]) + " left=" + str(word[2]) +
-                #      " bottom=" + str(word[3]) + " right=" + str(word[4]) +
-                #      ">" + str(word[0].encode('utf-8')) + "</word> ")
-                node_html += word[0] + " "
+                top, left, bottom, right = [int(x) for x in word[1:]]
+                # escape special HTML chars
+                text = html.escape(word[0])
 
-        # escape special HTML chars
-        node_html = html.escape(node_html)
-        char_html = html.escape(char_html)
-        return node_html, char_html, top_html, left_html, bottom_html, right_html
+                word_element = self.doc.createElement("span")
+                line_element.appendChild(word_element)
+                word_element.setAttribute("class", "ocrx_word")
+                word_element.setAttribute(
+                    "title", f"bbox {left} {top} {right} {bottom}"
+                )
+                word_element.appendChild(self.doc.createTextNode(text))
+        return element
 
-    def get_html_table(self, table, page_num):
+    def get_html_table(self, table, page_num) -> Element:
         table_str = [str(i) for i in table]
         table_json = tabula.read_pdf(
             self.pdf_file, pages=page_num, area=table_str, output_format="json"
         )
-        table_html = ""
         if len(table_json) > 0:
-            table_html = "<table>"
+            table_element = self.doc.createElement("table")
             for i, row in enumerate(table_json[0]["data"]):
-                row_str = "<tr>"
+                row_element = self.doc.createElement("tr")
+                table_element.appendChild(row_element)
                 for j, column in enumerate(row):
+                    col_element = self.doc.createElement("td")
+                    row_element.appendChild(col_element)
                     box = [
                         column["top"],
                         column["left"],
                         column["top"] + column["height"],
                         column["left"] + column["width"],
                     ]
-                    top_html = ""
-                    left_html = ""
-                    bottom_html = ""
-                    right_html = ""
-                    char_html = ""
-                    sep = " "
                     elems = get_mentions_within_bbox(box, self.elems[page_num].mentions)
                     elems.sort(key=cmp_to_key(reading_order))
-                    word_td = ""
                     for elem in elems:
-                        chars = self.get_char_boundaries(elem)
-                        for char in chars:
-                            temp = char[0]
-                            if not re.match(r"[\x00-\x1F]", temp):
-                                char_html += char[0].replace("'", '"') + sep
-                                top_html += str(char[1]) + sep
-                                left_html += str(char[2]) + sep
-                                bottom_html += str(char[3]) + sep
-                                right_html += str(char[4]) + sep
                         words = self.get_word_boundaries(elem)
                         for word in words:
-                            temp = word[0]
-                            if not re.match(r"[\x00-\x1F]", temp):
-                                word_td += word[0] + sep
-                    # escape special HTML chars
-                    word_td = html.escape(word_td)
-                    char_html = html.escape(char_html)
-                    row_str += (
-                        "<td char='"
-                        + char_html
-                        + "', top='"
-                        + top_html
-                        + "', left='"
-                        + left_html
-                        + "', bottom='"
-                        + bottom_html
-                        + "', right='"
-                        + right_html
-                        + "'>"
-                        + word_td.strip()
-                        + "</td>"
-                    )
-                    #  row_str += (
-                    #      "<td word='" + word_html + "', top='" + top_html +
-                    #      "', left='" + left_html + "', bottom='" + bottom_html +
-                    #      "', right='" + right_html + "'>") + str(
-                    #          column["text"].encode('utf-8')) + "</td>"
-                    #  row_str += ("<td char='" + char_html + "', top=") + str(
-                    #      column["top"]
-                    #  ) + (", left=" + str(column["left"]) + ", bottom=") + str(
-                    #      column["top"] + column["height"]) + ", right=" + str(
-                    #          column["left"] + column["width"]) + ">"
-                    # row_str += str(column["text"].encode('utf-8'))
-                    # row_str += "</td>"
-                row_str += "</tr>"
-                table_html += row_str
-            table_html += "</table>"
-        return table_html
+                            top = int(word[1])
+                            left = int(word[2])
+                            bottom = int(word[3])
+                            right = int(word[4])
+                            # escape special HTML chars
+                            text = html.escape(word[0])
+
+                            word_element = self.doc.createElement("span")
+                            col_element.appendChild(word_element)
+                            word_element.setAttribute("class", "ocrx_word")
+                            word_element.setAttribute(
+                                "title", f"bbox {left} {top} {right} {bottom}"
+                            )
+                            word_element.appendChild(self.doc.createTextNode(text))
+        return table_element

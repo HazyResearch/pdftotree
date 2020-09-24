@@ -10,6 +10,9 @@ notifications:
 
 install:
   - sudo apt-get -qq update
+  - sudo apt-get install libmagickwand-dev ghostscript  # required by Wand
+  - sudo rm -rf /etc/ImageMagick-6/policy.xml  # HazyResearch/fonduer#170
+  - pip install -U pip
   - make dev
   - pip install coveralls
 
@@ -21,7 +24,6 @@ before_script:
 
 script:
   - coverage run --source=pdftotree -m pytest tests -v -rsXx
-  - python setup.py -q install
   - pdftotree tests/input/112823.pdf
 
 after_success:

@@ -1,7 +1,19 @@
-import subprocess
+from typing import Tuple
 
-from bs4 import BeautifulSoup
-from IPython.display import display
+from pdfminer.pdfdocument import PDFDocument
+from pdfminer.pdfpage import PDFPage
+from pdfminer.pdfparser import PDFParser
+
+try:
+    from IPython import get_ipython
+
+    if "IPKernelApp" not in get_ipython().config:
+        raise ImportError("console")
+except (AttributeError, ImportError):
+    from wand.display import display
+else:
+    from IPython.display import display
+
 from wand.color import Color
 from wand.drawing import Drawing
 from wand.image import Image
@@ -83,14 +95,11 @@ class TreeVisualizer:
         return img
 
 
-def get_pdf_dim(pdf_file):
-    html_content = subprocess.check_output(
-        "pdftotext -f {} -l {} -bbox '{}' -".format("1", "1", pdf_file), shell=True
-    )
-    soup = BeautifulSoup(html_content, "html.parser")
-    pages = soup.find_all("page")
-    page_width, page_height = (
-        int(float(pages[0].get("width"))),
-        int(float(pages[0].get("height"))),
-    )
+def get_pdf_dim(pdf_file) -> Tuple[int, int]:
+    with open(pdf_file, "rb") as f:
+        parser = PDFParser(f)
+        doc = PDFDocument(parser)
+        # Look at the 1st page only.
+        page = next(PDFPage.create_pages(doc))
+        _, _, page_width, page_height = page.mediabox
     return page_width, page_height

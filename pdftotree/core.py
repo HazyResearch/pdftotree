@@ -22,7 +22,6 @@ import codecs
 import logging
 import os
 import pickle
-import re
 
 from pdftotree.TreeExtract import TreeExtractor
 from pdftotree.TreeVisualizer import TreeVisualizer
@@ -66,8 +65,8 @@ def parse(
         log.info("Tree structure built, creating html...")
         pdf_html = extractor.get_html_tree()
         log.info("HTML created.")
-        # Check html_path exists, create if not
-        pdf_html = re.sub(r"[\x00-\x1F]+", "", pdf_html)
+        # TODO: what is the following substition for and is it required?
+        # pdf_html = re.sub(r"[\x00-\x1F]+", "", pdf_html)
 
         if html_path is None:
             return pdf_html

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+from subprocess import PIPE, Popen
 
 import pdftotree
 
@@ -15,6 +16,20 @@ def test_cli_should_output_at_given_path(tmp_path):
     html_path = os.path.join(tmp_path, "paleo.html")
     pdftotree.parse("tests/input/paleo.pdf", html_path)
     assert os.path.isfile(html_path)
+
+
+def test_output_should_conform_to_hocr(tmp_path):
+    """Test if an exported file conform to hOCR."""
+    html_path = os.path.join(tmp_path, "md.html")
+    pdftotree.parse("tests/input/md.pdf", html_path)
+    with Popen(["hocr-check", html_path], stderr=PIPE) as proc:
+        assert all([line.decode("utf-8").startswith("ok") for line in proc.stderr])
+
+
+def test_visualize_output(tmp_path):
+    """Test if an output can be visualzied."""
+    html_path = os.path.join(tmp_path, "md.html")
+    pdftotree.parse("tests/input/md.pdf", html_path, visualize=True)
 
 
 def test_ml_completion():
