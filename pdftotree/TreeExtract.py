@@ -288,7 +288,7 @@ class TreeExtractor(object):
                 elif box[0] == "figure":
                     fig_element = doc.createElement("figure")
                     page.appendChild(fig_element)
-                    top, left, bottom, right = tuple([int(i) for i in box[1:]])
+                    top, left, bottom, right = [int(i) for i in box[1:]]
                     fig_element.setAttribute(
                         "title", f"bbox {left} {top} {right} {bottom}"
                     )
@@ -342,7 +342,7 @@ class TreeExtractor(object):
         element = self.doc.createElement("div")
         element.setAttribute("class", "ocrx_block")
         element.setAttribute("pdftotree", tag)  # for backward-compatibility
-        top, left, bottom, right = tuple([int(x) for x in box])
+        top, left, bottom, right = [int(x) for x in box]
         element.setAttribute("title", f"bbox {left} {top} {right} {bottom}")
         elems: List[LTTextLine] = get_mentions_within_bbox(
             box, self.elems[page_num].mentions
@@ -358,7 +358,7 @@ class TreeExtractor(object):
             )
             words = self.get_word_boundaries(elem)
             for word in words:
-                top, left, bottom, right = tuple([int(x) for x in word[1:]])
+                top, left, bottom, right = [int(x) for x in word[1:]]
                 # escape special HTML chars
                 text = html.escape(word[0])
 

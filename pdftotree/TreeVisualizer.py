@@ -101,5 +101,5 @@ def get_pdf_dim(pdf_file) -> Tuple[int, int]:
         doc = PDFDocument(parser)
         # Look at the 1st page only.
         page = next(PDFPage.create_pages(doc))
-        _, _, page_width, page_height = tuple(page.mediabox)
+        _, _, page_width, page_height = page.mediabox
     return page_width, page_height
