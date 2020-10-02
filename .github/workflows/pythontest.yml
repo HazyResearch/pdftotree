@@ -32,6 +32,7 @@ jobs:
       run: |
         conda install imagemagick
         pip install -U pip
+        pip install -q pytest-cov
         make dev
     - name: Print Version Info
       shell: bash -l {0}
@@ -48,4 +49,11 @@ jobs:
         cd tests/input/
         ./download_vision_model.sh
         cd ../../
-        pytest tests
+        pytest --cov=./ --cov-report=xml tests
+    - name: Upload to codecov.io
+      uses: codecov/codecov-action@v1
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: true
