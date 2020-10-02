@@ -1,0 +1,52 @@
+name: Python testing
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      matrix:
+        os: ubuntu-latest
+        python-version: [3.6, 3.7, 3.8]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Cache conda
+      uses: actions/cache@v1
+      env:
+        # Increase this value to reset cache
+        CACHE_NUMBER: 0
+      with:
+        path: ~/conda_pkgs_dir
+        key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}
+    - name: Install miniconda and python version ${{ matrix.python-version }}
+      uses: goanpeca/setup-miniconda@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+        channels: conda-forge
+        channel-priority: strict
+        use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
+    - name: Install dependencies
+      shell: bash -l {0}
+      run: |
+        conda install imagemagick
+        pip install -U pip
+        make dev
+    - name: Print Version Info
+      shell: bash -l {0}
+      run: |
+        python --version
+        pip --version
+        isort --version
+        black --version
+        flake8 --version
+        mypy --version
+    - name: Test
+      shell: bash -l {0}
+      run: |
+        make check
+        cd tests/input/
+        ./download_vision_model.sh
+        cd ../../
+        pytest tests
