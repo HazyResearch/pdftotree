@@ -23,13 +23,17 @@ jobs:
           release_name: Release ${{ github.ref }}
           body: |
             Changes in this Release
-          draft: false
+          draft: true
           prerelease: false
-  deploy:
+  pypi:
     needs: release
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Build package
+      run: |
+        pip install -U setuptools wheel pip
+        python setup.py sdist bdist_wheel
     - name: Publish package to TestPyPI
       uses: pypa/gh-action-pypi-publish@master
       with:
