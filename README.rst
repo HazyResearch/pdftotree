@@ -1,7 +1,7 @@
 pdftotree
 =========
 
-|License| |Stars| |PyPI| |Version| |Issues| |Travis| |Coveralls| |CodeStyle|
+|License| |Stars| |PyPI| |Version| |Issues| |CI-CD| |Coveralls| |CodeStyle|
 
 **WARNING**: ``pdftotree`` *is experimental code and is NOT stable. It is not integrated with or supported by Fonduer.*
 
@@ -192,8 +192,8 @@ Then you can run our tests::
    :target: https://pypi.python.org/pypi/pdftotree
 .. |Issues| image:: https://img.shields.io/github/issues/HazyResearch/pdftotree.svg
    :target: https://github.com/HazyResearch/pdftotree/issues
-.. |Travis| image:: https://img.shields.io/travis/HazyResearch/pdftotree/master.svg
-   :target: https://travis-ci.org/HazyResearch/pdftotree
+.. |CI-CD| image:: https://img.shields.io/github/workflow/status/HazyResearch/pdftotree/ci.svg
+   :target: https://github.com/HazyResearch/pdftotree/actions
 .. |Coveralls| image:: https://img.shields.io/coveralls/github/HazyResearch/pdftotree.svg
    :target: https://coveralls.io/github/HazyResearch/pdftotree
 .. |CodeStyle| image:: https://img.shields.io/badge/code%20style-black-000000.svg
