@@ -59,20 +59,21 @@ def parse(
     if model_type is not None and model_path is not None:
         model = load_model(model_type, model_path)
     extractor = TreeExtractor(pdf_file)
-    if not extractor.is_scanned():
-        log.info("Digitized PDF detected, building tree structure...")
-        pdf_tree = extractor.get_tree_structure(model_type, model, favor_figures)
-        log.info("Tree structure built, creating html...")
-        pdf_html = extractor.get_html_tree()
-        log.info("HTML created.")
-        # TODO: what is the following substition for and is it required?
-        # pdf_html = re.sub(r"[\x00-\x1F]+", "", pdf_html)
-
-        if html_path is None:
-            return pdf_html
-        with codecs.open(html_path, encoding="utf-8", mode="w") as f:
-            f.write(pdf_html)
-        if visualize:
-            visualize_tree(pdf_file, pdf_tree, html_path)
+    if extractor.is_scanned():
+        log.warning("Document looks scanned, the result may be far from expected.")
     else:
-        log.error("Document is scanned, cannot build tree structure")
+        log.info("Digitized PDF detected, building tree structure...")
+
+    pdf_tree = extractor.get_tree_structure(model_type, model, favor_figures)
+    log.info("Tree structure built, creating html...")
+    pdf_html = extractor.get_html_tree()
+    log.info("HTML created.")
+    # TODO: what is the following substition for and is it required?
+    # pdf_html = re.sub(r"[\x00-\x1F]+", "", pdf_html)
+
+    if html_path is None:
+        return pdf_html
+    with codecs.open(html_path, encoding="utf-8", mode="w") as f:
+        f.write(pdf_html)
+    if visualize:
+        visualize_tree(pdf_file, pdf_tree, html_path)

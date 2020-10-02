@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#64](https://github.com/HazyResearch/pdftotree/pull/64))
 - [@HiromuHota][HiromuHota]: Switch the output format from "HTML-like" to hOCR.
   ([#62](https://github.com/HazyResearch/pdftotree/pull/62))
+- [@HiromuHota][HiromuHota]: Greedily extract contents from PDF even if it looks scanned.
+  ([#71](https://github.com/HazyResearch/pdftotree/pull/71))
 
 ## 0.4.1 - 2020-09-21
 
