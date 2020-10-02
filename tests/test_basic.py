@@ -38,9 +38,9 @@ def test_looks_scanned():
     CaseStudy_ACS.pdf contains a transparent image overlaying the entire page.
     This overlaying transparent image fools TreeExtractor into thinking it is scanned.
     """
-    output = pdftotree.parse("tests/input/CaseStudy_ACS.pdf", favor_figures="True")
+    output = pdftotree.parse("tests/input/CaseStudy_ACS.pdf", favor_figures=True)
     assert output.count("ocrx_word") == 1  # single appearance in ocr-capabilities
-    output = pdftotree.parse("tests/input/CaseStudy_ACS.pdf", favor_figures="False")
+    output = pdftotree.parse("tests/input/CaseStudy_ACS.pdf", favor_figures=False)
     assert output.count("ocrx_word") >= 1000
 
 

@@ -42,12 +42,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "-f",
         "--favor_figures",
-        type=str,
         help="""
         Whether figures must be favored over other parts such as tables and section
         headers
         """,
-        default="True",
+        action="store_true",
     )
     parser.add_argument(
         "-V",

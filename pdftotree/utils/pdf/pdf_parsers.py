@@ -724,7 +724,7 @@ def cluster_vertically_aligned_boxes(
 
 
 def parse_tree_structure(
-    elems, font_stat, page_num, ref_page_seen, tables, favor_figures
+    elems, font_stat, page_num, ref_page_seen, tables, favor_figures: bool
 ):
     boxes_segments = elems.segments
     boxes_curves = elems.curves
@@ -762,7 +762,7 @@ def parse_tree_structure(
     )
 
     # Omit tables that overlap with figures if figures need to be favored
-    if favor_figures == "True":
+    if favor_figures:
         tables_page = []
         for idx, table in enumerate(tables):
             table_box = tuple(table[3:])
@@ -817,7 +817,7 @@ def parse_tree_structure(
 
     # Check overlap with figures if figures are favored
     pruned_text_candidates = {}
-    if favor_figures == "True":
+    if favor_figures:
         for clust in text_candidates:
             pruned_text_candidates[clust] = []
             for idx, box in enumerate(text_candidates[clust]):

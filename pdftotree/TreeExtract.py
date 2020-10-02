@@ -185,7 +185,9 @@ class TreeExtractor(object):
     def get_font_stats(self):
         return self.font_stats
 
-    def get_tree_structure(self, model_type, model, favor_figures) -> Dict[str, Any]:
+    def get_tree_structure(
+        self, model_type, model, favor_figures: bool
+    ) -> Dict[str, Any]:
         tables = {}
         # use vision to get tables
         if model_type == "vision":

@@ -51,7 +51,7 @@ def parse(
     html_path=None,
     model_type=None,
     model_path=None,
-    favor_figures=True,
+    favor_figures: bool = True,
     visualize=False,
 ):
     log = logging.getLogger(__name__)
