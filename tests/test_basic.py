@@ -32,6 +32,18 @@ def test_visualize_output(tmp_path):
     pdftotree.parse("tests/input/md.pdf", html_path, visualize=True)
 
 
+def test_looks_scanned():
+    """Test on a PDF that looks like a scanned one but not.
+
+    CaseStudy_ACS.pdf contains a transparent image overlaying the entire page.
+    This overlaying transparent image fools TreeExtractor into thinking it is scanned.
+    """
+    output = pdftotree.parse("tests/input/CaseStudy_ACS.pdf", favor_figures="True")
+    assert output.count("ocrx_word") == 1  # single appearance in ocr-capabilities
+    output = pdftotree.parse("tests/input/CaseStudy_ACS.pdf", favor_figures="False")
+    assert output.count("ocrx_word") >= 1000
+
+
 def test_ml_completion():
     """Simply test that ML-based parse runs without errors."""
     output = pdftotree.parse(
