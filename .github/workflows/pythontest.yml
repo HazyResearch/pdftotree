@@ -41,7 +41,6 @@ jobs:
         isort --version
         black --version
         flake8 --version
-        mypy --version
     - name: Test
       shell: bash -l {0}
       run: |
