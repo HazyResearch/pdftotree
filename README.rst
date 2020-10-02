@@ -182,6 +182,22 @@ Then you can run our tests::
 
     $ make test
 
+Release
+~~~~~~~
+
+Follow the below steps to release
+
+1. Make commits with the following changes:
+    1. Update the CHANGELOG
+    2. Change the version at `pdftotree/_version.py` to `0.X.Y`.
+2. Submit the commits as a pull-request
+3. Once the pull-request is merged, add a tag `v0.X.Y` (don't forget "v" at the beginning) and push it
+4. Pushing the tag triggers GitHub Actions workflow that
+    1. Creates a pre-release on GitHub
+    2. Publishes a package to PyPI
+5. Edit the pre-release and release it
+6. Increment the version to `0.X.(Y+1)+dev`
+
 .. |License| image:: https://img.shields.io/github/license/HazyResearch/pdftotree.svg
    :target: https://github.com/HazyResearch/pdftotree/blob/master/LICENSE
 .. |Stars| image:: https://img.shields.io/github/stars/HazyResearch/pdftotree.svg
