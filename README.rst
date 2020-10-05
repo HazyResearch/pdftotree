@@ -165,7 +165,7 @@ For Developers
 We are following `Semantic Versioning 2.0.0 <https://semver.org/>`__
 conventions. The maintainers will create a git tag for each release and
 increment the version number found in the `version file`_ accordingly. We
-deploy tags to PyPI automatically using Travis-CI.
+deploy tags to PyPI automatically using GitHub Actions.
 
 
 Tests
@@ -208,7 +208,7 @@ Follow the below steps to release
    :target: https://pypi.python.org/pypi/pdftotree
 .. |Issues| image:: https://img.shields.io/github/issues/HazyResearch/pdftotree.svg
    :target: https://github.com/HazyResearch/pdftotree/issues
-.. |CI-CD| image:: https://img.shields.io/github/workflow/status/HazyResearch/pdftotree/ci.svg
+.. |CI-CD| image:: https://img.shields.io/github/workflow/status/HazyResearch/pdftotree/test.svg
    :target: https://github.com/HazyResearch/pdftotree/actions
 .. |Codecov| image:: https://img.shields.io/codecov/c/github/HazyResearch/pdftotree
    :target: https://codecov.io/gh/HazyResearch/pdftotree
