@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 import os
 from subprocess import PIPE, Popen
+from typing import Optional
+
+from bs4 import BeautifulSoup
+from bs4.element import Tag
+from shapely.geometry import box
 
 import pdftotree
 
@@ -39,7 +44,34 @@ def test_looks_scanned():
     This overlaying transparent image fools TreeExtractor into thinking it is scanned.
     """
     output = pdftotree.parse("tests/input/CaseStudy_ACS.pdf")
-    assert output.count("ocrx_word") >= 1000
+    soup = BeautifulSoup(output)
+    assert len(soup.find_all(class_="ocrx_word")) >= 1000
+    assert len(soup.find_all("figure")) == 3
+
+    # Adapted from https://github.com/ocropus/hocr-tools/blob/v1.3.0/hocr-check
+    def get_prop(node: Tag, name: str) -> Optional[str]:
+        title = node.get("title")
+        if not title:
+            return None
+        props = title.split(";")
+        for prop in props:
+            (key, args) = prop.split(None, 1)
+            if key == name:
+                return args
+        return None
+
+    # Adapted from https://github.com/ocropus/hocr-tools/blob/v1.3.0/hocr-check
+    def get_bbox(node: Tag) -> box:
+        bbox = get_prop(node, "bbox")
+        if not bbox:
+            return None
+        return box(*[int(x) for x in bbox.split()])
+
+    # Check if words are extracted even though they are overlapped by a figure (#77).
+    page = soup.find(class_="ocr_page")  # checking only 1st page is good enough.
+    words = [get_bbox(word) for word in page.find_all(class_="ocrx_word")]
+    figure = get_bbox(page.find("figure"))
+    assert all([figure.contains(word) for word in words])
 
 
 def test_ml_completion():
