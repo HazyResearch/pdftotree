@@ -723,9 +723,7 @@ def cluster_vertically_aligned_boxes(
         return tables, table_features
 
 
-def parse_tree_structure(
-    elems, font_stat, page_num, ref_page_seen, tables, favor_figures: bool
-):
+def parse_tree_structure(elems, font_stat, page_num, ref_page_seen, tables):
     boxes_segments = elems.segments
     boxes_curves = elems.curves
     boxes_figures = elems.figures
@@ -761,26 +759,7 @@ def parse_tree_structure(
         mentions, elems.layout.bbox, page_num, boxes_figures, page_width, page_height
     )
 
-    # Omit tables that overlap with figures if figures need to be favored
-    if favor_figures:
-        tables_page = []
-        for idx, table in enumerate(tables):
-            table_box = tuple(table[3:])
-            intersect = False
-            for fig in figures_page:
-                bool_overlap = (
-                    table_box[1] <= fig[6]
-                    and fig[4] <= table_box[3]
-                    and table_box[0] <= fig[5]
-                    and fig[3] <= table_box[2]
-                )
-                if bool_overlap:
-                    intersect = True
-                    break
-            if not intersect:
-                tables_page.append(table)
-    else:
-        tables_page = tables
+    tables_page = tables
 
     # Eliminate tables from these boxes
     boxes = []
@@ -815,31 +794,7 @@ def parse_tree_structure(
     text_candidates["figure"] = figures_page
     text_candidates["table"] = tables_page
 
-    # Check overlap with figures if figures are favored
-    pruned_text_candidates = {}
-    if favor_figures:
-        for clust in text_candidates:
-            pruned_text_candidates[clust] = []
-            for idx, box in enumerate(text_candidates[clust]):
-                clust_box = tuple(box[3:])
-                intersect = False
-                for fig in figures_page:
-                    bool_overlap = (
-                        clust_box[1] <= fig[6]
-                        and fig[4] <= clust_box[3]
-                        and clust_box[0] <= fig[5]
-                        and fig[3] <= clust_box[2]
-                    )
-                    if bool_overlap:
-                        intersect = True
-                        break
-                if not intersect:
-                    pruned_text_candidates[clust].append(box)
-        pruned_text_candidates["figure"] = text_candidates["figure"]
-    else:
-        pruned_text_candidates = text_candidates
-
-    return pruned_text_candidates, ref_page_seen
+    return text_candidates, ref_page_seen
 
 
 def extract_text_candidates(

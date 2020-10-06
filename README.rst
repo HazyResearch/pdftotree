@@ -45,7 +45,7 @@ pdftotree as a Python package
 
     import pdftotree
 
-    pdftotree.parse(pdf_file, html_path=None, model_type=None, model_path=None, favor_figures=True, visualize=False):
+    pdftotree.parse(pdf_file, html_path=None, model_type=None, model_path=None, visualize=False):
 
 pdftotree
 ~~~~~~~~~
@@ -70,9 +70,6 @@ This takes a PDF file as input and produces an hOCR file as output::
       -o OUTPUT, --output OUTPUT
                             Path to output hOCR file. If not given, it will be
                             printed to stdout.
-      -f FAVOR_FIGURES, --favor_figures FAVOR_FIGURES
-                            Whether figures must be favored over other parts such
-                            as tables and section headers
       -V, --visualize       Whether to output visualization images
       -d, --dry-run         Run pdftotree, but do not save any output or print to
                             console.

@@ -40,15 +40,6 @@ if __name__ == "__main__":
         help="Path to output hOCR file. If not given, it will be printed to stdout.",
     )
     parser.add_argument(
-        "-f",
-        "--favor_figures",
-        help="""
-        Whether figures must be favored over other parts such as tables and section
-        headers
-        """,
-        action="store_true",
-    )
-    parser.add_argument(
         "-V",
         "--visualize",
         dest="visualize",
@@ -111,7 +102,6 @@ if __name__ == "__main__":
         args.output,
         args.model_type,
         args.model_path,
-        args.favor_figures,
         args.visualize,
     )
 

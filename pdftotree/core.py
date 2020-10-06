@@ -15,8 +15,6 @@ Tables are detected using a Machine learning model, provide the path in
 model_path argument = TreeStructure/data/paleo/ml/model.pkl.
 
 Other tree parts are detected using heuristic methods.
-
-Set favor_figures to "False" for Hardware sheets.
 """
 import codecs
 import logging
@@ -51,7 +49,6 @@ def parse(
     html_path=None,
     model_type=None,
     model_path=None,
-    favor_figures: bool = True,
     visualize=False,
 ):
     log = logging.getLogger(__name__)
@@ -64,7 +61,7 @@ def parse(
     else:
         log.info("Digitized PDF detected, building tree structure...")
 
-    pdf_tree = extractor.get_tree_structure(model_type, model, favor_figures)
+    pdf_tree = extractor.get_tree_structure(model_type, model)
     log.info("Tree structure built, creating html...")
     pdf_html = extractor.get_html_tree()
     log.info("HTML created.")
