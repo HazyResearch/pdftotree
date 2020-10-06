@@ -5,3 +5,4 @@ pre-commit
 pytest
 hocr-tools
 sphinx
+shapely

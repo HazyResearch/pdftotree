@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [@HiromuHota][HiromuHota]: Loosen Keras' version restriction, which is now unnecessarily strict.
   ([#68](https://github.com/HazyResearch/pdftotree/pull/68))
 
+### Removed
+- [@HiromuHota][HiromuHota]: Remove "favor_figures" option and extract everything.
+  ([#77](https://github.com/HazyResearch/pdftotree/pull/77))
+
 ### Fixed
 - [@HiromuHota][HiromuHota]: Fix a bug that an html file is not created at a given path.
   ([#64](https://github.com/HazyResearch/pdftotree/pull/64))
