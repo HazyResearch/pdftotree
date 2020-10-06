@@ -11,7 +11,7 @@ import os
 import re
 import string
 from collections import Counter
-from typing import Any, List, NamedTuple, Tuple, Union
+from typing import List, NamedTuple, Tuple, Union
 
 from pdfminer.converter import PDFPageAggregator
 from pdfminer.layout import (
@@ -22,6 +22,7 @@ from pdfminer.layout import (
     LTCurve,
     LTFigure,
     LTLine,
+    LTPage,
     LTTextLine,
 )
 from pdfminer.pdfdocument import PDFDocument
@@ -42,7 +43,7 @@ class PDFElems(NamedTuple):
     segments: List[LTLine]
     curves: List[LTCurve]
     figures: List[LTFigure]
-    layout: Any  # assigned to by PDFPageAggregator.get_result
+    layout: LTPage
     chars: List[Union[LTChar, LTAnno]]
 
 
@@ -150,7 +151,7 @@ def analyze_pages(file_name, char_margin=1.0):
             yield layout
 
 
-def normalize_pdf(layout, scaler) -> Tuple[PDFElems, Counter]:
+def normalize_pdf(layout: LTPage, scaler) -> Tuple[PDFElems, Counter]:
     """
     Normalizes pdf object coordinates (bot left) to image
     conventions (top left origin).

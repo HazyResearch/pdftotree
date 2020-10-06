@@ -74,6 +74,12 @@ def test_looks_scanned():
     assert all([figure.contains(word) for word in words])
 
 
+def test_issue_72():
+    """Make sure not to cause #72."""
+    output = pdftotree.parse("tests/input/CentralSemiconductorCorp_2N4013.pdf")
+    assert output is not None
+
+
 def test_ml_completion():
     """Simply test that ML-based parse runs without errors."""
     output = pdftotree.parse(

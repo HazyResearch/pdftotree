@@ -272,8 +272,11 @@ class TreeExtractor(object):
             page = doc.createElement("div")
             page.setAttribute("class", "ocr_page")
             page.setAttribute("id", f"page_{page_num}")
+            width = int(self.elems[page_num].layout.width)
+            height = int(self.elems[page_num].layout.height)
             page.setAttribute(
-                "title", f"bbox 0 0 {int(pwidth)} {int(pheight)}; ppageno {page_num-1}"
+                "title",
+                f"bbox 0 0 {width} {height}; ppageno {page_num-1}",
             )
             body.appendChild(page)
             # TODO: We need to detect columns and sort acccordingly.
