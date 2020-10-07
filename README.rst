@@ -24,9 +24,10 @@ From v0.5.0, it conforms to hOCR_, an open-standard format for OCR results.
 Dependencies
 ------------
 
-You'll need to install the Python3 Toolkit::
+pdftotree depends on the following native libraries:
 
-    $ sudo apt install python3-tk
+- ImageMagick 6+ (for Wand)
+- Java 8+ (for tabula-py)
 
 Installation
 ------------
