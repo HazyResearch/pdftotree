@@ -11,7 +11,7 @@ import os
 import re
 import string
 from collections import Counter
-from typing import List, NamedTuple, Tuple, Union
+from typing import List, NamedTuple, Optional, Tuple, Union
 
 from pdfminer.converter import PDFPageAggregator
 from pdfminer.layout import (
@@ -32,7 +32,7 @@ from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
-from pdfminer.utils import apply_matrix_pt
+from pdfminer.utils import INF, apply_matrix_pt
 
 from pdftotree.utils.img_utils import normalize_bbox, normalize_pts
 
@@ -168,15 +168,15 @@ def normalize_pdf(layout: LTPage, scaler) -> Tuple[PDFElems, Counter]:
     segments = []
     curves = []
     figures = []
-    mention: LTTextContainer = None
+    container: LTContainer = None
     _font = None
 
-    def processor(m):
+    def processor(m, parent):
         # Normalizes the coordinate system to be consistent with
         # image library conventions (top left as origin)
         if isinstance(m, LTContainer):
             for child in m:
-                processor(child)
+                processor(child, m)
         if isinstance(m, LTComponent):
             m.set_bbox(normalize_bbox(m.bbox, height, scaler))
 
@@ -194,29 +194,42 @@ def normalize_pdf(layout: LTPage, scaler) -> Tuple[PDFElems, Counter]:
                 figures.append(m)
                 return
 
+            def clean_textline(item: LTTextLine) -> Optional[LTTextLine]:
+                clean_text = keep_allowed_chars(item.get_text()).strip()
+                # Skip empty and invalid lines
+                if clean_text:
+                    # TODO: add subscript detection and use latex underscore
+                    # or superscript
+                    item.clean_text = clean_text
+                    item.font_name, item.font_size = _font_of_mention(item)
+                    return item
+                else:
+                    return None
+
             # Collect stats on the chars
             if isinstance(m, LTChar):
-                # Construct LTTextContainer from LTChar(s) outside of LTTextContainer
-                nonlocal _font
-                nonlocal mention
-                font = (m.fontname, m.size)
-                if font != _font:
-                    if _font is not None:
-                        mention.font_name, mention.font_size = _font_of_mention(mention)
-                        layout_container = LTLayoutContainer((0, 0, 0, 0))  # dummy bbox
-                        laparams = LAParams(
-                            char_margin=1.0, word_margin=0.1, detect_vertical=True
-                        )
-                        for textline in layout_container.group_objects(
-                            laparams, mention
-                        ):
-                            textline.font_name, textline.font_size = _font_of_mention(
-                                textline
+                if not isinstance(parent, LTTextLine):
+                    # Construct LTTextContainer from LTChar(s) that are not children of
+                    # LTTextLine, then group LTChar(s) into LTTextLine(s)
+                    nonlocal _font
+                    nonlocal container
+                    font = (m.fontname, m.size)
+                    dummy_bbox = (+INF, +INF, -INF, -INF)
+                    if font != _font:
+                        if _font is not None:
+                            layout_container = LTLayoutContainer(dummy_bbox)
+                            laparams = LAParams(
+                                char_margin=1.0, word_margin=0.1, detect_vertical=True
                             )
-                            mentions.append(textline)
-                    mention = LTTextContainer()
-                    _font = font
-                mention.add(m)
+                            for textline in layout_container.group_objects(
+                                laparams, container
+                            ):
+                                cleaned_textline = clean_textline(textline)
+                                if cleaned_textline is not None:
+                                    mentions.append(cleaned_textline)
+                        container = LTContainer(dummy_bbox)
+                        _font = font
+                    container.add(m)
 
                 chars.append(m)
                 # fonts could be rotated 90/270 degrees
@@ -225,21 +238,16 @@ def normalize_pdf(layout: LTPage, scaler) -> Tuple[PDFElems, Counter]:
                 return
 
             if isinstance(m, LTTextLine):
-                mention_text = keep_allowed_chars(m.get_text()).strip()
-                # Skip empty and invalid lines
-                if mention_text:
-                    # TODO: add subscript detection and use latex underscore
-                    # or superscript
-                    m.clean_text = mention_text
-                    m.font_name, m.font_size = _font_of_mention(m)
-                    mentions.append(m)
+                cleaned_textline = clean_textline(m)
+                if cleaned_textline is not None:
+                    mentions.append(cleaned_textline)
                 return
 
         # Also include non character annotations
         if isinstance(m, LTAnno):
             chars.append(m)
 
-    processor(layout)
+    processor(layout, None)
 
     # Resets mention y0 to the first y0 of alphanum character instead of
     # considering exotic unicode symbols and sub/superscripts to reflect
