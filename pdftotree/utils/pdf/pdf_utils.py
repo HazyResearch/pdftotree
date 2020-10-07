@@ -22,6 +22,7 @@ from pdfminer.layout import (
     LTContainer,
     LTCurve,
     LTFigure,
+    LTLayoutContainer,
     LTLine,
     LTPage,
     LTTextContainer,
@@ -202,7 +203,17 @@ def normalize_pdf(layout: LTPage, scaler) -> Tuple[PDFElems, Counter]:
                 if font != _font:
                     if _font is not None:
                         mention.font_name, mention.font_size = _font_of_mention(mention)
-                        mentions.append(mention)
+                        layout_container = LTLayoutContainer((0, 0, 0, 0))  # dummy bbox
+                        laparams = LAParams(
+                            char_margin=1.0, word_margin=0.1, detect_vertical=True
+                        )
+                        for textline in layout_container.group_objects(
+                            laparams, mention
+                        ):
+                            textline.font_name, textline.font_size = _font_of_mention(
+                                textline
+                            )
+                            mentions.append(textline)
                     mention = LTTextContainer()
                     _font = font
                 mention.add(m)
