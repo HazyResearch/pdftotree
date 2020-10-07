@@ -24,6 +24,7 @@ from pdfminer.layout import (
     LTFigure,
     LTLine,
     LTPage,
+    LTTextContainer,
     LTTextLine,
 )
 from pdfminer.pdfdocument import PDFDocument
@@ -158,7 +159,7 @@ def normalize_pdf(layout: LTPage, scaler) -> Tuple[PDFElems, Counter]:
     Returns the list of chars and average char size
     """
     chars = []
-    mentions = []
+    mentions: List[LTTextContainer] = []
     height = scaler * layout.height
     font_size_counter = collections.Counter()
     # Lines longer than this are included in segments
@@ -166,6 +167,8 @@ def normalize_pdf(layout: LTPage, scaler) -> Tuple[PDFElems, Counter]:
     segments = []
     curves = []
     figures = []
+    mention: LTTextContainer = None
+    _font = None
 
     def processor(m):
         # Normalizes the coordinate system to be consistent with
@@ -192,6 +195,18 @@ def normalize_pdf(layout: LTPage, scaler) -> Tuple[PDFElems, Counter]:
 
             # Collect stats on the chars
             if isinstance(m, LTChar):
+                # Construct LTTextContainer from LTChar(s) outside of LTTextContainer
+                nonlocal _font
+                nonlocal mention
+                font = (m.fontname, m.size)
+                if font != _font:
+                    if _font is not None:
+                        mention.font_name, mention.font_size = _font_of_mention(mention)
+                        mentions.append(mention)
+                    mention = LTTextContainer()
+                    _font = font
+                mention.add(m)
+
                 chars.append(m)
                 # fonts could be rotated 90/270 degrees
                 font_size = _font_size_of(m)
