@@ -23,6 +23,7 @@ If applicable, add error logs or screenshots to help explain your problem.
 **Environment (please complete the following information):**
  - OS: [e.g. Ubuntu 16.04]
  - `pdftotree` Version: [e.g. v0.4.0]
+ - `pdfminer.six` Version: [e.g. 20200726]
 
 **Additional context**
 Add any other context about the problem here.
