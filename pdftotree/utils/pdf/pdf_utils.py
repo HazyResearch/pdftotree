@@ -19,6 +19,7 @@ from pdfminer.layout import (
     LTAnno,
     LTChar,
     LTComponent,
+    LTContainer,
     LTCurve,
     LTFigure,
     LTLine,
@@ -32,7 +33,6 @@ from pdfminer.pdfparser import PDFParser
 from pdfminer.utils import apply_matrix_pt
 
 from pdftotree.utils.img_utils import normalize_bbox, normalize_pts
-from pdftotree.utils.pdf.layout_utils import traverse_layout
 
 #  from pdftotree.utils.pdf.vector_utils import *
 
@@ -170,6 +170,9 @@ def normalize_pdf(layout: LTPage, scaler) -> Tuple[PDFElems, Counter]:
     def processor(m):
         # Normalizes the coordinate system to be consistent with
         # image library conventions (top left as origin)
+        if isinstance(m, LTContainer):
+            for child in m:
+                processor(child)
         if isinstance(m, LTComponent):
             m.set_bbox(normalize_bbox(m.bbox, height, scaler))
 
@@ -210,7 +213,7 @@ def normalize_pdf(layout: LTPage, scaler) -> Tuple[PDFElems, Counter]:
         if isinstance(m, LTAnno):
             chars.append(m)
 
-    traverse_layout(layout, processor)
+    processor(layout)
 
     # Resets mention y0 to the first y0 of alphanum character instead of
     # considering exotic unicode symbols and sub/superscripts to reflect

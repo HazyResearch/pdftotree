@@ -14,17 +14,6 @@ from pdfminer.layout import LTAnno
 from pdftotree.utils.pdf.vector_utils import inside, intersect
 
 
-def traverse_layout(root, callback):
-    """
-    Tree walker and invokes the callback as it
-    traverse pdf object tree
-    """
-    callback(root)
-    if isinstance(root, collections.Iterable):
-        for child in root:
-            traverse_layout(child, callback)
-
-
 def get_near_items(tree, tree_key):
     """
     Check both possible neighbors for key
