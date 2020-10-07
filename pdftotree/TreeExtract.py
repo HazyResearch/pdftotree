@@ -402,10 +402,10 @@ class TreeExtractor(object):
                 word_element.appendChild(self.doc.createTextNode(text))
         return element
 
-    def get_html_table(self, table, page_num) -> Element:
-        table_str = [str(i) for i in table]
+    def get_html_table(self, table: List[float], page_num) -> Element:
+        self.log.debug(f"Calling tabula at page: {page_num} and area: {table}")
         table_json = tabula.read_pdf(
-            self.pdf_file, pages=page_num, area=table_str, output_format="json"
+            self.pdf_file, pages=page_num, area=table, output_format="json"
         )
         if len(table_json) > 0:
             table_element = self.doc.createElement("table")
