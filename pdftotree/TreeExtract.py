@@ -35,12 +35,6 @@ class TreeExtractor(object):
         self.pdf_file = pdf_file
         self.elems: Dict[int, PDFElems] = {}  # key represents page_num
         self.font_stats: Dict[int, Any] = {}  # key represents page_num
-        self.lines_bboxes = []
-        self.alignments_bboxes = []
-        self.intersection_bboxes = []
-        self.bboxes = []
-        self.candidates = []
-        self.features = []
         self.iou_thresh = 0.8
         self.scanned = False
         self.tree: Dict[int, Any] = {}  # key represents page_num
