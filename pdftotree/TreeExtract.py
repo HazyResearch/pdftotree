@@ -403,6 +403,12 @@ class TreeExtractor(object):
         return element
 
     def get_html_table(self, table: List[float], page_num) -> Element:
+        """Recognize a table using tabula and return a DOM element.
+
+        :param table: bbox for a table (top,left,bottom,right)
+        :param page_num: 1-based page number
+        :return: DOM element for a table
+        """
         self.log.debug(f"Calling tabula at page: {page_num} and area: {table}")
         table_json = tabula.read_pdf(
             self.pdf_file, pages=page_num, area=table, output_format="json"
