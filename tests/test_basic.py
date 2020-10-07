@@ -74,10 +74,21 @@ def test_looks_scanned():
     assert all([figure.contains(word) for word in words])
 
 
-def test_issue_72():
-    """Make sure not to cause #72."""
+def test_LTChar_under_LTFigure():
+    """Test on a PDF where LTChar(s) are children of LTFigure."""
     output = pdftotree.parse("tests/input/CentralSemiconductorCorp_2N4013.pdf")
-    assert output is not None
+    soup = BeautifulSoup(output)
+    line: Tag = soup.find(class_="ocrx_line")
+    assert [word.text for word in line.find_all(class_="ocrx_word")] == [
+        "Small",
+        "Signal",
+        "Transistors",
+    ]
+
+    # The table in the 1st page should contain 18 columns
+    page = soup.find(class_="ocr_page")
+    table = page.find("table")
+    assert len(table.find("tr").find_all("td")) == 18
 
 
 def test_ml_completion():
