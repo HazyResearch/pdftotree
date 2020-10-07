@@ -150,18 +150,6 @@ class CustomPDFPageAggregator(PDFPageAggregator):
                     figures.append(m)
                     return
 
-                def clean_textline(item: LTTextLine) -> Optional[LTTextLine]:
-                    clean_text = keep_allowed_chars(item.get_text()).strip()
-                    # Skip empty and invalid lines
-                    if clean_text:
-                        # TODO: add subscript detection and use latex underscore
-                        # or superscript
-                        item.clean_text = clean_text
-                        item.font_name, item.font_size = _font_of_mention(item)
-                        return item
-                    else:
-                        return None
-
                 # Collect stats on the chars
                 if isinstance(m, LTChar):
                     if not isinstance(parent, LTTextLine):
@@ -177,7 +165,7 @@ class CustomPDFPageAggregator(PDFPageAggregator):
                                 for textline in layout_container.group_objects(
                                     self.laparams, container
                                 ):
-                                    cleaned_textline = clean_textline(textline)
+                                    cleaned_textline = _clean_textline(textline)
                                     if cleaned_textline is not None:
                                         mentions.append(cleaned_textline)
                             container = LTContainer(dummy_bbox)
@@ -191,7 +179,7 @@ class CustomPDFPageAggregator(PDFPageAggregator):
                     return
 
                 if isinstance(m, LTTextLine):
-                    cleaned_textline = clean_textline(m)
+                    cleaned_textline = _clean_textline(m)
                     if cleaned_textline is not None:
                         mentions.append(cleaned_textline)
                     return
@@ -231,6 +219,19 @@ def _font_size_of(ch):
     if isinstance(ch, LTChar):
         return max(map(abs, ch.matrix[:4]))
     return -1
+
+
+def _clean_textline(item: LTTextLine) -> Optional[LTTextLine]:
+    clean_text = keep_allowed_chars(item.get_text()).strip()
+    # Skip empty and invalid lines
+    if clean_text:
+        # TODO: add subscript detection and use latex underscore
+        # or superscript
+        item.clean_text = clean_text
+        item.font_name, item.font_size = _font_of_mention(item)
+        return item
+    else:
+        return None
 
 
 def _font_of_mention(m):
