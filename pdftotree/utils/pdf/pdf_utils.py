@@ -128,65 +128,57 @@ class CustomPDFPageAggregator(PDFPageAggregator):
         _font = None
 
         def processor(m, parent):
-            # Normalizes the coordinate system to be consistent with
-            # image library conventions (top left as origin)
+            """Convert pdfminer.six's LT* into pdftotree's PDFElems."""
+            # Traverse
             if isinstance(m, LTContainer):
                 for child in m:
                     processor(child, m)
+            # Normalizes the coordinate system to be consistent with
+            # image library conventions (top left as origin)
             if isinstance(m, LTComponent):
                 m.set_bbox(normalize_bbox(m.bbox, height, scaler))
-
-                if isinstance(m, LTCurve):
-                    m.pts = normalize_pts(m.pts, height, scaler)
-                    # Only keep longer lines here
-                    if isinstance(m, LTLine) and max(m.width, m.height) > pts_thres:
-                        segments.append(m)
-                        return
-                    # Here we exclude straight lines from curves
+            # Assign LT* into PDFElems
+            if isinstance(m, LTCurve):
+                m.pts = normalize_pts(m.pts, height, scaler)
+                # Only keep longer lines here
+                if isinstance(m, LTLine) and max(m.width, m.height) > pts_thres:
+                    segments.append(m)
+                else:  # Here we exclude straight lines from curves
                     curves.append(m)
-                    return
-
-                if isinstance(m, LTFigure):
-                    figures.append(m)
-                    return
-
-                # Collect stats on the chars
-                if isinstance(m, LTChar):
-                    if not isinstance(parent, LTTextLine):
-                        # Construct LTTextContainer from LTChar(s) that are not
-                        # children of LTTextLine, then group LTChar(s) into LTTextLine
-                        nonlocal _font
-                        nonlocal container
-                        font = (m.fontname, m.size)
-                        dummy_bbox = (+INF, +INF, -INF, -INF)
-                        if font != _font:
-                            if _font is not None:
-                                layout_container = LTLayoutContainer(dummy_bbox)
-                                for textline in layout_container.group_objects(
-                                    self.laparams, container
-                                ):
-                                    cleaned_textline = _clean_textline(textline)
-                                    if cleaned_textline is not None:
-                                        mentions.append(cleaned_textline)
-                            container = LTContainer(dummy_bbox)
-                            _font = font
-                        container.add(m)
-
-                    chars.append(m)
-                    # fonts could be rotated 90/270 degrees
-                    font_size = _font_size_of(m)
-                    font_size_counter[font_size] += 1
-                    return
-
-                if isinstance(m, LTTextLine):
-                    cleaned_textline = _clean_textline(m)
-                    if cleaned_textline is not None:
-                        mentions.append(cleaned_textline)
-                    return
-
-            # Also include non character annotations
-            if isinstance(m, LTAnno):
+            elif isinstance(m, LTFigure):
+                figures.append(m)
+            elif isinstance(m, LTChar):
+                if not isinstance(parent, LTTextLine):
+                    # Construct LTTextContainer from LTChar(s) that are not
+                    # children of LTTextLine, then group LTChar(s) into LTTextLine
+                    nonlocal _font
+                    nonlocal container
+                    font = (m.fontname, m.size)
+                    dummy_bbox = (+INF, +INF, -INF, -INF)
+                    if font != _font:
+                        if _font is not None:
+                            layout_container = LTLayoutContainer(dummy_bbox)
+                            for textline in layout_container.group_objects(
+                                self.laparams, container
+                            ):
+                                cleaned_textline = _clean_textline(textline)
+                                if cleaned_textline is not None:
+                                    mentions.append(cleaned_textline)
+                        container = LTContainer(dummy_bbox)
+                        _font = font
+                    container.add(m)
+                # Collect chars for later stats analysis
                 chars.append(m)
+                # fonts could be rotated 90/270 degrees
+                font_size = _font_size_of(m)
+                font_size_counter[font_size] += 1
+            elif isinstance(m, LTTextLine):
+                cleaned_textline = _clean_textline(m)
+                if cleaned_textline is not None:
+                    mentions.append(cleaned_textline)
+            elif isinstance(m, LTAnno):  # Also include non character annotations
+                chars.append(m)
+            return
 
         processor(layout, None)
 
