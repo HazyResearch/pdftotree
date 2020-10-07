@@ -2,7 +2,7 @@ import html
 import logging
 import os
 from functools import cmp_to_key
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from xml.dom.minidom import Document, Element
 
 import numpy as np
@@ -402,68 +402,70 @@ class TreeExtractor(object):
                 word_element.appendChild(self.doc.createTextNode(text))
         return element
 
-    def get_html_table(self, table: List[float], page_num) -> Element:
+    def get_html_table(self, table: List[float], page_num) -> Optional[Element]:
         """Recognize a table using tabula and return a DOM element.
 
         :param table: bbox for a table (top,left,bottom,right)
         :param page_num: 1-based page number
         :return: DOM element for a table
         """
-        self.log.debug(f"Calling tabula at page: {page_num} and area: {table}")
+        self.log.debug(f"Calling tabula at page: {page_num} and area: {table}.")
         table_json = tabula.read_pdf(
             self.pdf_file, pages=page_num, area=table, output_format="json"
         )
-        if len(table_json) > 0:
-            table_element = self.doc.createElement("table")
-            table_element.setAttribute("class", "ocr_table")
-            top = int(table_json[0]["top"])
-            left = int(table_json[0]["left"])
-            bottom = int(table_json[0]["bottom"])
-            right = int(table_json[0]["right"])
-            table_element.setAttribute("title", f"bbox {left} {top} {right} {bottom}")
-            for i, row in enumerate(table_json[0]["data"]):
-                row_element = self.doc.createElement("tr")
-                table_element.appendChild(row_element)
-                for j, column in enumerate(row):
-                    # box could be [0, 0, 0, 0] if tabula recognizes no word inside.
-                    box: List[float] = [
-                        column["top"],
-                        column["left"],
-                        column["top"] + column["height"],
-                        column["left"] + column["width"],
-                    ]
-                    col_element = self.doc.createElement("td")
-                    row_element.appendChild(col_element)
-                    elems = get_mentions_within_bbox(box, self.elems[page_num].mentions)
-                    if len(elems) == 0:
-                        continue
-                    col_element.setAttribute(
+        self.log.debug(f"Tabula recognized {len(table_json)} table(s).")
+        if len(table_json) == 0:
+            return None
+        table_element = self.doc.createElement("table")
+        table_element.setAttribute("class", "ocr_table")
+        top = int(table_json[0]["top"])
+        left = int(table_json[0]["left"])
+        bottom = int(table_json[0]["bottom"])
+        right = int(table_json[0]["right"])
+        table_element.setAttribute("title", f"bbox {left} {top} {right} {bottom}")
+        for i, row in enumerate(table_json[0]["data"]):
+            row_element = self.doc.createElement("tr")
+            table_element.appendChild(row_element)
+            for j, column in enumerate(row):
+                # box could be [0, 0, 0, 0] if tabula recognizes no word inside.
+                box: List[float] = [
+                    column["top"],
+                    column["left"],
+                    column["top"] + column["height"],
+                    column["left"] + column["width"],
+                ]
+                col_element = self.doc.createElement("td")
+                row_element.appendChild(col_element)
+                elems = get_mentions_within_bbox(box, self.elems[page_num].mentions)
+                if len(elems) == 0:
+                    continue
+                col_element.setAttribute(
+                    "title",
+                    f"bbox {int(box[1])} {int(box[0])} {int(box[3])} {int(box[2])}",
+                )
+                elems.sort(key=cmp_to_key(reading_order))
+                for elem in elems:
+                    line_element = self.doc.createElement("span")
+                    col_element.appendChild(line_element)
+                    line_element.setAttribute("class", "ocrx_line")
+                    line_element.setAttribute(
                         "title",
-                        f"bbox {int(box[1])} {int(box[0])} {int(box[3])} {int(box[2])}",
+                        " ".join(["bbox"] + [str(int(_)) for _ in elem.bbox]),
                     )
-                    elems.sort(key=cmp_to_key(reading_order))
-                    for elem in elems:
-                        line_element = self.doc.createElement("span")
-                        col_element.appendChild(line_element)
-                        line_element.setAttribute("class", "ocrx_line")
-                        line_element.setAttribute(
-                            "title",
-                            " ".join(["bbox"] + [str(int(_)) for _ in elem.bbox]),
-                        )
-                        words = self.get_word_boundaries(elem)
-                        for word in words:
-                            top = int(word[1])
-                            left = int(word[2])
-                            bottom = int(word[3])
-                            right = int(word[4])
-                            # escape special HTML chars
-                            text = html.escape(word[0])
+                    words = self.get_word_boundaries(elem)
+                    for word in words:
+                        top = int(word[1])
+                        left = int(word[2])
+                        bottom = int(word[3])
+                        right = int(word[4])
+                        # escape special HTML chars
+                        text = html.escape(word[0])
 
-                            word_element = self.doc.createElement("span")
-                            line_element.appendChild(word_element)
-                            word_element.setAttribute("class", "ocrx_word")
-                            word_element.setAttribute(
-                                "title", f"bbox {left} {top} {right} {bottom}"
-                            )
-                            word_element.appendChild(self.doc.createTextNode(text))
+                        word_element = self.doc.createElement("span")
+                        line_element.appendChild(word_element)
+                        word_element.setAttribute("class", "ocrx_word")
+                        word_element.setAttribute(
+                            "title", f"bbox {left} {top} {right} {bottom}"
+                        )
+                        word_element.appendChild(self.doc.createTextNode(text))
         return table_element
