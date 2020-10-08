@@ -7,8 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- [@HiromuHota][HiromuHota]: Switch the output format from "HTML-like" to hOCR.
+  ([#62](https://github.com/HazyResearch/pdftotree/pull/62))
 - [@HiromuHota][HiromuHota]: Loosen Keras' version restriction, which is now unnecessarily strict.
   ([#68](https://github.com/HazyResearch/pdftotree/pull/68))
+- [@HiromuHota][HiromuHota]: Greedily extract contents from PDF even if it looks scanned.
+  ([#71](https://github.com/HazyResearch/pdftotree/pull/71))
 
 ### Removed
 - [@HiromuHota][HiromuHota]: Remove "favor_figures" option and extract everything.
@@ -17,10 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - [@HiromuHota][HiromuHota]: Fix a bug that an html file is not created at a given path.
   ([#64](https://github.com/HazyResearch/pdftotree/pull/64))
-- [@HiromuHota][HiromuHota]: Switch the output format from "HTML-like" to hOCR.
-  ([#62](https://github.com/HazyResearch/pdftotree/pull/62))
-- [@HiromuHota][HiromuHota]: Greedily extract contents from PDF even if it looks scanned.
-  ([#71](https://github.com/HazyResearch/pdftotree/pull/71))
 - [@HiromuHota][HiromuHota]: Extract LTChar even if they are not children of LTTextLine.
   ([#79](https://github.com/HazyResearch/pdftotree/pull/79))
 
