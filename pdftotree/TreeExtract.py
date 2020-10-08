@@ -426,27 +426,29 @@ class TreeExtractor(object):
         for i, row in enumerate(table_json[0]["data"]):
             row_element = self.doc.createElement("tr")
             table_element.appendChild(row_element)
-            for j, column in enumerate(row):
-                # box could be [0, 0, 0, 0] if tabula recognizes no word inside.
+            for j, cell in enumerate(row):
+                # It is not explicitly stated anywhere but tabula seems to use the cell
+                # bbox to represent that of cell itself rather than that of text inside.
+                # Note: bbox could be [0, 0, 0, 0] if tabula recognizes no text inside.
                 box: List[float] = [
-                    column["top"],
-                    column["left"],
-                    column["top"] + column["height"],
-                    column["left"] + column["width"],
+                    cell["top"],
+                    cell["left"],
+                    cell["top"] + cell["height"],
+                    cell["left"] + cell["width"],
                 ]
-                col_element = self.doc.createElement("td")
-                row_element.appendChild(col_element)
+                cell_element = self.doc.createElement("td")
+                row_element.appendChild(cell_element)
                 elems = get_mentions_within_bbox(box, self.elems[page_num].mentions)
                 if len(elems) == 0:
                     continue
-                col_element.setAttribute(
+                cell_element.setAttribute(
                     "title",
                     f"bbox {int(box[1])} {int(box[0])} {int(box[3])} {int(box[2])}",
                 )
                 elems.sort(key=cmp_to_key(reading_order))
                 for elem in elems:
                     line_element = self.doc.createElement("span")
-                    col_element.appendChild(line_element)
+                    cell_element.appendChild(line_element)
                     line_element.setAttribute("class", "ocrx_line")
                     line_element.setAttribute(
                         "title",
