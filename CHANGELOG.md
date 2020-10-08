@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#62](https://github.com/HazyResearch/pdftotree/pull/62))
 - [@HiromuHota][HiromuHota]: Greedily extract contents from PDF even if it looks scanned.
   ([#71](https://github.com/HazyResearch/pdftotree/pull/71))
+- [@HiromuHota][HiromuHota]: Extract LTChar even if they are not children of LTTextLine.
+  ([#79](https://github.com/HazyResearch/pdftotree/pull/79))
 
 ## 0.4.1 - 2020-09-21
 

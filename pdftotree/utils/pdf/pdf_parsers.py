@@ -16,6 +16,7 @@ from pdfminer.layout import LTTextLine
 from pdfminer.utils import Plane
 
 from pdftotree.utils.pdf.node import Node
+from pdftotree.utils.pdf.pdf_utils import PDFElems
 from pdftotree.utils.pdf.vector_utils import center, intersect, l1, xy_reading_order
 
 
@@ -723,13 +724,13 @@ def cluster_vertically_aligned_boxes(
         return tables, table_features
 
 
-def parse_tree_structure(elems, font_stat, page_num, ref_page_seen, tables):
+def parse_tree_structure(elems: PDFElems, font_stat, page_num, ref_page_seen, tables):
     boxes_segments = elems.segments
     boxes_curves = elems.curves
     boxes_figures = elems.figures
     page_width = elems.layout.width
     page_height = elems.layout.height
-    mentions = elems.mentions
+    mentions: List[LTTextLine] = elems.mentions
 
     avg_font_pts = get_most_common_font_pts(elems.mentions, font_stat)
     width = get_page_width(mentions + boxes_segments + boxes_figures + boxes_curves)
@@ -762,7 +763,7 @@ def parse_tree_structure(elems, font_stat, page_num, ref_page_seen, tables):
     tables_page = tables
 
     # Eliminate tables from these boxes
-    boxes = []
+    boxes: List[LTTextLine] = []
     for idx1, box in enumerate(mentions):
         intersect = False
         for idx2, table in enumerate(tables_page):
@@ -798,7 +799,7 @@ def parse_tree_structure(elems, font_stat, page_num, ref_page_seen, tables):
 
 
 def extract_text_candidates(
-    boxes,
+    boxes: List[LTTextLine],
     page_bbox,
     avg_font_pts,
     width,
@@ -1282,7 +1283,7 @@ def get_page_width(boxes):
     return xmax - xmin
 
 
-def get_char_width(boxes):
+def get_char_width(boxes: List[LTTextLine]) -> float:
     log = logging.getLogger(__name__)
     box_len_sum = 0
     num_char_sum = 0

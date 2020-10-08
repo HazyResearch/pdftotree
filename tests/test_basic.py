@@ -44,7 +44,7 @@ def test_looks_scanned():
     This overlaying transparent image fools TreeExtractor into thinking it is scanned.
     """
     output = pdftotree.parse("tests/input/CaseStudy_ACS.pdf")
-    soup = BeautifulSoup(output)
+    soup = BeautifulSoup(output, "lxml")
     assert len(soup.find_all(class_="ocrx_word")) >= 1000
     assert len(soup.find_all("figure")) == 3
 
@@ -72,6 +72,23 @@ def test_looks_scanned():
     words = [get_bbox(word) for word in page.find_all(class_="ocrx_word")]
     figure = get_bbox(page.find("figure"))
     assert all([figure.contains(word) for word in words])
+
+
+def test_LTChar_under_LTFigure():
+    """Test on a PDF where LTChar(s) are children of LTFigure."""
+    output = pdftotree.parse("tests/input/CentralSemiconductorCorp_2N4013.pdf")
+    soup = BeautifulSoup(output, "lxml")
+    line: Tag = soup.find(class_="ocrx_line")
+    assert [word.text for word in line.find_all(class_="ocrx_word")] == [
+        "Small",
+        "Signal",
+        "Transistors",
+    ]
+
+    # The table in the 1st page should contain 18 columns
+    page = soup.find(class_="ocr_page")
+    table = page.find("table")
+    assert len(table.find("tr").find_all("td")) == 18
 
 
 def test_ml_completion():

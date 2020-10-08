@@ -6,32 +6,28 @@ extracted with PDFminer
 @author: xiao
 """
 import collections
-import logging
-import os
 import re
 import string
 from collections import Counter
-from typing import Any, List, NamedTuple, Tuple, Union
+from typing import List, NamedTuple, Optional, Tuple, Union
 
 from pdfminer.converter import PDFPageAggregator
 from pdfminer.layout import (
-    LAParams,
     LTAnno,
     LTChar,
     LTComponent,
+    LTContainer,
     LTCurve,
     LTFigure,
+    LTLayoutContainer,
     LTLine,
+    LTPage,
+    LTTextContainer,
     LTTextLine,
 )
-from pdfminer.pdfdocument import PDFDocument
-from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
-from pdfminer.pdfpage import PDFPage
-from pdfminer.pdfparser import PDFParser
-from pdfminer.utils import apply_matrix_pt
+from pdfminer.utils import INF, apply_matrix_pt
 
 from pdftotree.utils.img_utils import normalize_bbox, normalize_pts
-from pdftotree.utils.pdf.layout_utils import traverse_layout
 
 #  from pdftotree.utils.pdf.vector_utils import *
 
@@ -42,7 +38,7 @@ class PDFElems(NamedTuple):
     segments: List[LTLine]
     curves: List[LTCurve]
     figures: List[LTFigure]
-    layout: Any  # assigned to by PDFPageAggregator.get_result
+    layout: LTPage
     chars: List[Union[LTChar, LTAnno]]
 
 
@@ -113,116 +109,91 @@ class CustomPDFPageAggregator(PDFPageAggregator):
         # Add the curve as an arbitrary polyline (belzier curve info is lost here)
         self.cur_item.add(LTCurve(gstate.linewidth, pts))
 
+    def normalize_pdf(self, layout: LTPage, scaler) -> Tuple[PDFElems, Counter]:
+        """
+        Normalizes pdf object coordinates (bot left) to image
+        conventions (top left origin).
+        Returns the list of chars and average char size
+        """
+        chars = []
+        mentions: List[LTTextContainer] = []
+        height = scaler * layout.height
+        font_size_counter = collections.Counter()
+        # Lines longer than this are included in segments
+        pts_thres = 2.0 * scaler
+        segments = []
+        curves = []
+        figures = []
+        container: LTContainer = None
+        _font = None
 
-def analyze_pages(file_name, char_margin=1.0):
-    """
-    Input: the file path to the PDF file
-    Output: yields the layout object for each page in the PDF
-    """
-    log = logging.getLogger(__name__)
-    # Open a PDF file.
-    with open(os.path.realpath(file_name), "rb") as fp:
-        # Create a PDF parser object associated with the file object.
-        parser = PDFParser(fp)
-        # Create a PDF document object that stores the document structure.
-        # Supply the password for initialization.
-        document = PDFDocument(parser, password="")
-        # Create a PDF resource manager object that stores shared resources.
-        rsrcmgr = PDFResourceManager()
-        # Set parameters for analysis.
-        laparams = LAParams(
-            char_margin=char_margin, word_margin=0.1, detect_vertical=True
-        )
-        # Create a PDF page aggregator object.
-        device = CustomPDFPageAggregator(rsrcmgr, laparams=laparams)
-        # Create a PDF interpreter object.
-        interpreter = PDFPageInterpreter(rsrcmgr, device)
-        # Process each page contained in the document.
-        for page_num, page in enumerate(PDFPage.create_pages(document)):
-            try:
-                interpreter.process_page(page)
-            except OverflowError as oe:
-                log.exception(
-                    "{}, skipping page {} of {}".format(oe, page_num, file_name)
-                )
-                continue
-            layout = device.get_result()
-            yield layout
-
-
-def normalize_pdf(layout, scaler) -> Tuple[PDFElems, Counter]:
-    """
-    Normalizes pdf object coordinates (bot left) to image
-    conventions (top left origin).
-    Returns the list of chars and average char size
-    """
-    chars = []
-    mentions = []
-    height = scaler * layout.height
-    font_size_counter = collections.Counter()
-    # Lines longer than this are included in segments
-    pts_thres = 2.0 * scaler
-    segments = []
-    curves = []
-    figures = []
-
-    def processor(m):
-        # Normalizes the coordinate system to be consistent with
-        # image library conventions (top left as origin)
-        if isinstance(m, LTComponent):
-            m.set_bbox(normalize_bbox(m.bbox, height, scaler))
-
+        def processor(m, parent):
+            """Convert pdfminer.six's LT* into pdftotree's PDFElems."""
+            # Traverse
+            if isinstance(m, LTContainer):
+                for child in m:
+                    processor(child, m)
+            # Normalizes the coordinate system to be consistent with
+            # image library conventions (top left as origin)
+            if isinstance(m, LTComponent):
+                m.set_bbox(normalize_bbox(m.bbox, height, scaler))
+            # Assign LT* into PDFElems
             if isinstance(m, LTCurve):
                 m.pts = normalize_pts(m.pts, height, scaler)
                 # Only keep longer lines here
                 if isinstance(m, LTLine) and max(m.width, m.height) > pts_thres:
                     segments.append(m)
-                    return
-                # Here we exclude straight lines from curves
-                curves.append(m)
-                return
-
-            if isinstance(m, LTFigure):
+                else:  # Here we exclude straight lines from curves
+                    curves.append(m)
+            elif isinstance(m, LTFigure):
                 figures.append(m)
-                return
-
-            # Collect stats on the chars
-            if isinstance(m, LTChar):
+            elif isinstance(m, LTChar):
+                if not isinstance(parent, LTTextLine):
+                    # Construct LTTextContainer from LTChar(s) that are not
+                    # children of LTTextLine, then group LTChar(s) into LTTextLine
+                    nonlocal _font
+                    nonlocal container
+                    font = (m.fontname, m.size)
+                    dummy_bbox = (+INF, +INF, -INF, -INF)
+                    if font != _font:
+                        if _font is not None:
+                            layout_container = LTLayoutContainer(dummy_bbox)
+                            for textline in layout_container.group_objects(
+                                self.laparams, container
+                            ):
+                                cleaned_textline = _clean_textline(textline)
+                                if cleaned_textline is not None:
+                                    mentions.append(cleaned_textline)
+                        container = LTContainer(dummy_bbox)
+                        _font = font
+                    container.add(m)
+                # Collect chars for later stats analysis
                 chars.append(m)
                 # fonts could be rotated 90/270 degrees
                 font_size = _font_size_of(m)
                 font_size_counter[font_size] += 1
-                return
+            elif isinstance(m, LTTextLine):
+                cleaned_textline = _clean_textline(m)
+                if cleaned_textline is not None:
+                    mentions.append(cleaned_textline)
+            elif isinstance(m, LTAnno):  # Also include non character annotations
+                chars.append(m)
+            return
 
-            if isinstance(m, LTTextLine):
-                mention_text = keep_allowed_chars(m.get_text()).strip()
-                # Skip empty and invalid lines
-                if mention_text:
-                    # TODO: add subscript detection and use latex underscore
-                    # or superscript
-                    m.clean_text = mention_text
-                    m.font_name, m.font_size = _font_of_mention(m)
-                    mentions.append(m)
-                return
+        processor(layout, None)
 
-        # Also include non character annotations
-        if isinstance(m, LTAnno):
-            chars.append(m)
+        # Resets mention y0 to the first y0 of alphanum character instead of
+        # considering exotic unicode symbols and sub/superscripts to reflect
+        # accurate alignment info
+        for m in mentions:
+            # best_y1 = min(c.y1 for c in m if isinstance(c, LTChar))
+            alphanum_c = next((c for c in m if c.get_text().isalnum()), None)
+            if alphanum_c:
+                m.set_bbox((m.x0, alphanum_c.y0, m.x1, alphanum_c.y1))
 
-    traverse_layout(layout, processor)
-
-    # Resets mention y0 to the first y0 of alphanum character instead of
-    # considering exotic unicode symbols and sub/superscripts to reflect
-    # accurate alignment info
-    for m in mentions:
-        # best_y1 = min(c.y1 for c in m if isinstance(c, LTChar))
-        alphanum_c = next((c for c in m if c.get_text().isalnum()), None)
-        if alphanum_c:
-            m.set_bbox((m.x0, alphanum_c.y0, m.x1, alphanum_c.y1))
-
-        #     mentions.sort(key = lambda m: (m.y0,m.x0))
-    elems = PDFElems(mentions, segments, curves, figures, layout, chars)
-    return elems, font_size_counter
+            #     mentions.sort(key = lambda m: (m.y0,m.x0))
+        elems = PDFElems(mentions, segments, curves, figures, layout, chars)
+        return elems, font_size_counter
 
 
 def _print_dict(elem_dict):
@@ -240,6 +211,19 @@ def _font_size_of(ch):
     if isinstance(ch, LTChar):
         return max(map(abs, ch.matrix[:4]))
     return -1
+
+
+def _clean_textline(item: LTTextLine) -> Optional[LTTextLine]:
+    clean_text = keep_allowed_chars(item.get_text()).strip()
+    # Skip empty and invalid lines
+    if clean_text:
+        # TODO: add subscript detection and use latex underscore
+        # or superscript
+        item.clean_text = clean_text
+        item.font_name, item.font_size = _font_of_mention(item)
+        return item
+    else:
+        return None
 
 
 def _font_of_mention(m):
