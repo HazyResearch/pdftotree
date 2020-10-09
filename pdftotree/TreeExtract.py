@@ -29,6 +29,8 @@ from pdftotree.utils.pdf.pdf_parsers import parse_layout, parse_tree_structure
 from pdftotree.utils.pdf.pdf_utils import CustomPDFPageAggregator, PDFElems
 from pdftotree.utils.pdf.vector_utils import column_order, reading_order
 
+logger = logging.getLogger(__name__)
+
 
 class TreeExtractor(object):
     """
@@ -36,7 +38,6 @@ class TreeExtractor(object):
     """
 
     def __init__(self, pdf_file):
-        self.log = logging.getLogger(__name__)
         self.pdf_file = pdf_file
         self.elems: Dict[int, PDFElems] = {}  # key represents page_num
         self.font_stats: Dict[int, Any] = {}  # key represents page_num
@@ -165,7 +166,7 @@ class TreeExtractor(object):
 
         boxes = alignments_bboxes
         if len(boxes) == 0:
-            self.log.info("No boxes were found on page {}.".format(page_num))
+            logger.info("No boxes were found on page {}.".format(page_num))
             return [], []
 
         lines_features = get_lines_features(boxes, elems)
@@ -197,7 +198,7 @@ class TreeExtractor(object):
         try:
             nodes, features = parse_layout(elems, font_stat)
         except Exception as e:
-            self.log.exception(e)
+            logger.exception(e)
             nodes, features = [], []
         return (
             [
@@ -348,7 +349,7 @@ class TreeExtractor(object):
                     char_idx += 1
                     continue
                 if word[len_idx] != mention_chars[char_idx][0]:
-                    self.log.warning(
+                    logger.warning(
                         "Out of order ({}, {})".format(word, mention_chars[char_idx][0])
                     )
                 curr_word[1] = min(curr_word[1], mention_chars[char_idx][1])
@@ -409,11 +410,11 @@ class TreeExtractor(object):
         :param page_num: 1-based page number
         :return: DOM element for a table
         """
-        self.log.debug(f"Calling tabula at page: {page_num} and area: {table}.")
+        logger.debug(f"Calling tabula at page: {page_num} and area: {table}.")
         table_json = tabula.read_pdf(
             self.pdf_file, pages=page_num, area=table, output_format="json"
         )
-        self.log.debug(f"Tabula recognized {len(table_json)} table(s).")
+        logger.debug(f"Tabula recognized {len(table_json)} table(s).")
         if len(table_json) == 0:
             return None
         table_element = self.doc.createElement("table")

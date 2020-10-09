@@ -19,6 +19,8 @@ from pdftotree.utils.pdf.node import Node
 from pdftotree.utils.pdf.pdf_utils import PDFElems
 from pdftotree.utils.pdf.vector_utils import center, intersect, l1, xy_reading_order
 
+logger = logging.getLogger(__name__)
+
 
 def parse_layout(elems, font_stat, combine=False):
     """
@@ -75,7 +77,6 @@ def cluster_vertically_aligned_boxes(
     page_width,
     combine,
 ):
-    log = logging.getLogger(__name__)
     # Filter out boxes with zero width or height
     filtered_boxes = []
     for bbox in boxes:
@@ -85,10 +86,10 @@ def cluster_vertically_aligned_boxes(
 
     # Too many "." in the Table of Content pages
     if len(boxes) == 0:
-        log.warning("No boxes were found to cluster.")
+        logger.warning("No boxes were found to cluster.")
         return [], []
     elif len(boxes) > 3500:
-        log.warning("Too many '.' in the Table of Content pages?")
+        logger.warning("Too many '.' in the Table of Content pages?")
         return [], []
 
     plane = Plane(page_bbox)
@@ -810,7 +811,6 @@ def extract_text_candidates(
     page_width,
     page_height,
 ) -> Tuple[Dict[str, List], bool]:
-    log = logging.getLogger(__name__)
     # Filter out boxes with zero width or height
     filtered_boxes = []
     for bbox in boxes:
@@ -1052,7 +1052,7 @@ def extract_text_candidates(
         min_y_page = min(min_y_page, box.bbox[1])
     if page_num == -1:
         # handle title, authors and abstract here
-        log.error("TODO: no way to handle title authors abstract yet.")
+        logger.error("TODO: no way to handle title authors abstract yet.")
     else:
         # eliminate header, footer, page number
         # sort other text and classify as header/paragraph
@@ -1180,7 +1180,6 @@ def extract_text_candidates(
 
 
 def get_figures(boxes, page_bbox, page_num, boxes_figures, page_width, page_height):
-    log = logging.getLogger(__name__)
     # Filter out boxes with zero width or height
     filtered_boxes = []
     for bbox in boxes:
@@ -1189,7 +1188,7 @@ def get_figures(boxes, page_bbox, page_num, boxes_figures, page_width, page_heig
     boxes = filtered_boxes
 
     if len(boxes) == 0:
-        log.warning("No boxes to get figures from on page {}.".format(page_num))
+        logger.warning("No boxes to get figures from on page {}.".format(page_num))
         return []
 
     plane = Plane(page_bbox)
@@ -1255,7 +1254,6 @@ def get_most_common_font_pts(mentions, font_stat):
     """
     font_stat: Counter object of font sizes
     """
-    log = logging.getLogger(__name__)
     try:
         # default min font size of 1 pt in case no font present
         most_common_font_size = font_stat.most_common(1)[0][0]
@@ -1269,7 +1267,7 @@ def get_most_common_font_pts(mentions, font_stat):
         return height_sum / count
 
     except IndexError:
-        log.info("No text found on page. Default most_common_font_pts to 2.0")
+        logger.info("No text found on page. Default most_common_font_pts to 2.0")
         return 2.0
 
 
@@ -1284,7 +1282,6 @@ def get_page_width(boxes):
 
 
 def get_char_width(boxes: List[LTTextLine]) -> float:
-    log = logging.getLogger(__name__)
     box_len_sum = 0
     num_char_sum = 0
     for i, b in enumerate(boxes):
@@ -1293,5 +1290,5 @@ def get_char_width(boxes: List[LTTextLine]) -> float:
     try:
         return box_len_sum / num_char_sum
     except ZeroDivisionError:
-        log.warning("No text found. Defaulting to char_width = 2.0.")
+        logger.warning("No text found. Defaulting to char_width = 2.0.")
         return 2.0

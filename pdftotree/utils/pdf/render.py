@@ -11,6 +11,8 @@ import logging
 import numpy as np
 from pdf.vector_utils import x0, x1, y0, y1
 
+logger = logging.getLogger(__name__)
+
 
 class Renderer(object):
     """
@@ -32,7 +34,6 @@ class Renderer(object):
         scaler so we can map original coordinates into the
         new grid map.
         """
-        self.log = logging.getLogger(__name__)
         self.scaler = scaler
         layout = elems.layout
         width = int(np.ceil(scaler * layout.width))
@@ -41,7 +42,7 @@ class Renderer(object):
         self.grid = np.zeros((width, height), dtype=np.int8)
 
         # Estimates the grid size in megabytes
-        self.log.info(self.grid.nbytes / float(1048576))
+        logger.info(self.grid.nbytes / float(1048576))
         for line in elems.segments:
             if line.height < 0.1:  # Horizontal lines
                 self.draw_rect(line.bbox, self.horizontal_line)
