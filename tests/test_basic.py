@@ -108,4 +108,5 @@ def test_vision_completion():
         model_type="vision",
         model_path="tests/input/paleo_visual_model.h5",
     )
-    assert output is not None
+    soup = BeautifulSoup(output, "lxml")
+    assert len(soup.find_all("table")) == 2
