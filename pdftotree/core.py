@@ -24,17 +24,18 @@ import pickle
 from pdftotree.TreeExtract import TreeExtractor
 from pdftotree.TreeVisualizer import TreeVisualizer
 
+logger = logging.getLogger(__name__)
+
 
 def load_model(model_type, model_path):
-    log = logging.getLogger(__name__)
-    log.info("Loading pretrained {} model for table detection".format(model_type))
+    logger.info("Loading pretrained {} model for table detection".format(model_type))
     if model_type == "ml":
         model = pickle.load(open(model_path, "rb"))
     else:
         from keras.models import load_model as load_vision_model
 
         model = load_vision_model(model_path)
-    log.info("Model loaded!")
+    logger.info("Model loaded!")
     return model
 
 
@@ -51,20 +52,19 @@ def parse(
     model_path=None,
     visualize=False,
 ):
-    log = logging.getLogger(__name__)
     model = None
     if model_type is not None and model_path is not None:
         model = load_model(model_type, model_path)
     extractor = TreeExtractor(pdf_file)
     if extractor.is_scanned():
-        log.warning("Document looks scanned, the result may be far from expected.")
+        logger.warning("Document looks scanned, the result may be far from expected.")
     else:
-        log.info("Digitized PDF detected, building tree structure...")
+        logger.info("Digitized PDF detected, building tree structure...")
 
     pdf_tree = extractor.get_tree_structure(model_type, model)
-    log.info("Tree structure built, creating html...")
+    logger.info("Tree structure built, creating html...")
     pdf_html = extractor.get_html_tree()
-    log.info("HTML created.")
+    logger.info("HTML created.")
     # TODO: what is the following substition for and is it required?
     # pdf_html = re.sub(r"[\x00-\x1F]+", "", pdf_html)
 

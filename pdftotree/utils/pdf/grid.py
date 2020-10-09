@@ -16,6 +16,8 @@ from pdfminer.utils import Plane
 
 from pdftotree.utils.pdf.vector_utils import inside, reading_order
 
+logger = logging.getLogger(__name__)
+
 
 class Cell(object):
     """Represents a cell with no visual dividers inside"""
@@ -117,7 +119,6 @@ class Grid(object):
         """
         Analyzes subcell structure
         """
-        log = logging.getLogger(__name__)
         # Resolve multirow mentions, TODO: validate against all PDFs
         #  subcol_count = 0
         mega_rows = []
@@ -127,12 +128,12 @@ class Grid(object):
             for col_id, cell in enumerate(row):
                 # Keep cell text in reading order
                 cell.texts.sort(key=cmp_to_key(reading_order))
-                log.debug("=" * 50)
+                logger.debug("=" * 50)
                 for m in cell.texts:
                     subrow_across_cell[m.yc_grid].append(m)
                     #  prev = m
 
-            log.debug(pformat(dict(subrow_across_cell)))
+            logger.debug(pformat(dict(subrow_across_cell)))
 
             mega_rows.append(subrow_across_cell)
 

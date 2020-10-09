@@ -1,7 +1,7 @@
 import string
 from builtins import str
 from collections import defaultdict
-from typing import List
+from typing import Any, List
 
 from pdfminer.layout import LTTextLine
 
@@ -35,7 +35,15 @@ def get_height_coverage(bbox):
 # ******************* Text Coverage Features *************************************
 
 
-def get_mentions_within_bbox(bbox, mentions) -> List[LTTextLine]:
+def get_mentions_within_bbox(
+    bbox: List[Any], mentions: List[LTTextLine]
+) -> List[LTTextLine]:
+    """Get textlines within bbox.
+
+    :param bbox: a list containing (top, left, bottom, right) in the last 4 digits
+    :param mentions: a list of textlines
+    :return: a list of textlines within the given bbox
+    """
     mentions_within_bbox = []
     for mention in mentions:
         bbox_mention = (

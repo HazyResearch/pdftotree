@@ -10,6 +10,27 @@ from shapely.geometry import box
 import pdftotree
 
 
+# Adapted from https://github.com/ocropus/hocr-tools/blob/v1.3.0/hocr-check
+def get_prop(node: Tag, name: str) -> Optional[str]:
+    title = node.get("title")
+    if not title:
+        return None
+    props = title.split(";")
+    for prop in props:
+        (key, args) = prop.split(None, 1)
+        if key == name:
+            return args
+    return None
+
+
+# Adapted from https://github.com/ocropus/hocr-tools/blob/v1.3.0/hocr-check
+def get_bbox(node: Tag) -> box:
+    bbox = get_prop(node, "bbox")
+    if not bbox:
+        return None
+    return box(*[int(x) for x in bbox.split()])
+
+
 def test_heuristic_completion():
     """Simply test that parse runs to completion without errors."""
     output = pdftotree.parse("tests/input/paleo.pdf")
@@ -48,25 +69,6 @@ def test_looks_scanned():
     assert len(soup.find_all(class_="ocrx_word")) >= 1000
     assert len(soup.find_all("figure")) == 3
 
-    # Adapted from https://github.com/ocropus/hocr-tools/blob/v1.3.0/hocr-check
-    def get_prop(node: Tag, name: str) -> Optional[str]:
-        title = node.get("title")
-        if not title:
-            return None
-        props = title.split(";")
-        for prop in props:
-            (key, args) = prop.split(None, 1)
-            if key == name:
-                return args
-        return None
-
-    # Adapted from https://github.com/ocropus/hocr-tools/blob/v1.3.0/hocr-check
-    def get_bbox(node: Tag) -> box:
-        bbox = get_prop(node, "bbox")
-        if not bbox:
-            return None
-        return box(*[int(x) for x in bbox.split()])
-
     # Check if words are extracted even though they are overlapped by a figure (#77).
     page = soup.find(class_="ocr_page")  # checking only 1st page is good enough.
     words = [get_bbox(word) for word in page.find_all(class_="ocrx_word")]
@@ -74,10 +76,12 @@ def test_looks_scanned():
     assert all([figure.contains(word) for word in words])
 
 
-def test_LTChar_under_LTFigure():
+def test_LTChar_under_LTFigure(tmp_path):
     """Test on a PDF where LTChar(s) are children of LTFigure."""
-    output = pdftotree.parse("tests/input/CentralSemiconductorCorp_2N4013.pdf")
-    soup = BeautifulSoup(output, "lxml")
+    html_path = os.path.join(tmp_path, "paleo.html")
+    pdftotree.parse("tests/input/CentralSemiconductorCorp_2N4013.pdf", html_path)
+    with open(html_path) as f:
+        soup = BeautifulSoup(f, "lxml")
     line: Tag = soup.find(class_="ocrx_line")
     assert [word.text for word in line.find_all(class_="ocrx_word")] == [
         "Small",
@@ -87,8 +91,16 @@ def test_LTChar_under_LTFigure():
 
     # The table in the 1st page should contain 18 columns
     page = soup.find(class_="ocr_page")
-    table = page.find("table")
+    table = page.find(class_="ocr_table")
     assert len(table.find("tr").find_all("td")) == 18
+    assert get_bbox(table) is not None
+
+    # Find a cell containing one or more of ocrx_word and check if it has bbox
+    cell = table.find(class_="ocrx_word").parent.parent
+    assert get_bbox(cell) is not None
+
+    with Popen(["hocr-check", html_path], stderr=PIPE) as proc:
+        assert all([line.decode("utf-8").startswith("ok") for line in proc.stderr])
 
 
 def test_ml_completion():

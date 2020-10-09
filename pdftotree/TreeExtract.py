@@ -2,7 +2,7 @@ import html
 import logging
 import os
 from functools import cmp_to_key
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from xml.dom.minidom import Document, Element
 
 import numpy as np
@@ -29,6 +29,8 @@ from pdftotree.utils.pdf.pdf_parsers import parse_layout, parse_tree_structure
 from pdftotree.utils.pdf.pdf_utils import CustomPDFPageAggregator, PDFElems
 from pdftotree.utils.pdf.vector_utils import column_order, reading_order
 
+logger = logging.getLogger(__name__)
+
 
 class TreeExtractor(object):
     """
@@ -36,7 +38,6 @@ class TreeExtractor(object):
     """
 
     def __init__(self, pdf_file):
-        self.log = logging.getLogger(__name__)
         self.pdf_file = pdf_file
         self.elems: Dict[int, PDFElems] = {}  # key represents page_num
         self.font_stats: Dict[int, Any] = {}  # key represents page_num
@@ -165,7 +166,7 @@ class TreeExtractor(object):
 
         boxes = alignments_bboxes
         if len(boxes) == 0:
-            self.log.info("No boxes were found on page {}.".format(page_num))
+            logger.info("No boxes were found on page {}.".format(page_num))
             return [], []
 
         lines_features = get_lines_features(boxes, elems)
@@ -197,7 +198,7 @@ class TreeExtractor(object):
         try:
             nodes, features = parse_layout(elems, font_stat)
         except Exception as e:
-            self.log.exception(e)
+            logger.exception(e)
             nodes, features = [], []
         return (
             [
@@ -348,7 +349,7 @@ class TreeExtractor(object):
                     char_idx += 1
                     continue
                 if word[len_idx] != mention_chars[char_idx][0]:
-                    self.log.warning(
+                    logger.warning(
                         "Out of order ({}, {})".format(word, mention_chars[char_idx][0])
                     )
                 curr_word[1] = min(curr_word[1], mention_chars[char_idx][1])
@@ -402,42 +403,72 @@ class TreeExtractor(object):
                 word_element.appendChild(self.doc.createTextNode(text))
         return element
 
-    def get_html_table(self, table, page_num) -> Element:
-        table_str = [str(i) for i in table]
-        table_json = tabula.read_pdf(
-            self.pdf_file, pages=page_num, area=table_str, output_format="json"
-        )
-        if len(table_json) > 0:
-            table_element = self.doc.createElement("table")
-            for i, row in enumerate(table_json[0]["data"]):
-                row_element = self.doc.createElement("tr")
-                table_element.appendChild(row_element)
-                for j, column in enumerate(row):
-                    col_element = self.doc.createElement("td")
-                    row_element.appendChild(col_element)
-                    box = [
-                        column["top"],
-                        column["left"],
-                        column["top"] + column["height"],
-                        column["left"] + column["width"],
-                    ]
-                    elems = get_mentions_within_bbox(box, self.elems[page_num].mentions)
-                    elems.sort(key=cmp_to_key(reading_order))
-                    for elem in elems:
-                        words = self.get_word_boundaries(elem)
-                        for word in words:
-                            top = int(word[1])
-                            left = int(word[2])
-                            bottom = int(word[3])
-                            right = int(word[4])
-                            # escape special HTML chars
-                            text = html.escape(word[0])
+    def get_html_table(self, table: List[float], page_num) -> Optional[Element]:
+        """Recognize a table using tabula and return a DOM element.
 
-                            word_element = self.doc.createElement("span")
-                            col_element.appendChild(word_element)
-                            word_element.setAttribute("class", "ocrx_word")
-                            word_element.setAttribute(
-                                "title", f"bbox {left} {top} {right} {bottom}"
-                            )
-                            word_element.appendChild(self.doc.createTextNode(text))
+        :param table: bbox for a table (top,left,bottom,right)
+        :param page_num: 1-based page number
+        :return: DOM element for a table
+        """
+        logger.debug(f"Calling tabula at page: {page_num} and area: {table}.")
+        table_json = tabula.read_pdf(
+            self.pdf_file, pages=page_num, area=table, output_format="json"
+        )
+        logger.debug(f"Tabula recognized {len(table_json)} table(s).")
+        if len(table_json) == 0:
+            return None
+        table_element = self.doc.createElement("table")
+        table_element.setAttribute("class", "ocr_table")
+        top = int(table_json[0]["top"])
+        left = int(table_json[0]["left"])
+        bottom = int(table_json[0]["bottom"])
+        right = int(table_json[0]["right"])
+        table_element.setAttribute("title", f"bbox {left} {top} {right} {bottom}")
+        for i, row in enumerate(table_json[0]["data"]):
+            row_element = self.doc.createElement("tr")
+            table_element.appendChild(row_element)
+            for j, cell in enumerate(row):
+                # It is not explicitly stated anywhere but tabula seems to use the cell
+                # bbox to represent that of cell itself rather than that of text inside.
+                # Note: bbox could be [0, 0, 0, 0] if tabula recognizes no text inside.
+                box: List[float] = [
+                    cell["top"],
+                    cell["left"],
+                    cell["top"] + cell["height"],
+                    cell["left"] + cell["width"],
+                ]
+                cell_element = self.doc.createElement("td")
+                row_element.appendChild(cell_element)
+                elems = get_mentions_within_bbox(box, self.elems[page_num].mentions)
+                if len(elems) == 0:
+                    continue
+                cell_element.setAttribute(
+                    "title",
+                    f"bbox {int(box[1])} {int(box[0])} {int(box[3])} {int(box[2])}",
+                )
+                elems.sort(key=cmp_to_key(reading_order))
+                for elem in elems:
+                    line_element = self.doc.createElement("span")
+                    cell_element.appendChild(line_element)
+                    line_element.setAttribute("class", "ocrx_line")
+                    line_element.setAttribute(
+                        "title",
+                        " ".join(["bbox"] + [str(int(_)) for _ in elem.bbox]),
+                    )
+                    words = self.get_word_boundaries(elem)
+                    for word in words:
+                        top = int(word[1])
+                        left = int(word[2])
+                        bottom = int(word[3])
+                        right = int(word[4])
+                        # escape special HTML chars
+                        text = html.escape(word[0])
+
+                        word_element = self.doc.createElement("span")
+                        line_element.appendChild(word_element)
+                        word_element.setAttribute("class", "ocrx_word")
+                        word_element.setAttribute(
+                            "title", f"bbox {left} {top} {right} {bottom}"
+                        )
+                        word_element.appendChild(self.doc.createTextNode(text))
         return table_element

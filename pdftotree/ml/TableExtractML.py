@@ -20,6 +20,8 @@ from pdftotree.utils.lines_utils import (
 from pdftotree.utils.pdf.pdf_parsers import parse_layout
 from pdftotree.utils.pdf.pdf_utils import analyze_pages, normalize_pdf
 
+logger = logging.getLogger(__name__)
+
 
 class TableExtractorML(object):
     """
@@ -27,7 +29,6 @@ class TableExtractorML(object):
     """
 
     def __init__(self, pdf_file):
-        self.log = logging.getLogger(__name__)
         self.pdf_file = pdf_file
         self.elems = {}
         self.font_stats = {}
@@ -97,7 +98,7 @@ class TableExtractorML(object):
                     and round(fig.bbox[2]) == round(elems.layout.width)
                     and round(fig.bbox[3]) == round(elems.layout.height)
                 ):
-                    self.log.debug(
+                    logger.debug(
                         "{} is scanned because of full-page figure.".format(
                             self.pdf_file
                         )
@@ -111,7 +112,7 @@ class TableExtractorML(object):
             )
             # doc is scanned if any page is scanned
             if page_scanned:
-                self.log.debug(
+                logger.debug(
                     "{} is scanned one of its pages is scanned.".format(self.pdf_file)
                 )
                 is_scanned = True
@@ -139,7 +140,7 @@ class TableExtractorML(object):
     def get_candidates_and_features(self):
         self.parse()
         if self.scanned:
-            self.log.info("{} is scanned.".format(self.pdf_file))
+            logger.info("{} is scanned.".format(self.pdf_file))
             return [], [], self.scanned
         for page_num in list(self.elems.keys()):
             page_boxes, page_features = self.get_candidates_and_features_page_num(
@@ -161,7 +162,7 @@ class TableExtractorML(object):
         alignments_bboxes, alignment_features = self.get_candidates_alignments(
             page_num, elems
         )
-        self.log.info(
+        logger.info(
             "Page Num: {}, Line bboxes: {}, Alignment bboxes: {}".format(
                 page_num, len(lines_bboxes), len(alignments_bboxes)
             )
