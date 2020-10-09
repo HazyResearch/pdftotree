@@ -1,14 +1,18 @@
 import os
+from typing import Tuple
 
 import keras.backend as K
 import numpy as np
 import selectivesearch
 from keras.preprocessing.image import img_to_array, load_img
+from numpy import ndarray
 from wand.color import Color
 from wand.image import Image
 
 
-def predict_heatmap(pdf_path, page_num, model, img_dim=448, img_dir="tmp/img"):
+def predict_heatmap(
+    pdf_path, page_num, model, img_dim=448, img_dir="tmp/img"
+) -> Tuple[ndarray, ndarray]:
     """
     Return an image corresponding to the page of the pdf
     documents saved at pdf_path. If the image is not found in img_dir this
