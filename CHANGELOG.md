@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- [@HiromuHota][HiromuHota]: Support for Python 3.8.
+  ([#86](https://github.com/HazyResearch/pdftotree/pull/86))
+
 ### Changed
 - [@HiromuHota][HiromuHota]: Switch the output format from "HTML-like" to hOCR.
   ([#62](https://github.com/HazyResearch/pdftotree/pull/62))
@@ -13,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#68](https://github.com/HazyResearch/pdftotree/pull/68))
 - [@HiromuHota][HiromuHota]: Greedily extract contents from PDF even if it looks scanned.
   ([#71](https://github.com/HazyResearch/pdftotree/pull/71))
+- [@HiromuHota][HiromuHota]: Upgrade Keras to 2.4.0 or later (and TensorFlow 2.2 or later).
+  ([#86](https://github.com/HazyResearch/pdftotree/pull/86))
 
 ### Removed
 - [@HiromuHota][HiromuHota]: Remove "favor_figures" option and extract everything.
