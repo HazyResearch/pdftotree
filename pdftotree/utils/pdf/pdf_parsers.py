@@ -12,7 +12,7 @@ from collections import Counter, defaultdict
 from functools import cmp_to_key
 from typing import Any, Dict, List, Tuple
 
-from pdfminer.layout import LTTextLine
+from pdfminer.layout import LTFigure, LTTextLine
 from pdfminer.utils import Plane
 
 from pdftotree.utils.pdf.node import Node
@@ -734,7 +734,7 @@ def parse_tree_structure(
 ) -> Tuple[Dict[str, Any], bool]:
     boxes_segments = elems.segments
     boxes_curves = elems.curves
-    boxes_figures = elems.figures
+    boxes_figures: List[LTFigure] = elems.figures
     page_width = elems.layout.width
     page_height = elems.layout.height
     mentions: List[LTTextLine] = elems.mentions
@@ -1183,7 +1183,14 @@ def extract_text_candidates(
     return tree, new_ref_page_seen
 
 
-def get_figures(boxes, page_bbox, page_num, boxes_figures, page_width, page_height):
+def get_figures(
+    boxes: List[LTTextLine],
+    page_bbox: Tuple[float, float, float, float],
+    page_num: int,
+    boxes_figures: List[LTFigure],
+    page_width: float,
+    page_height: float,
+) -> List[Tuple[int, int, int, float, float, float, float]]:
     # Filter out boxes with zero width or height
     filtered_boxes = []
     for bbox in boxes:
@@ -1198,11 +1205,8 @@ def get_figures(boxes, page_bbox, page_num, boxes_figures, page_width, page_heig
     plane = Plane(page_bbox)
     plane.extend(boxes)
 
-    nodes_figures = []
-
-    for fig_box in boxes_figures:
-        node_fig = Node(fig_box)
-        nodes_figures.append(node_fig)
+    # Convert LTFigure to Node
+    nodes_figures: List[Node] = [Node(fig_box) for fig_box in boxes_figures]
 
     merge_indices = [i for i in range(len(nodes_figures))]
     page_stat = Node(boxes)
@@ -1221,7 +1225,9 @@ def get_figures(boxes, page_bbox, page_num, boxes_figures, page_width, page_heig
     return figures
 
 
-def merge_nodes(nodes, plane, page_stat, merge_indices):
+def merge_nodes(
+    nodes: List[Node], plane: Plane, page_stat: Node, merge_indices: List[int]
+) -> Tuple[List[Node], List[int]]:
     """
     Merges overlapping nodes
     """
