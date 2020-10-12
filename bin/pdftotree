@@ -47,13 +47,6 @@ if __name__ == "__main__":
         help="Whether to output visualization images for the tree",
     )
     parser.add_argument(
-        "-d",
-        "--dry-run",
-        dest="dry_run",
-        action="store_true",
-        help="Run pdftotree, but do not save any output or print to console.",
-    )
-    parser.add_argument(
         "-v",
         "--verbose",
         dest="verbose",
@@ -92,10 +85,6 @@ if __name__ == "__main__":
     ch.setFormatter(formatter)
     log.addHandler(ch)
 
-    if args.dry_run:
-        print("This is just a dry run. No hOCR will be output.")
-        args.output = None
-
     # Call the main routine
     result = pdftotree.parse(
         args.pdf_file,
@@ -105,8 +94,7 @@ if __name__ == "__main__":
         args.visualize,
     )
 
-    if result:
-        if not args.dry_run:
-            print(result)
+    if args.output is None:
+        print(result)
     else:
         print("hOCR output to {}".format(args.output))
