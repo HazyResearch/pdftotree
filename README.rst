@@ -72,8 +72,6 @@ This takes a PDF file as input and produces an hOCR file as output::
                             Path to output hOCR file. If not given, it will be
                             printed to stdout.
       -V, --visualize       Whether to output visualization images
-      -d, --dry-run         Run pdftotree, but do not save any output or print to
-                            console.
       -v, --verbose         Output INFO level logging.
       -vv, --veryverbose    Output DEBUG level logging.
 
