@@ -282,7 +282,9 @@ class TreeExtractor(object):
         meta = doc.createElement("meta")
         head.appendChild(meta)
         meta.setAttribute("name", "ocr-capabilities")
-        meta.setAttribute("content", "ocr_page ocr_table ocrx_block ocrx_word")
+        meta.setAttribute(
+            "content", "ocr_page ocr_table ocrx_block ocrx_line ocrx_word"
+        )
         meta = doc.createElement("meta")
         head.appendChild(meta)
         meta.setAttribute("name", "ocr-number-of-pages")

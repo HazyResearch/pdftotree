@@ -51,6 +51,19 @@ def test_output_should_conform_to_hocr(tmp_path):
     with Popen(["hocr-check", html_path], stderr=PIPE) as proc:
         assert all([line.decode("utf-8").startswith("ok") for line in proc.stderr])
 
+    # Check detailed things that hocr-check does not check.
+    with open(html_path) as fp:
+        soup = BeautifulSoup(fp, "lxml")
+    capabilities = soup.find("meta", attrs={"name": "ocr-capabilities"})
+    # Check the list as hocr-check only checks the existence of "ocr-capabilities".
+    assert capabilities["content"].split() == [
+        "ocr_page",
+        "ocr_table",
+        "ocrx_block",
+        "ocrx_line",
+        "ocrx_word",
+    ]
+
 
 def test_visualize_output(tmp_path):
     """Test if an output can be visualzied."""
