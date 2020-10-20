@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- List a missing "ocrx_line" in the ocr-capabilities metadata field.
+  ([#94](https://github.com/HazyResearch/pdftotree/issues/94), [@HiromuHota][HiromuHota])
+
 ## 0.5.0 - 2020-10-13
 
 ### Added
