@@ -8,9 +8,9 @@ import logging
 import math
 import operator
 from builtins import filter, range, str, zip
-from collections import defaultdict
+from collections import Counter, defaultdict
 from functools import cmp_to_key
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from pdfminer.layout import LTTextLine
 from pdfminer.utils import Plane
@@ -725,7 +725,13 @@ def cluster_vertically_aligned_boxes(
         return tables, table_features
 
 
-def parse_tree_structure(elems: PDFElems, font_stat, page_num, ref_page_seen, tables):
+def parse_tree_structure(
+    elems: PDFElems,
+    font_stat: Counter,
+    page_num: int,
+    ref_page_seen: bool,
+    tables_page: List[Tuple[int, int, int, float, float, float, float]],
+) -> Tuple[Dict[str, Any], bool]:
     boxes_segments = elems.segments
     boxes_curves = elems.curves
     boxes_figures = elems.figures
@@ -760,8 +766,6 @@ def parse_tree_structure(elems: PDFElems, font_stat, page_num, ref_page_seen, ta
     figures_page = get_figures(
         mentions, elems.layout.bbox, page_num, boxes_figures, page_width, page_height
     )
-
-    tables_page = tables
 
     # Eliminate tables from these boxes
     boxes: List[LTTextLine] = []

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - List a missing "ocrx_line" in the ocr-capabilities metadata field.
   ([#94](https://github.com/HazyResearch/pdftotree/issues/94), [@HiromuHota][HiromuHota])
+- Use the centroid for `isContained` check not to miss cell values.
+  ([#96](https://github.com/HazyResearch/pdftotree/issues/96), [@HiromuHota][HiromuHota])
 
 ## 0.5.0 - 2020-10-13
 

@@ -216,7 +216,7 @@ class TreeExtractor(object):
         return self.font_stats
 
     def get_tree_structure(self, model_type, model) -> Dict[str, Any]:
-        tables = {}
+        tables: Dict[int, List[Tuple(int, int, int, float, float, float, float)]] = {}
         # use vision to get tables
         if model_type == "vision":
             from pdftotree.visual.visual_utils import get_bboxes, predict_heatmap
@@ -334,6 +334,11 @@ class TreeExtractor(object):
     def get_word_boundaries(
         self, mention: LTTextLine
     ) -> List[Tuple[str, float, float, float, float]]:
+        """Split a line of text into words.
+
+        :param mention: a line of text
+        :return: a list of words
+        """
         mention_text = mention.get_text()
         mention_chars: List[Tuple[str, int, int, int, int]] = []
         for obj in mention:
