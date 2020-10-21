@@ -46,12 +46,16 @@ def get_mentions_within_bbox(
     """
     mentions_within_bbox = []
     for mention in mentions:
+        # Compute the centroid
+        xc = int((mention.x0 + mention.x1) / 2)
+        yc = int((mention.y0 + mention.y1) / 2)
         bbox_mention = (
-            int(mention.y0),
-            int(mention.x0),
-            int(mention.y1),
-            int(mention.x1),
+            yc,
+            xc,
+            yc,
+            xc,
         )
+        # See if the centroid is contained by the bbox.
         if isContained(bbox_mention, bbox[-4:]):
             mentions_within_bbox += [mention]
     return mentions_within_bbox
