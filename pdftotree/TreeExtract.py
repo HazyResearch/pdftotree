@@ -1,12 +1,13 @@
 import logging
 import os
+from base64 import b64encode
 from functools import cmp_to_key
 from typing import Any, Dict, List, Optional, Tuple
 from xml.dom.minidom import Document, Element
 
 import numpy as np
 import tabula
-from pdfminer.layout import LAParams, LTChar, LTPage, LTTextLine
+from pdfminer.layout import LAParams, LTChar, LTImage, LTPage, LTTextLine
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdfminer.pdfpage import PDFPage
@@ -15,7 +16,7 @@ from pdfminer.utils import Plane
 
 from pdftotree._version import __version__
 from pdftotree.ml.features import get_lines_features, get_mentions_within_bbox
-from pdftotree.utils.bbox_utils import get_rectangles
+from pdftotree.utils.bbox_utils import bbox2str, get_rectangles
 from pdftotree.utils.lines_utils import (
     extend_horizontal_lines,
     extend_vertical_lines,
@@ -321,12 +322,29 @@ class TreeExtractor(object):
                     table_element = self.get_html_table(table, page_num)
                     page.appendChild(table_element)
                 elif box[0] == "figure":
+                    elems: List[LTTextLine] = get_mentions_within_bbox(
+                        box, self.elems[page_num].figures
+                    )
                     fig_element = doc.createElement("figure")
                     page.appendChild(fig_element)
                     top, left, bottom, right = [int(i) for i in box[1:]]
                     fig_element.setAttribute(
                         "title", f"bbox {left} {top} {right} {bottom}"
                     )
+                    for img in [img for elem in elems for img in elem]:
+                        if not isinstance(img, LTImage):
+                            continue
+                        data = img.stream.get_rawdata()
+                        base64 = b64encode(data).decode("ascii")
+                        if data.startswith(b"\xff\xd8\xff"):
+                            img_element = doc.createElement("img")
+                            fig_element.appendChild(img_element)
+                            img_element.setAttribute("title", bbox2str(img.bbox))
+                            img_element.setAttribute(
+                                "src", f"data:image/jpeg;base64,{base64}"
+                            )
+                        else:
+                            logger.warning(f"Skipping an image of unknown type: {img}.")
                 else:
                     element = self.get_html_others(box[0], box[1:], page_num)
                     page.appendChild(element)
@@ -392,10 +410,7 @@ class TreeExtractor(object):
             line_element = self.doc.createElement("span")
             element.appendChild(line_element)
             line_element.setAttribute("class", "ocrx_line")
-            line_element.setAttribute(
-                "title",
-                f"bbox {int(elem.x0)} {int(elem.y0)} {int(elem.x1)} {int(elem.y1)}",
-            )
+            line_element.setAttribute("title", bbox2str(elem.bbox))
             words = self.get_word_boundaries(elem)
             for word in words:
                 top, left, bottom, right = [int(x) for x in word[1:]]
@@ -458,10 +473,7 @@ class TreeExtractor(object):
                     line_element = self.doc.createElement("span")
                     cell_element.appendChild(line_element)
                     line_element.setAttribute("class", "ocrx_line")
-                    line_element.setAttribute(
-                        "title",
-                        " ".join(["bbox"] + [str(int(_)) for _ in elem.bbox]),
-                    )
+                    line_element.setAttribute("title", bbox2str(elem.bbox))
                     words = self.get_word_boundaries(elem)
                     for word in words:
                         top = int(word[1])

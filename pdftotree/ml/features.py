@@ -3,7 +3,7 @@ from builtins import str
 from collections import defaultdict
 from typing import Any, List
 
-from pdfminer.layout import LTTextLine
+from pdfminer.layout import LTComponent, LTTextLine
 
 from pdftotree.utils.bbox_utils import isContained
 from pdftotree.utils.pdf.pdf_parsers import (
@@ -36,8 +36,8 @@ def get_height_coverage(bbox):
 
 
 def get_mentions_within_bbox(
-    bbox: List[Any], mentions: List[LTTextLine]
-) -> List[LTTextLine]:
+    bbox: List[Any], mentions: List[LTComponent]
+) -> List[LTComponent]:
     """Get textlines within bbox.
 
     :param bbox: a list containing (top, left, bottom, right) in the last 4 digits
