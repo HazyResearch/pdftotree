@@ -762,9 +762,13 @@ def parse_tree_structure(
         m.feats[prefix + "yc"] = m.yc_grid = m.yc // grid_size
 
     # Figures for this page
-    figures_page = get_figures(
-        mentions, elems.layout.bbox, page_num, boxes_figures, page_width, page_height
-    )
+    nodes = get_figures(boxes_figures)
+    if len(nodes) == 0:
+        logger.warning("No boxes to get figures from on page {}.".format(page_num))
+    figures_page: Tuple[int, int, int, float, float, float, float] = [
+        (page_num, page_width, page_height) + (node.y0, node.x0, node.y1, node.x1)
+        for node in nodes
+    ]
 
     # Eliminate tables from these boxes
     boxes: List[LTTextLine] = []
@@ -1182,34 +1186,20 @@ def extract_text_candidates(
 
 
 def get_figures(
-    boxes: List[LTTextLine],
-    page_bbox: Tuple[float, float, float, float],
-    page_num: int,
-    boxes_figures: List[LTFigure],
-    page_width: float,
-    page_height: float,
-) -> List[Tuple[int, int, int, float, float, float, float]]:
+    boxes: List[LTFigure],
+) -> List[Node]:
     # Filter out boxes with zero width or height
-    filtered_boxes = []
-    for bbox in boxes:
-        if bbox.x1 - bbox.x0 > 0 and bbox.y1 - bbox.y0 > 0:
-            filtered_boxes.append(bbox)
-    boxes = filtered_boxes
+    boxes = [bbox for bbox in boxes if not bbox.is_empty()]
 
     if len(boxes) == 0:
-        logger.warning("No boxes to get figures from on page {}.".format(page_num))
         return []
 
-    plane = Plane(page_bbox)
-    plane.extend(boxes)
-
     # Convert LTFigure to Node
-    nodes_figures: List[Node] = [Node(fig_box) for fig_box in boxes_figures]
+    nodes_figures: List[Node] = [Node(fig_box) for fig_box in boxes]
 
-    merge_indices = [i for i in range(len(nodes_figures))]
+    # Merge and retain only the most outer nodes
+    merge_indices = list(range(len(nodes_figures)))
     nodes, merge_indices = merge_nodes(nodes_figures, merge_indices)
-
-    # Merging Nodes
     new_nodes = []
     for idx in range(len(merge_indices)):
         if merge_indices[idx] == idx:
