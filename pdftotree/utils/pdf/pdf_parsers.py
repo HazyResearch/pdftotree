@@ -547,7 +547,7 @@ def cluster_vertically_aligned_boxes(
     nodes = [Node(elems) for elems in clusters]
     node_indices = [i for i, x in enumerate(cid2obj2) if x]
     merge_indices = [i for i in range(len(node_indices))]
-    nodes, merge_indices = merge_nodes(nodes, merge_indices)
+    merge_indices = merge_nodes(nodes, merge_indices)
     # Features
     for idx in range(len(merge_indices)):
         if merge_indices[idx] != idx:
@@ -1036,7 +1036,7 @@ def extract_text_candidates(
     nodes = [Node(elems) for elems in clusters]
     node_indices = [i for i, x in enumerate(cid2obj) if x]
     merge_indices = [i for i in range(len(node_indices))]
-    nodes, merge_indices = merge_nodes(nodes, merge_indices)
+    merge_indices = merge_nodes(nodes, merge_indices)
 
     # Merging Nodes
     new_nodes = []
@@ -1195,11 +1195,11 @@ def get_figures(
         return []
 
     # Convert LTFigure to Node
-    nodes_figures: List[Node] = [Node(fig_box) for fig_box in boxes]
+    nodes: List[Node] = [Node(fig_box) for fig_box in boxes]
 
     # Merge and retain only the most outer nodes
-    merge_indices = list(range(len(nodes_figures)))
-    nodes, merge_indices = merge_nodes(nodes_figures, merge_indices)
+    merge_indices = list(range(len(nodes)))
+    merge_indices = merge_nodes(nodes, merge_indices)
     new_nodes = []
     for idx in range(len(merge_indices)):
         if merge_indices[idx] == idx:
@@ -1212,9 +1212,7 @@ def get_figures(
     return figures
 
 
-def merge_nodes(
-    nodes: List[Node], merge_indices: List[int]
-) -> Tuple[List[Node], List[int]]:
+def merge_nodes(nodes: List[Node], merge_indices: List[int]) -> List[int]:
     """
     Merges overlapping nodes
     """
@@ -1244,7 +1242,7 @@ def merge_nodes(
         for cid_iter in range(len(merge_indices)):
             if merge_indices[cid_iter] == merge_indices[inner_idx]:
                 merge_indices[cid_iter] = merge_indices[best_outer_idx]
-    return nodes, merge_indices
+    return merge_indices
 
 
 def get_most_common_font_pts(mentions, font_stat):
