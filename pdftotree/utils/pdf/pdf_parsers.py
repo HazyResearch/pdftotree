@@ -547,8 +547,7 @@ def cluster_vertically_aligned_boxes(
     nodes = [Node(elems) for elems in clusters]
     node_indices = [i for i, x in enumerate(cid2obj2) if x]
     merge_indices = [i for i in range(len(node_indices))]
-    page_stat = Node(boxes)
-    nodes, merge_indices = merge_nodes(nodes, plane, page_stat, merge_indices)
+    nodes, merge_indices = merge_nodes(nodes, merge_indices)
     # Features
     for idx in range(len(merge_indices)):
         if merge_indices[idx] != idx:
@@ -1033,8 +1032,7 @@ def extract_text_candidates(
     nodes = [Node(elems) for elems in clusters]
     node_indices = [i for i, x in enumerate(cid2obj) if x]
     merge_indices = [i for i in range(len(node_indices))]
-    page_stat = Node(boxes)
-    nodes, merge_indices = merge_nodes(nodes, plane, page_stat, merge_indices)
+    nodes, merge_indices = merge_nodes(nodes, merge_indices)
 
     # Merging Nodes
     new_nodes = []
@@ -1209,8 +1207,7 @@ def get_figures(
     nodes_figures: List[Node] = [Node(fig_box) for fig_box in boxes_figures]
 
     merge_indices = [i for i in range(len(nodes_figures))]
-    page_stat = Node(boxes)
-    nodes, merge_indices = merge_nodes(nodes_figures, plane, page_stat, merge_indices)
+    nodes, merge_indices = merge_nodes(nodes_figures, merge_indices)
 
     # Merging Nodes
     new_nodes = []
@@ -1226,7 +1223,7 @@ def get_figures(
 
 
 def merge_nodes(
-    nodes: List[Node], plane: Plane, page_stat: Node, merge_indices: List[int]
+    nodes: List[Node], merge_indices: List[int]
 ) -> Tuple[List[Node], List[int]]:
     """
     Merges overlapping nodes
