@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Embed base64-encoded images inline. Support starting with JPEG and BMP.
+  ([#99](https://github.com/HazyResearch/pdftotree/pull/99), [@HiromuHota][HiromuHota])
+
 ### Fixed
 - List a missing "ocrx_line" in the ocr-capabilities metadata field.
   ([#94](https://github.com/HazyResearch/pdftotree/issues/94), [@HiromuHota][HiromuHota])
