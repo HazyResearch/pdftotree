@@ -1,5 +1,6 @@
 import logging
 import os
+import tempfile
 from base64 import b64encode
 from functools import cmp_to_key
 from typing import Any, Dict, List, Optional, Tuple
@@ -7,6 +8,7 @@ from xml.dom.minidom import Document, Element
 
 import numpy as np
 import tabula
+from pdfminer.image import ImageWriter
 from pdfminer.layout import LAParams, LTChar, LTImage, LTPage, LTTextLine
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
@@ -270,6 +272,10 @@ class TreeExtractor(object):
         return self.tree
 
     def get_html_tree(self) -> str:
+        # Create a temp folder where images are temporarily saved.
+        dirname = tempfile.mkdtemp()
+        imagewriter = ImageWriter(dirname)
+
         doc = Document()
         self.doc = doc
         html = doc.createElement("html")
@@ -334,17 +340,23 @@ class TreeExtractor(object):
                     for img in [img for elem in elems for img in elem]:
                         if not isinstance(img, LTImage):
                             continue
-                        data = img.stream.get_rawdata()
-                        base64 = b64encode(data).decode("ascii")
-                        if data.startswith(b"\xff\xd8\xff"):
-                            img_element = doc.createElement("img")
-                            fig_element.appendChild(img_element)
-                            img_element.setAttribute("title", bbox2str(img.bbox))
-                            img_element.setAttribute(
-                                "src", f"data:image/jpeg;base64,{base64}"
-                            )
+                        filename = imagewriter.export_image(img)
+                        with open(os.path.join(dirname, filename), "rb") as f:
+                            base64 = b64encode(f.read()).decode("ascii")
+                        if filename.endswith("jpg"):
+                            mediatype = "jpeg"
+                        elif filename.endswith("bmp"):
+                            mediatype = "bmp"
                         else:
-                            logger.warning(f"Skipping an image of unknown type: {img}.")
+                            logger.info(f"Skipping an unknown type image: {filename}.")
+                            continue
+                        logger.info(f"Embedding a known type image: {filename}.")
+                        img_element = doc.createElement("img")
+                        fig_element.appendChild(img_element)
+                        img_element.setAttribute("title", bbox2str(img.bbox))
+                        img_element.setAttribute(
+                            "src", f"data:image/{mediatype};base64,{base64}"
+                        )
                 else:
                     element = self.get_html_others(box[0], box[1:], page_num)
                     page.appendChild(element)
