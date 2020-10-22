@@ -1213,8 +1213,11 @@ def get_figures(
 
 
 def merge_nodes(nodes: List[Node], merge_indices: List[int]) -> List[int]:
-    """
-    Merges overlapping nodes
+    """Merges overlapping nodes.
+
+    :param nodes: Nodes to be merged
+    :param merge_indices: Indices of nodes
+    :return: a list of indices, indicating which node is its most outer node.
     """
     # Merge inner boxes to the best outer box
     # nodes.sort(key=Node.area)

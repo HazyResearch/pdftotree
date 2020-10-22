@@ -42,7 +42,9 @@ class TreeExtractor(object):
         self.font_stats: Dict[int, Any] = {}  # key represents page_num
         self.iou_thresh = 0.8
         self.scanned = False
-        self.tree: Dict[int, Any] = {}  # key represents page_num
+        self.tree: Dict[
+            int, Dict[str, Tuple[int, int, int, float, float, float, float]]
+        ] = {}  # key represents page_num
 
     def identify_scanned_page(self, boxes, page_bbox, page_width, page_height):
         plane = Plane(page_bbox)
@@ -292,13 +294,13 @@ class TreeExtractor(object):
         body = doc.createElement("body")
         html.appendChild(body)
         for page_num in self.elems.keys():  # 1-based
-            boxes = []
+            boxes: List[Tuple[str, float, float, float, float]] = []
             for clust in self.tree[page_num]:
                 for (pnum, pwidth, pheight, top, left, bottom, right) in self.tree[
                     page_num
                 ][clust]:
                     boxes += [
-                        [clust.lower().replace(" ", "_"), top, left, bottom, right]
+                        (clust.lower().replace(" ", "_"), top, left, bottom, right)
                     ]
             page = doc.createElement("div")
             page.setAttribute("class", "ocr_page")
