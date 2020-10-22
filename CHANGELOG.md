@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#96](https://github.com/HazyResearch/pdftotree/issues/96), [@HiromuHota][HiromuHota])
 - Treat non-breaking space as a white space to prevent "Out of order" warnings.
   ([#98](https://github.com/HazyResearch/pdftotree/pull/98), [@HiromuHota][HiromuHota])
+- Escape text only once.
+  ([#100](https://github.com/HazyResearch/pdftotree/pull/100), [@HiromuHota][HiromuHota])
 
 ## 0.5.0 - 2020-10-13
 
