@@ -1,4 +1,3 @@
-import html
 import logging
 import os
 from functools import cmp_to_key
@@ -398,8 +397,6 @@ class TreeExtractor(object):
             words = self.get_word_boundaries(elem)
             for word in words:
                 top, left, bottom, right = [int(x) for x in word[1:]]
-                # escape special HTML chars
-                text = html.escape(word[0])
 
                 word_element = self.doc.createElement("span")
                 line_element.appendChild(word_element)
@@ -407,7 +404,8 @@ class TreeExtractor(object):
                 word_element.setAttribute(
                     "title", f"bbox {left} {top} {right} {bottom}"
                 )
-                word_element.appendChild(self.doc.createTextNode(text))
+                # No need to escape text here as minidom will do.
+                word_element.appendChild(self.doc.createTextNode(word[0]))
         return element
 
     def get_html_table(self, table: List[float], page_num) -> Optional[Element]:
@@ -468,8 +466,6 @@ class TreeExtractor(object):
                         left = int(word[2])
                         bottom = int(word[3])
                         right = int(word[4])
-                        # escape special HTML chars
-                        text = html.escape(word[0])
 
                         word_element = self.doc.createElement("span")
                         line_element.appendChild(word_element)
@@ -477,5 +473,6 @@ class TreeExtractor(object):
                         word_element.setAttribute(
                             "title", f"bbox {left} {top} {right} {bottom}"
                         )
-                        word_element.appendChild(self.doc.createTextNode(text))
+                        # No need to escape text here as minidom will do.
+                        word_element.appendChild(self.doc.createTextNode(word[0]))
         return table_element
