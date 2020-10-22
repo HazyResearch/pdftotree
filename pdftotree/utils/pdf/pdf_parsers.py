@@ -1200,16 +1200,9 @@ def get_figures(
     # Merge and retain only the most outer nodes
     merge_indices = list(range(len(nodes)))
     merge_indices = merge_nodes(nodes, merge_indices)
-    new_nodes = []
-    for idx in range(len(merge_indices)):
-        if merge_indices[idx] == idx:
-            new_nodes.append(nodes[idx])
+    new_nodes = [node for idx, node in enumerate(nodes) if merge_indices[idx] == idx]
 
-    figures = [
-        (page_num, page_width, page_height) + (node.y0, node.x0, node.y1, node.x1)
-        for node in new_nodes
-    ]
-    return figures
+    return new_nodes
 
 
 def merge_nodes(nodes: List[Node], merge_indices: List[int]) -> List[int]:
