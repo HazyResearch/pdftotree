@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import os
 from subprocess import PIPE, Popen
 from typing import Optional
@@ -63,6 +62,12 @@ def test_output_should_conform_to_hocr(tmp_path):
         "ocrx_line",
         "ocrx_word",
     ]
+
+
+def test_no_out_of_order(caplog):
+    """Test if no out of order warning is issued."""
+    pdftotree.parse("tests/input/md.pdf")
+    assert "Out of order" not in caplog.text
 
 
 def test_visualize_output(tmp_path):
