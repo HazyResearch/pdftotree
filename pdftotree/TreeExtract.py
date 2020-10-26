@@ -1,12 +1,15 @@
 import logging
 import os
+import tempfile
+from base64 import b64encode
 from functools import cmp_to_key
 from typing import Any, Dict, List, Optional, Tuple
 from xml.dom.minidom import Document, Element
 
 import numpy as np
 import tabula
-from pdfminer.layout import LAParams, LTChar, LTPage, LTTextLine
+from pdfminer.image import ImageWriter
+from pdfminer.layout import LAParams, LTChar, LTImage, LTPage, LTTextLine
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdfminer.pdfpage import PDFPage
@@ -15,7 +18,7 @@ from pdfminer.utils import Plane
 
 from pdftotree._version import __version__
 from pdftotree.ml.features import get_lines_features, get_mentions_within_bbox
-from pdftotree.utils.bbox_utils import get_rectangles
+from pdftotree.utils.bbox_utils import bbox2str, get_rectangles
 from pdftotree.utils.lines_utils import (
     extend_horizontal_lines,
     extend_vertical_lines,
@@ -42,7 +45,9 @@ class TreeExtractor(object):
         self.font_stats: Dict[int, Any] = {}  # key represents page_num
         self.iou_thresh = 0.8
         self.scanned = False
-        self.tree: Dict[int, Any] = {}  # key represents page_num
+        self.tree: Dict[
+            int, Dict[str, Tuple[int, int, int, float, float, float, float]]
+        ] = {}  # key represents page_num
 
     def identify_scanned_page(self, boxes, page_bbox, page_width, page_height):
         plane = Plane(page_bbox)
@@ -267,6 +272,10 @@ class TreeExtractor(object):
         return self.tree
 
     def get_html_tree(self) -> str:
+        # Create a temp folder where images are temporarily saved.
+        dirname = tempfile.mkdtemp()
+        imagewriter = ImageWriter(dirname)
+
         doc = Document()
         self.doc = doc
         html = doc.createElement("html")
@@ -292,13 +301,13 @@ class TreeExtractor(object):
         body = doc.createElement("body")
         html.appendChild(body)
         for page_num in self.elems.keys():  # 1-based
-            boxes = []
+            boxes: List[Tuple[str, float, float, float, float]] = []
             for clust in self.tree[page_num]:
                 for (pnum, pwidth, pheight, top, left, bottom, right) in self.tree[
                     page_num
                 ][clust]:
                     boxes += [
-                        [clust.lower().replace(" ", "_"), top, left, bottom, right]
+                        (clust.lower().replace(" ", "_"), top, left, bottom, right)
                     ]
             page = doc.createElement("div")
             page.setAttribute("class", "ocr_page")
@@ -319,12 +328,35 @@ class TreeExtractor(object):
                     table_element = self.get_html_table(table, page_num)
                     page.appendChild(table_element)
                 elif box[0] == "figure":
+                    elems: List[LTTextLine] = get_mentions_within_bbox(
+                        box, self.elems[page_num].figures
+                    )
                     fig_element = doc.createElement("figure")
                     page.appendChild(fig_element)
                     top, left, bottom, right = [int(i) for i in box[1:]]
                     fig_element.setAttribute(
                         "title", f"bbox {left} {top} {right} {bottom}"
                     )
+                    for img in [img for elem in elems for img in elem]:
+                        if not isinstance(img, LTImage):
+                            continue
+                        filename = imagewriter.export_image(img)
+                        with open(os.path.join(dirname, filename), "rb") as f:
+                            base64 = b64encode(f.read()).decode("ascii")
+                        if filename.endswith("jpg"):
+                            mediatype = "jpeg"
+                        elif filename.endswith("bmp"):
+                            mediatype = "bmp"
+                        else:
+                            logger.info(f"Skipping an unknown type image: {filename}.")
+                            continue
+                        logger.info(f"Embedding a known type image: {filename}.")
+                        img_element = doc.createElement("img")
+                        fig_element.appendChild(img_element)
+                        img_element.setAttribute("title", bbox2str(img.bbox))
+                        img_element.setAttribute(
+                            "src", f"data:image/{mediatype};base64,{base64}"
+                        )
                 else:
                     element = self.get_html_others(box[0], box[1:], page_num)
                     page.appendChild(element)
@@ -390,10 +422,7 @@ class TreeExtractor(object):
             line_element = self.doc.createElement("span")
             element.appendChild(line_element)
             line_element.setAttribute("class", "ocrx_line")
-            line_element.setAttribute(
-                "title",
-                f"bbox {int(elem.x0)} {int(elem.y0)} {int(elem.x1)} {int(elem.y1)}",
-            )
+            line_element.setAttribute("title", bbox2str(elem.bbox))
             words = self.get_word_boundaries(elem)
             for word in words:
                 top, left, bottom, right = [int(x) for x in word[1:]]
@@ -456,10 +485,7 @@ class TreeExtractor(object):
                     line_element = self.doc.createElement("span")
                     cell_element.appendChild(line_element)
                     line_element.setAttribute("class", "ocrx_line")
-                    line_element.setAttribute(
-                        "title",
-                        " ".join(["bbox"] + [str(int(_)) for _ in elem.bbox]),
-                    )
+                    line_element.setAttribute("title", bbox2str(elem.bbox))
                     words = self.get_word_boundaries(elem)
                     for word in words:
                         top = int(word[1])

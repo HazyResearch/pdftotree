@@ -1,3 +1,5 @@
+from typing import Tuple
+
 TOLERANCE = 5
 
 
@@ -147,3 +149,13 @@ def compute_iou(bbox1, bbox2):
         )
         return float(intersection) / float(union)
     return 0.0
+
+
+def bbox2str(bbox: Tuple[float, float, float, float]) -> str:
+    """Return a string representation suited for hOCR.
+
+    :param bbox: a bounding box (left, top, right, bottom)
+    :return: a string representation for hOCR
+    """
+    (x0, y0, x1, y1) = bbox
+    return f"bbox {int(x0)} {int(y0)} {int(x1)} {int(y1)}"

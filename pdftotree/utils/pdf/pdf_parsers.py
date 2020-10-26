@@ -12,7 +12,7 @@ from collections import Counter, defaultdict
 from functools import cmp_to_key
 from typing import Any, Dict, List, Tuple
 
-from pdfminer.layout import LTTextLine
+from pdfminer.layout import LTFigure, LTTextLine
 from pdfminer.utils import Plane
 
 from pdftotree.utils.pdf.node import Node
@@ -547,8 +547,7 @@ def cluster_vertically_aligned_boxes(
     nodes = [Node(elems) for elems in clusters]
     node_indices = [i for i, x in enumerate(cid2obj2) if x]
     merge_indices = [i for i in range(len(node_indices))]
-    page_stat = Node(boxes)
-    nodes, merge_indices = merge_nodes(nodes, plane, page_stat, merge_indices)
+    merge_indices = merge_nodes(nodes, merge_indices)
     # Features
     for idx in range(len(merge_indices)):
         if merge_indices[idx] != idx:
@@ -734,7 +733,7 @@ def parse_tree_structure(
 ) -> Tuple[Dict[str, Any], bool]:
     boxes_segments = elems.segments
     boxes_curves = elems.curves
-    boxes_figures = elems.figures
+    boxes_figures: List[LTFigure] = elems.figures
     page_width = elems.layout.width
     page_height = elems.layout.height
     mentions: List[LTTextLine] = elems.mentions
@@ -763,9 +762,13 @@ def parse_tree_structure(
         m.feats[prefix + "yc"] = m.yc_grid = m.yc // grid_size
 
     # Figures for this page
-    figures_page = get_figures(
-        mentions, elems.layout.bbox, page_num, boxes_figures, page_width, page_height
-    )
+    nodes = get_figures(boxes_figures)
+    if len(nodes) == 0:
+        logger.warning("No boxes to get figures from on page {}.".format(page_num))
+    figures_page: Tuple[int, int, int, float, float, float, float] = [
+        (page_num, page_width, page_height) + (node.y0, node.x0, node.y1, node.x1)
+        for node in nodes
+    ]
 
     # Eliminate tables from these boxes
     boxes: List[LTTextLine] = []
@@ -1033,8 +1036,7 @@ def extract_text_candidates(
     nodes = [Node(elems) for elems in clusters]
     node_indices = [i for i, x in enumerate(cid2obj) if x]
     merge_indices = [i for i in range(len(node_indices))]
-    page_stat = Node(boxes)
-    nodes, merge_indices = merge_nodes(nodes, plane, page_stat, merge_indices)
+    merge_indices = merge_nodes(nodes, merge_indices)
 
     # Merging Nodes
     new_nodes = []
@@ -1183,47 +1185,32 @@ def extract_text_candidates(
     return tree, new_ref_page_seen
 
 
-def get_figures(boxes, page_bbox, page_num, boxes_figures, page_width, page_height):
+def get_figures(
+    boxes: List[LTFigure],
+) -> List[Node]:
     # Filter out boxes with zero width or height
-    filtered_boxes = []
-    for bbox in boxes:
-        if bbox.x1 - bbox.x0 > 0 and bbox.y1 - bbox.y0 > 0:
-            filtered_boxes.append(bbox)
-    boxes = filtered_boxes
+    boxes = [bbox for bbox in boxes if not bbox.is_empty()]
 
     if len(boxes) == 0:
-        logger.warning("No boxes to get figures from on page {}.".format(page_num))
         return []
 
-    plane = Plane(page_bbox)
-    plane.extend(boxes)
+    # Convert LTFigure to Node
+    nodes: List[Node] = [Node(fig_box) for fig_box in boxes]
 
-    nodes_figures = []
+    # Merge and retain only the most outer nodes
+    merge_indices = list(range(len(nodes)))
+    merge_indices = merge_nodes(nodes, merge_indices)
+    new_nodes = [node for idx, node in enumerate(nodes) if merge_indices[idx] == idx]
 
-    for fig_box in boxes_figures:
-        node_fig = Node(fig_box)
-        nodes_figures.append(node_fig)
-
-    merge_indices = [i for i in range(len(nodes_figures))]
-    page_stat = Node(boxes)
-    nodes, merge_indices = merge_nodes(nodes_figures, plane, page_stat, merge_indices)
-
-    # Merging Nodes
-    new_nodes = []
-    for idx in range(len(merge_indices)):
-        if merge_indices[idx] == idx:
-            new_nodes.append(nodes[idx])
-
-    figures = [
-        (page_num, page_width, page_height) + (node.y0, node.x0, node.y1, node.x1)
-        for node in new_nodes
-    ]
-    return figures
+    return new_nodes
 
 
-def merge_nodes(nodes, plane, page_stat, merge_indices):
-    """
-    Merges overlapping nodes
+def merge_nodes(nodes: List[Node], merge_indices: List[int]) -> List[int]:
+    """Merges overlapping nodes.
+
+    :param nodes: Nodes to be merged
+    :param merge_indices: Indices of nodes
+    :return: a list of indices, indicating which node is its most outer node.
     """
     # Merge inner boxes to the best outer box
     # nodes.sort(key=Node.area)
@@ -1251,7 +1238,7 @@ def merge_nodes(nodes, plane, page_stat, merge_indices):
         for cid_iter in range(len(merge_indices)):
             if merge_indices[cid_iter] == merge_indices[inner_idx]:
                 merge_indices[cid_iter] = merge_indices[best_outer_idx]
-    return nodes, merge_indices
+    return merge_indices
 
 
 def get_most_common_font_pts(mentions, font_stat):

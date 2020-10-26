@@ -5,6 +5,7 @@ Created on Jun 10, 2016
 """
 import numbers
 from collections import Counter
+from typing import List, Union
 
 from pdfminer.layout import LTComponent, LTCurve, LTFigure, LTLine, LTTextLine
 
@@ -31,7 +32,7 @@ class Node(LTComponent):
     Also holds its data and features.
     """
 
-    def __init__(self, elems):
+    def __init__(self, elems: Union[List[LTComponent], LTComponent]):
         """
         Constructor
         """
