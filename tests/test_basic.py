@@ -69,6 +69,9 @@ def test_no_out_of_order(caplog):
     pdftotree.parse("tests/input/md.pdf")
     assert "Out of order" not in caplog.text
 
+    pdftotree.parse("tests/input/paleo.pdf")
+    assert "Out of order" not in caplog.text
+
 
 def test_visualize_output(tmp_path):
     """Test if an output can be visualzied."""
