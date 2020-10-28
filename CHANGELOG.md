@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#98](https://github.com/HazyResearch/pdftotree/pull/98), [@HiromuHota][HiromuHota])
 - Escape text only once.
   ([#100](https://github.com/HazyResearch/pdftotree/pull/100), [@HiromuHota][HiromuHota])
+- Treat "(cid:%d)" as a possible char to reduce "Out of order" warnings.
+  ([#102](https://github.com/HazyResearch/pdftotree/pull/102), [@HiromuHota][HiromuHota])
 
 ## 0.5.0 - 2020-10-13
 

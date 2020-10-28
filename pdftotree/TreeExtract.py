@@ -383,10 +383,11 @@ class TreeExtractor(object):
             curr_word = [word, float("Inf"), float("Inf"), float("-Inf"), float("-Inf")]
             len_idx = 0
             while len_idx < len(word):
-                if mention_chars[char_idx][0] in [" ", "\xa0"]:
+                char: str = mention_chars[char_idx][0]
+                if char in [" ", "\xa0"]:
                     char_idx += 1
                     continue
-                if word[len_idx] != mention_chars[char_idx][0]:
+                if word[len_idx : len_idx + len(char)] != char:
                     logger.warning(
                         "Out of order ({}, {})".format(word, mention_chars[char_idx][0])
                     )
