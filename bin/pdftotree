@@ -58,7 +58,7 @@ if __name__ == "__main__":
         "--veryverbose",
         dest="debug",
         action="store_true",
-        help="Output DEBUG level logging.",
+        help="Output DEBUG level logging. Use this if tabula should not be silent.",
     )
     parser.set_defaults(visualize=False)
     args = parser.parse_args()

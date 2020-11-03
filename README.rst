@@ -43,9 +43,11 @@ pdftotree as a Python package
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
+    # Uncomment the followings if tabula should not be silent.
+    # import logging
+    # logging.getLogger("pdftotree").setLevel(logging.DEBUG)
 
     import pdftotree
-
     pdftotree.parse(pdf_file, html_path=None, model_type=None, model_path=None, visualize=False):
 
 pdftotree
@@ -73,7 +75,7 @@ This takes a PDF file as input and produces an hOCR file as output::
                             printed to stdout.
       -V, --visualize       Whether to output visualization images
       -v, --verbose         Output INFO level logging.
-      -vv, --veryverbose    Output DEBUG level logging.
+      -vv, --veryverbose    Output DEBUG level logging. Use this if tabula should not be silent.
 
 extract\_tables
 ~~~~~~~~~~~~~~~
