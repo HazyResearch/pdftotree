@@ -150,7 +150,7 @@ downloading this dataset and extracting it into a directory named ``data`` and
 then running the command below. Double check that the paths in the command
 match wherever you have downloaded the data::
 
-    $ extract_tables --train-pdf data/paleo/ml/train.pdf.list.paleo.not.scanned --gt-train data/paleo/ml/gt.train --test-pdf data/paleo/ml/test.pdf.list.paleo.not.scanned --gt-test data/paleo/ml/gt.test --datapath data/paleo/documents/ --model-path data/model.pkl
+    $ extract_tables -v --train-pdf data/paleo/ml/train.pdf.list.paleo.not.scanned --gt-train data/paleo/ml/gt.train --test-pdf data/paleo/ml/test.pdf.list.paleo.not.scanned --gt-test data/paleo/ml/gt.test --datapath data/paleo/documents/ --model-path data/model.pkl
 
 The resulting model of this example command would be saved as
 ``data/model.pkl``.
