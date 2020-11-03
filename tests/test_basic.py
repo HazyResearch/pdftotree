@@ -124,6 +124,14 @@ def test_LTChar_under_LTFigure(tmp_path):
         assert all([line.decode("utf-8").startswith("ok") for line in proc.stderr])
 
 
+def test_overflowerror_should_not_happen():
+    """Test if OverflowError does not happen (#104)."""
+    output = pdftotree.parse(
+        "tests/input/UACompanionSpecificationforIEC611313Model_p41.pdf"
+    )
+    assert output is not None
+
+
 def test_ml_completion():
     """Simply test that ML-based parse runs without errors."""
     output = pdftotree.parse(
