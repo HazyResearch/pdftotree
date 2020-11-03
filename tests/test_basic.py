@@ -1,3 +1,4 @@
+import logging
 import os
 from subprocess import PIPE, Popen
 from typing import Optional
@@ -71,6 +72,19 @@ def test_no_out_of_order(caplog):
 
     pdftotree.parse("tests/input/paleo.pdf")
     assert "Out of order" not in caplog.text
+
+
+def test_tabula_warning_suppressed(caplog):
+    """Test if tabula warnings are suppressed."""
+    # Warnings suppressed by default
+    pdftotree.parse("tests/input/112823.pdf")
+    assert "org.apache.pdfbox" not in caplog.text
+
+    # Not to suppress warnings
+    log = logging.getLogger("pdftotree")
+    log.setLevel(logging.DEBUG)
+    pdftotree.parse("tests/input/112823.pdf")
+    assert "org.apache.pdfbox" in caplog.text
 
 
 def test_visualize_output(tmp_path):

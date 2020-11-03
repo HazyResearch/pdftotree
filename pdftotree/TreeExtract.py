@@ -446,8 +446,13 @@ class TreeExtractor(object):
         :return: DOM element for a table
         """
         logger.debug(f"Calling tabula at page: {page_num} and area: {table}.")
+        loglevel = logging.getLogger("pdftotree").getEffectiveLevel()
         table_json = tabula.read_pdf(
-            self.pdf_file, pages=page_num, area=table, output_format="json"
+            self.pdf_file,
+            pages=page_num,
+            area=table,
+            output_format="json",
+            silent=False if loglevel <= logging.DEBUG else True,
         )
         logger.debug(f"Tabula recognized {len(table_json)} table(s).")
         if len(table_json) == 0:
