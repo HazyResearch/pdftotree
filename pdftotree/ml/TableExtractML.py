@@ -26,11 +26,6 @@ class TableExtractorML(TreeExtractor):
         self.candidates = []
         self.features = []
 
-    def get_scanned(self):
-        if len(self.elems) == 0:
-            self.parse()
-        return self.scanned
-
     def get_candidates(self):
         if len(self.elems) == 0:
             self.parse()
