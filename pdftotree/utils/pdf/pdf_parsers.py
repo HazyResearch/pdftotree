@@ -7,6 +7,7 @@ Parsing raw PDF data into python data structures
 import logging
 import math
 import operator
+import sys
 from builtins import filter, range, str, zip
 from collections import Counter, defaultdict
 from functools import cmp_to_key
@@ -351,10 +352,10 @@ def cluster_vertically_aligned_boxes(
     cid2span = {}
     for cid in range(len(cid2obj)):
         cid2span[cid] = {}
-        cid2span[cid]["min_x"] = float("Inf")
-        cid2span[cid]["min_y"] = float("Inf")
-        cid2span[cid]["max_x"] = float("-Inf")
-        cid2span[cid]["max_y"] = float("-Inf")
+        cid2span[cid]["min_x"] = sys.maxsize
+        cid2span[cid]["min_y"] = sys.maxsize
+        cid2span[cid]["max_x"] = -sys.maxsize - 1
+        cid2span[cid]["max_y"] = -sys.maxsize - 1
         for obj in cid2obj[cid]:
             cid2span[cid]["min_x"] = min(cid2span[cid]["min_x"], boxes[obj].bbox[0])
             cid2span[cid]["max_x"] = max(cid2span[cid]["max_x"], boxes[obj].bbox[2])
@@ -942,10 +943,10 @@ def extract_text_candidates(
     cid2span = {}
     for cid in range(len(cid2obj)):
         cid2span[cid] = {}
-        cid2span[cid]["min_x"] = float("Inf")
-        cid2span[cid]["min_y"] = float("Inf")
-        cid2span[cid]["max_x"] = float("-Inf")
-        cid2span[cid]["max_y"] = float("-Inf")
+        cid2span[cid]["min_x"] = sys.maxsize
+        cid2span[cid]["min_y"] = sys.maxsize
+        cid2span[cid]["max_x"] = -sys.maxsize - 1
+        cid2span[cid]["max_y"] = -sys.maxsize - 1
         for obj in cid2obj[cid]:
             cid2span[cid]["min_x"] = min(cid2span[cid]["min_x"], boxes[obj].bbox[0])
             cid2span[cid]["max_x"] = max(cid2span[cid]["max_x"], boxes[obj].bbox[2])
