@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#102](https://github.com/HazyResearch/pdftotree/pull/102), [@HiromuHota][HiromuHota])
 - Use sys.maxsize not to cause "OverflowError: cannot convert float infinity to integer".
   ([#104](https://github.com/HazyResearch/pdftotree/issues/104), [@HiromuHota][HiromuHota])
+- Let TableExtractorML inherit TreeExtractor to use its updated parse().
+  ([#105](https://github.com/HazyResearch/pdftotree/issues/105), [@HiromuHota][HiromuHota])
 
 ## 0.5.0 - 2020-10-13
 
