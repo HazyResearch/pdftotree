@@ -19,7 +19,7 @@ from pdfminer.utils import Plane
 from pdftotree.utils.pdf.node import Node
 from pdftotree.utils.pdf.pdf_utils import PDFElems
 from pdftotree.utils.pdf.vector_utils import center, intersect, l1, xy_reading_order
-
+import numpy as np
 logger = logging.getLogger(__name__)
 
 
@@ -1274,11 +1274,8 @@ def get_page_width(boxes):
 
 
 def get_char_width(boxes: List[LTTextLine]) -> float:
-    box_len_sum = 0
-    num_char_sum = 0
-    for i, b in enumerate(boxes):
-        box_len_sum = box_len_sum + b.bbox[2] - b.bbox[0]
-        num_char_sum = num_char_sum + len(b.get_text())
+    box_len_sum = np.sum([b.bbox[2] - b.bbox[0] for b in boxes] )
+    num_char_sum = np.sum([len(b.get_text()) for b in boxes])
     try:
         return box_len_sum / num_char_sum
     except ZeroDivisionError:
