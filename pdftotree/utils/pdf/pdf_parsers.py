@@ -13,13 +13,14 @@ from collections import Counter, defaultdict
 from functools import cmp_to_key
 from typing import Any, Dict, List, Tuple
 
+import numpy as np
 from pdfminer.layout import LTFigure, LTTextLine
 from pdfminer.utils import Plane
 
 from pdftotree.utils.pdf.node import Node
 from pdftotree.utils.pdf.pdf_utils import PDFElems
 from pdftotree.utils.pdf.vector_utils import center, intersect, l1, xy_reading_order
-import numpy as np
+
 logger = logging.getLogger(__name__)
 
 
