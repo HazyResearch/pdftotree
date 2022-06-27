@@ -1275,7 +1275,7 @@ def get_page_width(boxes):
 
 
 def get_char_width(boxes: List[LTTextLine]) -> float:
-    box_len_sum = np.sum([b.bbox[2] - b.bbox[0] for b in boxes] )
+    box_len_sum = np.sum([b.bbox[2] - b.bbox[0] for b in boxes])
     num_char_sum = np.sum([len(b.get_text()) for b in boxes])
     try:
         return box_len_sum / num_char_sum
