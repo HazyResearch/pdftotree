@@ -51,3 +51,6 @@ setup(
     author_email="senwu@cs.stanford.edu",
     license="MIT",
 )
+
+if __name__ == "__main__":
+    setup()
