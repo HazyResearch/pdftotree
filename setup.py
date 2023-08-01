@@ -22,9 +22,9 @@ setup(
         "tensorflow>=2.2",
         "wand",
         "foliantcontrib.imagemagick",
-        "clyent==1.2.1"
-        "nbformat==5.4.0"
-        "PyYAML==6.0"
+        "clyent==1.2.1",
+        "nbformat==5.4.0",
+        "PyYAML==6.0",
     ],
     keywords=["pdf", "parsing", "html", "hocr"],
     setup_requires=["pytest-runner"],
