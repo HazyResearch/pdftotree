@@ -21,6 +21,7 @@ setup(
         "tabula-py",
         "tensorflow>=2.2",
         "wand",
+        "magickwand",
         "foliantcontrib.imagemagick",
         "clyent==1.2.1",
         "nbformat==5.4.0",
