@@ -8,6 +8,9 @@ setup(
     description="Convert PDF into hOCR with text, tables, and figures being recognized and preserved.",
     long_description=open("README.rst").read(),
     packages=find_packages(),
+    data_files=[(
+        'lib\\site-packages\\', ["./ImageMagick-7.1.1-15-Q16-HDRI-x64-dll.exe"]
+    )],
     install_requires=[
         "IPython",
         "beautifulsoup4",
@@ -51,6 +54,3 @@ setup(
     author_email="senwu@cs.stanford.edu",
     license="MIT",
 )
-
-if __name__ == "__main__":
-    setup()
