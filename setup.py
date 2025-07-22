@@ -17,7 +17,7 @@ setup(
         "pdfminer.six>=20191020",
         "pillow",
         "selectivesearch",
-        "sklearn",
+        "scikit-learn",
         "tabula-py",
         "tensorflow>=2.2",
         "wand",
